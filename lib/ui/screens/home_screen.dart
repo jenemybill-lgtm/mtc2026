@@ -14,6 +14,7 @@ import 'package:mtc2026/ui/screens/project_list_screen.dart';
 import 'package:mtc2026/ui/screens/project_comparison_screen.dart';
 import 'package:mtc2026/ui/screens/ai_assistant_screen.dart';
 import 'package:mtc2026/ui/screens/portfolio_screen.dart';
+import 'package:mtc2026/ui/theme/app_theme.dart';
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
@@ -37,7 +38,7 @@ class _HomeScreenState extends State<HomeScreen> {
     final isDesktop = Responsive.isDesktop(context);
 
     return Scaffold(
-      backgroundColor: const Color(0xFFF1F5F9),
+      backgroundColor: AppTheme.backgroundLight,
       appBar: isDesktop ? AppBar(
         title: Text("${provider.settings.companyName} (WEB)".toUpperCase(), style: const TextStyle(fontWeight: FontWeight.w900, letterSpacing: 2)),
         actions: [
@@ -51,7 +52,7 @@ class _HomeScreenState extends State<HomeScreen> {
             onPressed: () => provider.fetchProjects(),
             tooltip: "Ανανέωση δεδομένων",
           ),
-          _buildTopAction(context, "Ψηφιακή Κάρτα", Icons.qr_code_2, const Color(0xFFF72585), () => Navigator.push(context, MaterialPageRoute(builder: (context) => DigitalCardScreen(settings: provider.settings)))),
+          _buildTopAction(context, "Ψηφιακή Κάρτα", Icons.qr_code_2, AppTheme.accentSlate, () => Navigator.push(context, MaterialPageRoute(builder: (context) => DigitalCardScreen(settings: provider.settings)))),
           const SizedBox(width: 16),
           IconButton(
             icon: const Icon(Icons.settings_rounded), 
@@ -69,18 +70,18 @@ class _HomeScreenState extends State<HomeScreen> {
           height: 64,
           elevation: 0,
           backgroundColor: Colors.white,
-          indicatorColor: const Color(0xFF4361EE).withValues(alpha: 0.1),
+          indicatorColor: AppTheme.primaryBlue.withValues(alpha: 0.1),
           selectedIndex: 0,
           onDestinationSelected: (index) {
             if (index == 1) Navigator.push(context, MaterialPageRoute(builder: (context) => const ProjectListScreen()));
             if (index == 2) Navigator.push(context, MaterialPageRoute(builder: (context) => const CompanyHubScreen()));
             if (index == 3) Navigator.push(context, MaterialPageRoute(builder: (context) => const SettingsScreen()));
           },
-          destinations: const [
-            NavigationDestination(icon: Icon(Icons.home_outlined, size: 22), selectedIcon: Icon(Icons.home_rounded, color: Color(0xFF4361EE)), label: "Αρχική"),
-            NavigationDestination(icon: Icon(Icons.business_center_outlined, size: 22), selectedIcon: Icon(Icons.business_center_rounded, color: Color(0xFF4361EE)), label: "Έργα"),
-            NavigationDestination(icon: Icon(Icons.settings_suggest_outlined, size: 22), selectedIcon: Icon(Icons.settings_suggest_rounded, color: Color(0xFF4361EE)), label: "Εταιρεία"),
-            NavigationDestination(icon: Icon(Icons.settings_outlined, size: 22), selectedIcon: Icon(Icons.settings_rounded, color: Color(0xFF4361EE)), label: "Ρυθμίσεις"),
+          destinations: [
+            NavigationDestination(icon: const Icon(Icons.home_outlined, size: 22), selectedIcon: Icon(Icons.home_rounded, color: AppTheme.primaryBlue), label: "Αρχική"),
+            NavigationDestination(icon: const Icon(Icons.business_center_outlined, size: 22), selectedIcon: Icon(Icons.business_center_rounded, color: AppTheme.primaryBlue), label: "Έργα"),
+            NavigationDestination(icon: const Icon(Icons.settings_suggest_outlined, size: 22), selectedIcon: Icon(Icons.settings_suggest_rounded, color: AppTheme.primaryBlue), label: "Εταιρεία"),
+            NavigationDestination(icon: const Icon(Icons.settings_outlined, size: 22), selectedIcon: Icon(Icons.settings_rounded, color: AppTheme.primaryBlue), label: "Ρυθμίσεις"),
           ],
         ),
       ),
@@ -125,13 +126,13 @@ class _HomeScreenState extends State<HomeScreen> {
                           flex: 2,
                           child: Column(
                             children: [
-                              _PremiumStatCard(label: "ΣΥΝΟΛΟ ΕΙΣΠΡΑΞΕΩΝ", amount: stats['income']!, color: const Color(0xFF38B000), icon: Icons.trending_up_rounded),
+                              _PremiumStatCard(label: "ΣΥΝΟΛΟ ΕΙΣΠΡΑΞΕΩΝ", amount: stats['income']!, color: AppTheme.successGreen, icon: Icons.trending_up_rounded),
                               const SizedBox(height: 12),
-                              _PremiumStatCard(label: "ΣΥΝΟΛΟ ΕΞΟΔΩΝ", amount: stats['expense']!, color: const Color(0xFFEF4444), icon: Icons.trending_down_rounded),
+                              _PremiumStatCard(label: "ΣΥΝΟΛΟ ΕΞΟΔΩΝ", amount: stats['expense']!, color: AppTheme.dangerRed, icon: Icons.trending_down_rounded),
                               const SizedBox(height: 12),
                               _PremiumStatCard(label: "ΥΠΟΛΟΙΠΟ ΦΠΑ", amount: stats['vatBalance'] ?? 0.0, color: Colors.orange, icon: Icons.account_balance_rounded),
                               const SizedBox(height: 12),
-                              _PremiumStatCard(label: "ΚΑΘΑΡΟ ΥΠΟΛΟΙΠΟ", amount: balance, color: balance >= 0 ? const Color(0xFF4361EE) : Colors.red, isBalance: true, icon: Icons.account_balance_wallet_rounded),
+                              _PremiumStatCard(label: "ΚΑΘΑΡΟ ΥΠΟΛΟΙΠΟ", amount: balance, color: balance >= 0 ? AppTheme.primaryBlue : Colors.red, isBalance: true, icon: Icons.account_balance_wallet_rounded),
                             ],
                           ),
                         ),
@@ -143,13 +144,13 @@ class _HomeScreenState extends State<HomeScreen> {
                       ],
                     ),
                     const SizedBox(height: 32),
-                    const PremiumHeader(title: "ΕΝΟΤΗΤΕΣ ΣΥΣΤΗΜΑΤΟΣ", color: Colors.blue),
+                    const PremiumHeader(title: "ΕΝΟΤΗΤΕΣ ΣΥΣΤΗΜΑΤΟΣ", color: AppTheme.primaryBlue),
                     const SizedBox(height: 24),
                     Row(
                       children: [
-                        Expanded(child: _PremiumNavCard(title: "ΔΙΑΧΕΙΡΙΣΗ ΕΡΓΩΝ", subtitle: "${provider.projects.length} Ενεργά Έργα", icon: Icons.business_center_rounded, color: const Color(0xFF4361EE), onClick: () => Navigator.push(context, MaterialPageRoute(builder: (context) => const ProjectListScreen())))),
+                        Expanded(child: _PremiumNavCard(title: "ΔΙΑΧΕΙΡΙΣΗ ΕΡΓΩΝ", subtitle: "${provider.projects.length} Ενεργά Έργα", icon: Icons.business_center_rounded, color: AppTheme.primaryBlue, onClick: () => Navigator.push(context, MaterialPageRoute(builder: (context) => const ProjectListScreen())))),
                         const SizedBox(width: 24),
-                        Expanded(child: _PremiumNavCard(title: "ΚΕΝΤΡΟ ΕΛΕΓΧΟΥ", subtitle: "Εταιρικά & Εργαλεία", icon: Icons.settings_suggest_rounded, color: const Color(0xFF7209B7), onClick: () => Navigator.push(context, MaterialPageRoute(builder: (context) => const CompanyHubScreen())))),
+                        Expanded(child: _PremiumNavCard(title: "ΚΕΝΤΡΟ ΕΛΕΓΧΟΥ", subtitle: "Εταιρικά & Εργαλεία", icon: Icons.settings_suggest_rounded, color: AppTheme.primaryNavy, onClick: () => Navigator.push(context, MaterialPageRoute(builder: (context) => const CompanyHubScreen())))),
                       ],
                     ),
                     const SizedBox(height: 24),
@@ -157,7 +158,7 @@ class _HomeScreenState extends State<HomeScreen> {
                       title: "AI ΒΟΗΘΟΣ MTC",
                       subtitle: "Ανάλυση δεδομένων & Έξυπνες προτάσεις",
                       icon: Icons.auto_awesome_rounded,
-                      color: const Color(0xFFFF9800),
+                      color: Colors.amber.shade800,
                       isFullWidth: true,
                       onClick: () => Navigator.push(context, MaterialPageRoute(builder: (context) => const AiAssistantScreen())),
                     ),
@@ -166,7 +167,7 @@ class _HomeScreenState extends State<HomeScreen> {
                       title: "ΨΗΦΙΑΚΟ PORTFOLIO",
                       subtitle: "Το 'Book' των έργων σας",
                       icon: Icons.photo_library_rounded,
-                      color: Colors.teal,
+                      color: AppTheme.accentSlate,
                       isFullWidth: true,
                       onClick: () => Navigator.push(context, MaterialPageRoute(builder: (context) => const PortfolioScreen())),
                     ),
@@ -206,12 +207,12 @@ class _HomeScreenState extends State<HomeScreen> {
                         icon: const Icon(Icons.add_business_rounded, size: 20),
                         label: const Text("ΝΕΟ ΕΡΓΟ", style: TextStyle(fontWeight: FontWeight.w900, letterSpacing: 1.0)),
                         style: ElevatedButton.styleFrom(
-                          backgroundColor: const Color(0xFF4361EE),
+                          backgroundColor: AppTheme.primaryBlue,
                           foregroundColor: Colors.white,
                           minimumSize: const Size(double.infinity, 70),
-                          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(24)),
-                          elevation: 8,
-                          shadowColor: const Color(0xFF4361EE).withValues(alpha: 0.4),
+                          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+                          elevation: 4,
+                          shadowColor: AppTheme.primaryBlue.withValues(alpha: 0.3),
                         ),
                       ),
                     ),
@@ -233,7 +234,7 @@ class _HomeScreenState extends State<HomeScreen> {
           child: Column(
             children: [
               PremiumCard(
-                accentColor: const Color(0xFF4361EE),
+                accentColor: AppTheme.primaryBlue,
                 padding: const EdgeInsets.all(28),
                 child: Column(
                   children: [
@@ -243,14 +244,14 @@ class _HomeScreenState extends State<HomeScreen> {
                         const PremiumHeader(title: "ΙΣΟΛΟΓΙΣΜΟΣ"),
                         Row(
                           children: [
-                            _buildIconButton(context, Icons.qr_code_2, const Color(0xFFF72585), () {
+                            _buildIconButton(context, Icons.qr_code_2, AppTheme.accentSlate, () {
                               Navigator.push(context, PageRouteBuilder(
                                 pageBuilder: (c, a1, a2) => DigitalCardScreen(settings: provider.settings),
                                 transitionsBuilder: (c, a1, a2, child) => FadeTransition(opacity: a1, child: child),
                               ));
                             }),
                             const SizedBox(width: 8),
-                            _buildIconButton(context, Icons.analytics_rounded, const Color(0xFF4361EE), () {
+                            _buildIconButton(context, Icons.analytics_rounded, AppTheme.primaryBlue, () {
                               Navigator.push(context, PageRouteBuilder(
                                 pageBuilder: (c, a1, a2) => const ProjectComparisonScreen(),
                                 transitionsBuilder: (c, a1, a2, child) => FadeTransition(opacity: a1, child: child),
@@ -264,18 +265,18 @@ class _HomeScreenState extends State<HomeScreen> {
                     Row(
                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       children: [
-                        Expanded(child: _buildStatColumn("ΕΙΣΠΡΑΞΕΙΣ (ΚΑΘΑΡΑ)", "${stats['income']!.toStringAsFixed(0)}€", const Color(0xFF38B000))),
+                        Expanded(child: _buildStatColumn("ΕΙΣΠΡΑΞΕΙΣ (ΚΑΘΑΡΑ)", "${stats['income']!.toStringAsFixed(0)}€", AppTheme.successGreen)),
                         const SizedBox(width: 8),
-                        Expanded(child: _buildStatColumn("ΕΞΟΔΑ (ΚΑΘΑΡΑ)", "${stats['expense']!.toStringAsFixed(0)}€", Colors.red, crossAxisAlignment: CrossAxisAlignment.end)),
+                        Expanded(child: _buildStatColumn("ΕΞΟΔΑ (ΚΑΘΑΡΑ)", "${stats['expense']!.toStringAsFixed(0)}€", AppTheme.dangerRed, crossAxisAlignment: CrossAxisAlignment.end)),
                       ],
                     ),
                     const SizedBox(height: 16),
                     Row(
                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       children: [
-                        Expanded(child: _buildStatColumn("ΦΠΑ ΕΙΣΠΡΑΞΕΩΝ", "${(stats['vatCollected'] ?? 0.0).toStringAsFixed(0)}€", Colors.blueGrey)),
+                        Expanded(child: _buildStatColumn("ΦΠΑ ΕΙΣΠΡΑΞΕΩΝ", "${(stats['vatCollected'] ?? 0.0).toStringAsFixed(0)}€", AppTheme.accentSlate)),
                         const SizedBox(width: 8),
-                        Expanded(child: _buildStatColumn("ΦΠΑ ΠΛΗΡΩΜΩΝ", "${(stats['vatPaid'] ?? 0.0).toStringAsFixed(0)}€", Colors.blueGrey, crossAxisAlignment: CrossAxisAlignment.end)),
+                        Expanded(child: _buildStatColumn("ΦΠΑ ΠΛΗΡΩΜΩΝ", "${(stats['vatPaid'] ?? 0.0).toStringAsFixed(0)}€", AppTheme.accentSlate, crossAxisAlignment: CrossAxisAlignment.end)),
                       ],
                     ),
                     const Padding(
@@ -297,7 +298,7 @@ class _HomeScreenState extends State<HomeScreen> {
                                 style: TextStyle(
                                   fontWeight: FontWeight.w900,
                                   fontSize: 22,
-                                  color: balance >= 0 ? const Color(0xFF4361EE) : Colors.red,
+                                  color: balance >= 0 ? AppTheme.primaryBlue : Colors.red,
                                   letterSpacing: -1
                                 ),
                               ),
@@ -334,7 +335,7 @@ class _HomeScreenState extends State<HomeScreen> {
                 title: "ΔΙΑΧΕΙΡΙΣΗ ΕΡΓΩΝ",
                 subtitle: "${provider.projects.length} ΕΝΕΡΓΑ ΕΡΓΑ",
                 icon: Icons.business_center_rounded,
-                color: const Color(0xFF4361EE),
+                color: AppTheme.primaryBlue,
                 isFullWidth: true,
                 onClick: () => Navigator.push(context, PageRouteBuilder(
                   pageBuilder: (c, a1, a2) => const ProjectListScreen(),
@@ -346,7 +347,7 @@ class _HomeScreenState extends State<HomeScreen> {
                 title: "ΚΕΝΤΡΟ ΕΛΕΓΧΟΥ",
                 subtitle: "ΕΤΑΙΡΕΙΑ & ΕΡΓΑΛΕΙΑ",
                 icon: Icons.settings_suggest_rounded,
-                color: const Color(0xFF7209B7),
+                color: AppTheme.primaryNavy,
                 isFullWidth: true,
                 onClick: () => Navigator.push(context, PageRouteBuilder(
                   pageBuilder: (c, a1, a2) => const CompanyHubScreen(),
@@ -358,7 +359,7 @@ class _HomeScreenState extends State<HomeScreen> {
                 title: "AI ΒΟΗΘΟΣ MTC",
                 subtitle: "ΈΞΥΠΝΗ ΥΠΟΣΤΉΡΙΞΗ",
                 icon: Icons.auto_awesome_rounded,
-                color: const Color(0xFFFF9800),
+                color: Colors.amber.shade800,
                 isFullWidth: true,
                 onClick: () => Navigator.push(context, PageRouteBuilder(
                   pageBuilder: (c, a1, a2) => const AiAssistantScreen(),
@@ -370,7 +371,7 @@ class _HomeScreenState extends State<HomeScreen> {
                 title: "ΨΗΦΙΑΚΟ PORTFOLIO",
                 subtitle: "ΤΟ BOOK ΤΩΝ ΕΡΓΩΝ ΣΑΣ",
                 icon: Icons.photo_library_rounded,
-                color: Colors.teal,
+                color: AppTheme.accentSlate,
                 isFullWidth: true,
                 onClick: () => Navigator.push(context, PageRouteBuilder(
                   pageBuilder: (c, a1, a2) => const PortfolioScreen(),
@@ -389,12 +390,12 @@ class _HomeScreenState extends State<HomeScreen> {
 
   Widget _buildSyncControl(BuildContext context, ProjectProvider provider) {
     return PremiumCard(
-      accentColor: Colors.blue,
+      accentColor: AppTheme.primaryBlue,
       padding: const EdgeInsets.all(24),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          const PremiumHeader(title: "ΣΥΓΧΡΟΝΙΣΜΟΣ CLOUD", icon: Icons.cloud_sync_rounded, color: Colors.blueGrey),
+          const PremiumHeader(title: "ΣΥΓΧΡΟΝΙΣΜΟΣ CLOUD", icon: Icons.cloud_sync_rounded, color: AppTheme.accentSlate),
           const SizedBox(height: 20),
           Row(
             children: [
@@ -412,7 +413,7 @@ class _HomeScreenState extends State<HomeScreen> {
                   },
                   icon: const Icon(Icons.cloud_upload_rounded, size: 18),
                   label: const Text("UPLOAD", style: TextStyle(fontWeight: FontWeight.w900, fontSize: 11)),
-                  style: ElevatedButton.styleFrom(backgroundColor: Colors.blue, foregroundColor: Colors.white, padding: const EdgeInsets.symmetric(vertical: 14)),
+                  style: ElevatedButton.styleFrom(backgroundColor: AppTheme.primaryBlue, foregroundColor: Colors.white, padding: const EdgeInsets.symmetric(vertical: 14)),
                 ),
               ),
               const SizedBox(width: 12),
@@ -430,7 +431,7 @@ class _HomeScreenState extends State<HomeScreen> {
                   },
                   icon: const Icon(Icons.cloud_download_rounded, size: 18),
                   label: const Text("DOWNLOAD", style: TextStyle(fontWeight: FontWeight.w900, fontSize: 11)),
-                  style: ElevatedButton.styleFrom(backgroundColor: const Color(0xFF3A0CA3), foregroundColor: Colors.white, padding: const EdgeInsets.symmetric(vertical: 14)),
+                  style: ElevatedButton.styleFrom(backgroundColor: AppTheme.primaryNavy, foregroundColor: Colors.white, padding: const EdgeInsets.symmetric(vertical: 14)),
                 ),
               ),
             ],
@@ -519,13 +520,13 @@ class _HomeScreenState extends State<HomeScreen> {
     );
   }
 
-  Widget _buildStatColumn(String label, String value, Color valueColor, {CrossAxisAlignment crossAxisAlignment = CrossAxisAlignment.start}) {
+  Widget _buildStatColumn(String label, String value, Color color, {CrossAxisAlignment crossAxisAlignment = CrossAxisAlignment.start}) {
     return Column(
       crossAxisAlignment: crossAxisAlignment,
       children: [
-        Text(label, style: const TextStyle(fontSize: 9, color: Colors.grey, fontWeight: FontWeight.w900, letterSpacing: 0.5)),
+        Text(label, style: TextStyle(fontSize: 8, fontWeight: FontWeight.w900, color: Colors.blueGrey.withValues(alpha: 0.6), letterSpacing: 1)),
         const SizedBox(height: 4),
-        Text(value, style: TextStyle(fontWeight: FontWeight.w900, color: valueColor, fontSize: 18)),
+        Text(value, style: TextStyle(fontWeight: FontWeight.w900, fontSize: 18, color: color, letterSpacing: -0.5)),
       ],
     );
   }
@@ -545,7 +546,7 @@ class _PremiumStatCard extends StatelessWidget {
     return Container(
       decoration: BoxDecoration(
         color: Colors.white,
-        borderRadius: BorderRadius.circular(32),
+        borderRadius: BorderRadius.circular(20),
         border: Border.all(color: Colors.black.withValues(alpha: 0.08), width: 1.0),
         boxShadow: [
           BoxShadow(color: Colors.black.withValues(alpha: 0.02), blurRadius: 15, offset: const Offset(0, 6)),
@@ -606,7 +607,7 @@ class _PremiumChartCard extends StatelessWidget {
       padding: const EdgeInsets.all(40),
       child: Column(
         children: [
-          const PremiumHeader(title: "ΚΑΤΑΝΟΜΗ ΤΑΜΕΙΟΥ", icon: Icons.pie_chart_outline_rounded, color: Color(0xFF1E293B)),
+          const PremiumHeader(title: "ΚΑΤΑΝΟΜΗ ΤΑΜΕΙΟΥ", icon: Icons.pie_chart_outline_rounded, color: AppTheme.primaryNavy),
           const SizedBox(height: 48),
           SizedBox(
             height: 280,
@@ -620,21 +621,21 @@ class _PremiumChartCard extends StatelessWidget {
                     sections: [
                       if (income > 0)
                         PieChartSectionData(
-                          color: const Color(0xFF38B000),
+                          color: AppTheme.successGreen,
                           value: income,
                           title: '${(income / total * 100).toInt()}%',
                           radius: 60,
                           titleStyle: const TextStyle(fontWeight: FontWeight.w900, color: Colors.white, fontSize: 13),
-                          gradient: const LinearGradient(colors: [Color(0xFF38B000), Color(0xFF1B5E20)]),
+                          gradient: LinearGradient(colors: [AppTheme.successGreen, AppTheme.successGreen.withValues(alpha: 0.7)]),
                         ),
                       if (expense > 0)
                         PieChartSectionData(
-                          color: const Color(0xFFEF4444),
+                          color: AppTheme.dangerRed,
                           value: expense,
                           title: '${(expense / total * 100).toInt()}%',
                           radius: 60,
                           titleStyle: const TextStyle(fontWeight: FontWeight.w900, color: Colors.white, fontSize: 13),
-                          gradient: const LinearGradient(colors: [Color(0xFFEF4444), Color(0xFFB71C1C)]),
+                          gradient: LinearGradient(colors: [AppTheme.dangerRed, AppTheme.dangerRed.withValues(alpha: 0.7)]),
                         ),
                     ],
                   ),
@@ -653,9 +654,9 @@ class _PremiumChartCard extends StatelessWidget {
           Row(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              _Legend(color: const Color(0xFF38B000), label: "Εισπράξεις"),
+              _Legend(color: AppTheme.successGreen, label: "Εισπράξεις"),
               const SizedBox(width: 48),
-              _Legend(color: const Color(0xFFEF4444), label: "Έξοδα"),
+              _Legend(color: AppTheme.dangerRed, label: "Έξοδα"),
             ],
           ),
         ],
@@ -695,7 +696,7 @@ class _PremiumNavCard extends StatelessWidget {
       margin: const EdgeInsets.only(bottom: 16),
       decoration: BoxDecoration(
         color: Colors.white,
-        borderRadius: BorderRadius.circular(32),
+        borderRadius: BorderRadius.circular(20),
         border: Border.all(color: Colors.black.withValues(alpha: 0.08), width: 1.0),
         boxShadow: [
           BoxShadow(color: Colors.black.withValues(alpha: 0.02), blurRadius: 15, offset: const Offset(0, 6)),
@@ -705,7 +706,7 @@ class _PremiumNavCard extends StatelessWidget {
         color: Colors.transparent,
         child: InkWell(
           onTap: onClick,
-          borderRadius: BorderRadius.circular(32),
+          borderRadius: BorderRadius.circular(20),
           child: Padding(
             padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 20),
             child: Row(
@@ -744,13 +745,13 @@ class _PremiumNavCard extends StatelessWidget {
       padding: const EdgeInsets.fromLTRB(32, 60, 32, 40),
       decoration: BoxDecoration(
         gradient: LinearGradient(
-          colors: [const Color(0xFF1E293B), const Color(0xFF334155)],
+          colors: [AppTheme.primaryNavy, AppTheme.accentSlate],
           begin: Alignment.topLeft,
           end: Alignment.bottomRight,
         ),
-        borderRadius: const BorderRadius.vertical(bottom: Radius.circular(48)),
+        borderRadius: const BorderRadius.vertical(bottom: Radius.circular(32)),
         boxShadow: [
-          BoxShadow(color: const Color(0xFF1E293B).withValues(alpha: 0.2), blurRadius: 30, offset: const Offset(0, 10))
+          BoxShadow(color: AppTheme.primaryNavy.withValues(alpha: 0.2), blurRadius: 30, offset: const Offset(0, 10))
         ],
       ),
       child: Column(
@@ -761,9 +762,9 @@ class _PremiumNavCard extends StatelessWidget {
                 width: 56,
                 height: 56,
                 decoration: BoxDecoration(
-                  gradient: LinearGradient(colors: [Colors.blue.shade400, Colors.blue.shade700]),
+                  gradient: LinearGradient(colors: [AppTheme.primaryBlue, AppTheme.primaryNavy]),
                   shape: BoxShape.circle,
-                  boxShadow: [BoxShadow(color: Colors.blue.withValues(alpha: 0.3), blurRadius: 10)],
+                  boxShadow: [BoxShadow(color: AppTheme.primaryBlue.withValues(alpha: 0.3), blurRadius: 10)],
                   border: Border.all(color: Colors.white.withValues(alpha: 0.3), width: 2),
                 ),
                 child: const Icon(Icons.person_rounded, color: Colors.white, size: 28),
@@ -802,7 +803,7 @@ class _PremiumNavCard extends StatelessWidget {
               padding: const EdgeInsets.all(16),
               decoration: BoxDecoration(
                 color: Colors.white.withValues(alpha: 0.05),
-                borderRadius: BorderRadius.circular(24),
+                borderRadius: BorderRadius.circular(20),
               ),
               child: Image.file(File(provider.settings.logoUri!), fit: BoxFit.contain),
             ),
@@ -830,4 +831,3 @@ class _PremiumNavCard extends StatelessWidget {
       ],
     );
   }
-
