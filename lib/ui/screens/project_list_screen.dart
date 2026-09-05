@@ -6,7 +6,6 @@ import 'package:mtc2026/models/project_models.dart';
 import 'package:mtc2026/utils/responsive.dart';
 import 'package:mtc2026/ui/components/premium_ui.dart';
 import 'package:mtc2026/ui/screens/project_main_screen.dart';
-import 'package:mtc2026/ui/screens/company_expenses_screen.dart';
 
 class ProjectListScreen extends StatefulWidget {
   const ProjectListScreen({super.key});
@@ -226,30 +225,14 @@ class _ProjectList extends StatelessWidget {
               ),
             ),
           ),
-          Padding(
-            padding: const EdgeInsets.only(bottom: 24),
-            child: PremiumCard(
-              accentColor: Colors.redAccent,
-              onTap: () => Navigator.push(context, MaterialPageRoute(builder: (context) => const CompanyExpensesScreen(initialTabIndex: 1))),
-              child: const Row(
-                children: [
-                  Icon(Icons.account_balance_wallet_rounded, color: Colors.redAccent),
-                  SizedBox(width: 16),
-                  Text("ΛΕΙΤΟΥΡΓΙΚΑ ΕΞΟΔΑ ΕΤΑΙΡΕΙΑΣ", style: TextStyle(fontWeight: FontWeight.w900, fontSize: 12, letterSpacing: 0.5)),
-                  Spacer(),
-                  Icon(Icons.chevron_right_rounded, color: Colors.black12),
-                ],
-              ),
-            ),
-          ),
         GridView.builder(
           shrinkWrap: true,
           physics: const NeverScrollableScrollPhysics(),
           gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
-            crossAxisCount: isDesktop ? 3 : 1,
-            crossAxisSpacing: 20,
-            mainAxisSpacing: 20,
-            childAspectRatio: isDesktop ? 2.4 : 3.2,
+            crossAxisCount: isDesktop ? 4 : 1,
+            crossAxisSpacing: 16,
+            mainAxisSpacing: 16,
+            childAspectRatio: isDesktop ? 3.2 : 3.2,
           ),
           itemCount: projects.length,
           itemBuilder: (context, index) {
