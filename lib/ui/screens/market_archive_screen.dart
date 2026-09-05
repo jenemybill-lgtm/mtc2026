@@ -325,7 +325,6 @@ class _MarketArchiveScreenState extends State<MarketArchiveScreen> {
       ),
     );
   }
-  }
 
   List<MarketArchiveItem> _filterBySelectedCategory(
     List<MarketArchiveItem> items,
