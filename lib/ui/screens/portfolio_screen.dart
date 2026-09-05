@@ -83,27 +83,25 @@ class _PortfolioScreenState extends State<PortfolioScreen> {
 
   Widget _buildCategoryFilter() {
     return Container(
-      height: 60,
+      width: double.infinity,
       color: Colors.white,
-      child: ListView.builder(
-        scrollDirection: Axis.horizontal,
-        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
-        itemCount: _categories.length,
-        itemBuilder: (context, index) {
-          final cat = _categories[index];
+      alignment: Alignment.center,
+      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+      child: Wrap(
+        spacing: 8,
+        runSpacing: 8,
+        alignment: WrapAlignment.center,
+        children: _categories.map((cat) {
           final isSelected = cat == _selectedCategory;
-          return Padding(
-            padding: const EdgeInsets.only(right: 8),
-            child: FilterChip(
-              label: Text(cat, style: TextStyle(fontWeight: FontWeight.bold, fontSize: 11, color: isSelected ? Colors.white : Colors.blueGrey)),
-              selected: isSelected,
-              onSelected: (val) => setState(() => _selectedCategory = cat),
-              selectedColor: Colors.blue,
-              showCheckmark: false,
-              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-            ),
+          return FilterChip(
+            label: Text(cat, style: TextStyle(fontWeight: FontWeight.bold, fontSize: 11, color: isSelected ? Colors.white : Colors.blueGrey)),
+            selected: isSelected,
+            onSelected: (val) => setState(() => _selectedCategory = cat),
+            selectedColor: Colors.blue,
+            showCheckmark: false,
+            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
           );
-        },
+        }).toList(),
       ),
     );
   }

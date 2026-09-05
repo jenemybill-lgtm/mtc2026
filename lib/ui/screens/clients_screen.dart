@@ -114,26 +114,25 @@ class _ClientsScreenState extends State<ClientsScreen> {
   Widget _buildFilterBar() {
     final statuses = ["ΟΛΑ", "LEAD", "ACTIVE", "PAST"];
     return Container(
-      height: 50,
+      width: double.infinity,
+      color: Colors.white,
+      alignment: Alignment.center,
       margin: const EdgeInsets.only(top: 16),
-      child: ListView.builder(
-        scrollDirection: Axis.horizontal,
-        padding: const EdgeInsets.symmetric(horizontal: 20),
-        itemCount: statuses.length,
-        itemBuilder: (context, index) {
-          final s = statuses[index];
+      padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
+      child: Wrap(
+        spacing: 8,
+        runSpacing: 8,
+        alignment: WrapAlignment.center,
+        children: statuses.map((s) {
           final isSelected = _filterStatus == s;
-          return Padding(
-            padding: const EdgeInsets.only(right: 8),
-            child: FilterChip(
-              label: Text(s, style: TextStyle(fontSize: 10, fontWeight: FontWeight.bold, color: isSelected ? Colors.white : Colors.blueGrey)),
-              selected: isSelected,
-              onSelected: (val) => setState(() => _filterStatus = s),
-              selectedColor: Colors.blue,
-              showCheckmark: false,
-            ),
+          return FilterChip(
+            label: Text(s, style: TextStyle(fontSize: 10, fontWeight: FontWeight.bold, color: isSelected ? Colors.white : Colors.blueGrey)),
+            selected: isSelected,
+            onSelected: (val) => setState(() => _filterStatus = s),
+            selectedColor: Colors.blue,
+            showCheckmark: false,
           );
-        },
+        }).toList(),
       ),
     );
   }

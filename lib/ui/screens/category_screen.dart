@@ -140,26 +140,35 @@ class _CategoryScreenState extends State<CategoryScreen> {
   }
 
   Widget _buildCalculatorsBar() {
-    return SingleChildScrollView(
-      scrollDirection: Axis.horizontal,
-      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-      child: Row(
-        children: [
-          if (widget.category == AppDestinations.WINDOWS) _calcBtn("Υπολογιστής", Icons.calculate_rounded, WindowCalculator(onResult: _handleCalcResult)),
-          if (widget.category == AppDestinations.DRYWALL) _calcBtn("Υλικά & Εργασία", Icons.square_rounded, DrywallCalculator(onResult: _handleCalcResult)),
-          if (widget.category == AppDestinations.GENERAL || widget.category == AppDestinations.TILES) _calcBtn("Υλικά (Άμμος/Τσιμ.)", Icons.home_work_rounded, MortarCalculator(category: widget.category.name, onResult: _handleCalcResult)),
-          if (widget.category == AppDestinations.ELECTRICAL) _calcBtn("Υπολογιστής", Icons.bolt_rounded, ElectricalCalculator(onResult: _handleCalcResult)),
-          if (widget.category == AppDestinations.PLUMBING) _calcBtn("Υπολογιστής", Icons.water_drop_rounded, PlumbingCalculator(onResult: _handleCalcResult)),
-          if (widget.category == AppDestinations.PAINTING) _calcBtn("Υπολογιστής", Icons.brush_rounded, PaintingCalculator(onResult: _handleCalcResult)),
-          if (widget.category == AppDestinations.TILES) _calcBtn("Υπολογιστής", Icons.grid_view_rounded, TilesCalculator(onResult: _handleCalcResult)),
-          if (widget.category == AppDestinations.BETON) _calcBtn("Υπολογιστής", Icons.warehouse_rounded, BetonCalculator(onResult: _handleCalcResult)),
-          if (widget.category == AppDestinations.FLOORS) _calcBtn("Υπολογιστής", Icons.square_foot_rounded, FloorsCalculator(onResult: _handleCalcResult)),
-          if (widget.category == AppDestinations.METAL) _calcBtn("Υπολογιστής", Icons.construction_rounded, MetalCalculator(onResult: _handleCalcResult)),
-          if (widget.category == AppDestinations.CARPENTRY) _calcBtn("Υπολογιστής", Icons.kitchen_rounded, CarpentryCalculator(onResult: _handleCalcResult)),
-          if (widget.category == AppDestinations.ENGINEERING) _calcBtn("Υπολογιστής", Icons.design_services_rounded, EngineeringCalculator(onResult: _handleCalcResult)),
-          _actionBtn("ΠΡΟΤΥΠΑ", Icons.style_rounded, _showPriceTemplatesSheet),
-          _actionBtn("ΣΥΝΤΑΓΕΣ (RECIPES)", Icons.auto_fix_high_rounded, _showRecipesSheet),
-        ],
+    final isDesktop = MediaQuery.of(context).size.width > 900;
+    return Container(
+      width: double.infinity,
+      color: Colors.white,
+      alignment: Alignment.center,
+      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+      child: Container(
+        constraints: BoxConstraints(maxWidth: isDesktop ? 950 : double.infinity),
+        child: Wrap(
+          spacing: 8,
+          runSpacing: 8,
+          alignment: WrapAlignment.center,
+          children: [
+            if (widget.category == AppDestinations.WINDOWS) _calcBtn("Υπολογιστής", Icons.calculate_rounded, WindowCalculator(onResult: _handleCalcResult)),
+            if (widget.category == AppDestinations.DRYWALL) _calcBtn("Υλικά & Εργασία", Icons.square_rounded, DrywallCalculator(onResult: _handleCalcResult)),
+            if (widget.category == AppDestinations.GENERAL || widget.category == AppDestinations.TILES) _calcBtn("Υλικά (Άμμος/Τσιμ.)", Icons.home_work_rounded, MortarCalculator(category: widget.category.name, onResult: _handleCalcResult)),
+            if (widget.category == AppDestinations.ELECTRICAL) _calcBtn("Υπολογιστής", Icons.bolt_rounded, ElectricalCalculator(onResult: _handleCalcResult)),
+            if (widget.category == AppDestinations.PLUMBING) _calcBtn("Υπολογιστής", Icons.water_drop_rounded, PlumbingCalculator(onResult: _handleCalcResult)),
+            if (widget.category == AppDestinations.PAINTING) _calcBtn("Υπολογιστής", Icons.brush_rounded, PaintingCalculator(onResult: _handleCalcResult)),
+            if (widget.category == AppDestinations.TILES) _calcBtn("Υπολογιστής", Icons.grid_view_rounded, TilesCalculator(onResult: _handleCalcResult)),
+            if (widget.category == AppDestinations.BETON) _calcBtn("Υπολογιστής", Icons.warehouse_rounded, BetonCalculator(onResult: _handleCalcResult)),
+            if (widget.category == AppDestinations.FLOORS) _calcBtn("Υπολογιστής", Icons.square_foot_rounded, FloorsCalculator(onResult: _handleCalcResult)),
+            if (widget.category == AppDestinations.METAL) _calcBtn("Υπολογιστής", Icons.construction_rounded, MetalCalculator(onResult: _handleCalcResult)),
+            if (widget.category == AppDestinations.CARPENTRY) _calcBtn("Υπολογιστής", Icons.kitchen_rounded, CarpentryCalculator(onResult: _handleCalcResult)),
+            if (widget.category == AppDestinations.ENGINEERING) _calcBtn("Υπολογιστής", Icons.design_services_rounded, EngineeringCalculator(onResult: _handleCalcResult)),
+            _actionBtn("ΠΡΟΤΥΠΑ", Icons.style_rounded, _showPriceTemplatesSheet),
+            _actionBtn("ΣΥΝΤΑΓΕΣ (RECIPES)", Icons.auto_fix_high_rounded, _showRecipesSheet),
+          ],
+        ),
       ),
     );
   }
