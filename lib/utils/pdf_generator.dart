@@ -978,6 +978,12 @@ class PdfGenerator {
   static pw.Widget _buildHeader(Settings settings, pw.MemoryImage? logo) {
     return pw.Column(
       children: [
+        pw.Container(
+          height: 6,
+          width: double.infinity,
+          color: PdfColors.blue800,
+        ),
+        pw.SizedBox(height: 15),
         pw.Row(
           mainAxisAlignment: pw.MainAxisAlignment.spaceBetween,
           crossAxisAlignment: pw.CrossAxisAlignment.start,
@@ -986,7 +992,7 @@ class PdfGenerator {
               child: pw.Column(
                 crossAxisAlignment: pw.CrossAxisAlignment.start,
                 children: [
-                  pw.Text("ΗΜΕΡΟΜΗΝΙΑ", style: pw.TextStyle(fontSize: 8, color: PdfColors.grey)),
+                  pw.Text("ΗΜΕΡΟΜΗΝΙΑ", style: pw.TextStyle(fontSize: 8, color: PdfColors.grey700, fontWeight: pw.FontWeight.bold)),
                   pw.Text(DateFormat('dd/MM/yyyy').format(DateTime.now()), style: pw.TextStyle(fontSize: 10, fontWeight: pw.FontWeight.bold)),
                 ],
               ),
@@ -999,13 +1005,13 @@ class PdfGenerator {
                 children: [
                   if (logo != null)
                     pw.Container(
-                      height: 80,
+                      height: 70,
                       child: pw.Image(logo, fit: pw.BoxFit.contain),
                     )
                   else
                     pw.Text(settings.companyName.toUpperCase(), 
                       style: pw.TextStyle(fontSize: 18, fontWeight: pw.FontWeight.bold, color: PdfColors.blue900)),
-                  pw.SizedBox(height: 5),
+                  pw.SizedBox(height: 4),
                   pw.Text(settings.tagline, style: const pw.TextStyle(fontSize: 9, color: PdfColors.grey700)),
                 ],
               ),
@@ -1018,10 +1024,12 @@ class PdfGenerator {
         pw.SizedBox(height: 15),
         pw.Container(
           width: double.infinity,
-          decoration: const pw.BoxDecoration(
-            border: pw.Border(top: pw.BorderSide(color: PdfColors.grey300, width: 0.5)),
+          decoration: pw.BoxDecoration(
+            color: PdfColors.grey100,
+            borderRadius: const pw.BorderRadius.all(pw.Radius.circular(6)),
+            border: pw.Border.all(color: PdfColors.grey300, width: 0.5),
           ),
-          padding: const pw.EdgeInsets.only(top: 10),
+          padding: const pw.EdgeInsets.symmetric(vertical: 8, horizontal: 12),
           child: pw.Row(
             mainAxisAlignment: pw.MainAxisAlignment.spaceAround,
             children: [
@@ -1032,6 +1040,7 @@ class PdfGenerator {
             ],
           ),
         ),
+        pw.SizedBox(height: 10),
       ],
     );
   }
