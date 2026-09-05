@@ -381,9 +381,11 @@ class ProjectProvider with ChangeNotifier {
   }
 
   Future<void> _autoSync() async {
-    if (kIsWeb) {
-      // Non-blocking upload
+    try {
+      // Non-blocking upload to cloud on all platforms
       manualUploadToCloud();
+    } catch (e) {
+      debugPrint("AutoSync Error: $e");
     }
   }
 
