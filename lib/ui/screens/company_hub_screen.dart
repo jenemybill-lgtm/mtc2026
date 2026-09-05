@@ -146,43 +146,43 @@ class _PremiumHubCategoryCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Container(
-      height: isDesktop ? 160 : 130,
+      height: isDesktop ? 100 : 110,
       decoration: BoxDecoration(
         gradient: LinearGradient(
           colors: [color.withValues(alpha: 0.1), color.withValues(alpha: 0.02)],
           begin: Alignment.topLeft,
           end: Alignment.bottomRight,
         ),
-        borderRadius: BorderRadius.circular(32),
+        borderRadius: BorderRadius.circular(20),
         border: Border.all(color: color.withValues(alpha: 0.15), width: 1.5),
         boxShadow: [
-          BoxShadow(color: color.withValues(alpha: 0.05), blurRadius: 30, offset: const Offset(0, 10)),
+          BoxShadow(color: color.withValues(alpha: 0.05), blurRadius: 15, offset: const Offset(0, 4)),
         ],
       ),
       child: Material(
         color: Colors.transparent,
         child: InkWell(
           onTap: onClick,
-          borderRadius: BorderRadius.circular(32),
+          borderRadius: BorderRadius.circular(20),
           child: Padding(
-            padding: EdgeInsets.symmetric(horizontal: isDesktop ? 40 : 28),
+            padding: EdgeInsets.symmetric(horizontal: isDesktop ? 24 : 20),
             child: Row(
               children: [
                 Container(
-                  width: isDesktop ? 80 : 64, 
-                  height: isDesktop ? 80 : 64,
+                  width: isDesktop ? 52 : 56, 
+                  height: isDesktop ? 52 : 56,
                   decoration: BoxDecoration(
                     gradient: LinearGradient(
                       colors: [color, color.withValues(alpha: 0.7)],
                       begin: Alignment.topLeft,
                       end: Alignment.bottomRight,
                     ),
-                    borderRadius: BorderRadius.circular(isDesktop ? 24 : 20),
-                    boxShadow: [BoxShadow(color: color.withValues(alpha: 0.3), blurRadius: 15, offset: const Offset(0, 6))],
+                    borderRadius: BorderRadius.circular(isDesktop ? 16 : 20),
+                    boxShadow: [BoxShadow(color: color.withValues(alpha: 0.3), blurRadius: 10, offset: const Offset(0, 4))],
                   ),
-                  child: Icon(icon, color: Colors.white, size: isDesktop ? 40 : 30),
+                  child: Icon(icon, color: Colors.white, size: isDesktop ? 26 : 30),
                 ),
-                SizedBox(width: isDesktop ? 40 : 24),
+                SizedBox(width: isDesktop ? 20 : 24),
                 Expanded(
                   child: Column(
                     mainAxisAlignment: MainAxisAlignment.center,
@@ -192,20 +192,20 @@ class _PremiumHubCategoryCard extends StatelessWidget {
                         fit: BoxFit.scaleDown,
                         child: Text(
                           label, 
-                          style: TextStyle(fontWeight: FontWeight.w900, fontSize: isDesktop ? 22 : 17, letterSpacing: 0.5, color: const Color(0xFF1E293B))
+                          style: TextStyle(fontWeight: FontWeight.w900, fontSize: isDesktop ? 15 : 17, letterSpacing: 0.5, color: const Color(0xFF1E293B))
                         ),
                       ),
-                      const SizedBox(height: 4),
+                      const SizedBox(height: 2),
                       Text(
                         subtitle, 
-                        style: TextStyle(color: Colors.grey.withValues(alpha: 0.8), fontSize: isDesktop ? 13 : 11, fontWeight: FontWeight.bold),
+                        style: TextStyle(color: Colors.grey.withValues(alpha: 0.8), fontSize: isDesktop ? 11 : 11, fontWeight: FontWeight.bold),
                         maxLines: 2,
                         overflow: TextOverflow.ellipsis,
                       ),
                     ],
                   ),
                 ),
-                Icon(Icons.arrow_forward_ios_rounded, color: color.withValues(alpha: 0.2), size: isDesktop ? 24 : 18),
+                Icon(Icons.arrow_forward_ios_rounded, color: color.withValues(alpha: 0.2), size: isDesktop ? 20 : 18),
               ],
             ),
           ),
