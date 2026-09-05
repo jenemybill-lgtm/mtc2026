@@ -126,11 +126,11 @@ class _HomeScreenState extends State<HomeScreen> {
                           child: Column(
                             children: [
                               _PremiumStatCard(label: "ΣΥΝΟΛΟ ΕΙΣΠΡΑΞΕΩΝ", amount: stats['income']!, color: const Color(0xFF38B000), icon: Icons.trending_up_rounded),
-                              const SizedBox(height: 12),
+                              const SizedBox(height: 8),
                               _PremiumStatCard(label: "ΣΥΝΟΛΟ ΕΞΟΔΩΝ", amount: stats['expense']!, color: const Color(0xFFEF4444), icon: Icons.trending_down_rounded),
-                              const SizedBox(height: 12),
+                              const SizedBox(height: 8),
                               _PremiumStatCard(label: "ΥΠΟΛΟΙΠΟ ΦΠΑ", amount: stats['vatBalance'] ?? 0.0, color: Colors.orange, icon: Icons.account_balance_rounded),
-                              const SizedBox(height: 12),
+                              const SizedBox(height: 8),
                               _PremiumStatCard(label: "ΚΑΘΑΡΟ ΥΠΟΛΟΙΠΟ", amount: balance, color: balance >= 0 ? const Color(0xFF4361EE) : Colors.red, isBalance: true, icon: Icons.account_balance_wallet_rounded),
                             ],
                           ),
@@ -545,25 +545,25 @@ class _PremiumStatCard extends StatelessWidget {
     return Container(
       decoration: BoxDecoration(
         color: Colors.white,
-        borderRadius: BorderRadius.circular(32),
+        borderRadius: BorderRadius.circular(20),
         border: Border.all(color: Colors.black.withValues(alpha: 0.08), width: 1.0),
         boxShadow: [
-          BoxShadow(color: Colors.black.withValues(alpha: 0.02), blurRadius: 15, offset: const Offset(0, 6)),
+          BoxShadow(color: Colors.black.withValues(alpha: 0.02), blurRadius: 10, offset: const Offset(0, 4)),
         ],
       ),
       child: Padding(
-        padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 20),
+        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
         child: Row(
           children: [
             Container(
-              padding: const EdgeInsets.all(10),
+              padding: const EdgeInsets.all(8),
               decoration: BoxDecoration(
                 color: color.withValues(alpha: 0.08),
-                borderRadius: BorderRadius.circular(12),
+                borderRadius: BorderRadius.circular(10),
               ),
-              child: Icon(icon, color: color, size: 20),
+              child: Icon(icon, color: color, size: 18),
             ),
-            const SizedBox(width: 16),
+            const SizedBox(width: 12),
             Expanded(
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
@@ -576,7 +576,7 @@ class _PremiumStatCard extends StatelessWidget {
                       "${amount.toStringAsFixed(2)} €",
                       style: TextStyle(
                         fontWeight: FontWeight.w900,
-                        fontSize: 20,
+                        fontSize: 16,
                         color: isBalance ? (amount >= 0 ? color : Colors.red) : const Color(0xFF0F172A),
                         letterSpacing: -0.5
                       )
@@ -603,28 +603,28 @@ class _PremiumChartCard extends StatelessWidget {
     final total = income + expense;
 
     return PremiumCard(
-      padding: const EdgeInsets.all(40),
+      padding: const EdgeInsets.all(24),
       child: Column(
         children: [
           const PremiumHeader(title: "ΚΑΤΑΝΟΜΗ ΤΑΜΕΙΟΥ", icon: Icons.pie_chart_outline_rounded, color: Color(0xFF1E293B)),
-          const SizedBox(height: 48),
+          const SizedBox(height: 24),
           SizedBox(
-            height: 280,
+            height: 180,
             child: Stack(
               alignment: Alignment.center,
               children: [
                 PieChart(
                   PieChartData(
-                    sectionsSpace: 8,
-                    centerSpaceRadius: 80,
+                    sectionsSpace: 6,
+                    centerSpaceRadius: 50,
                     sections: [
                       if (income > 0)
                         PieChartSectionData(
                           color: const Color(0xFF38B000),
                           value: income,
                           title: '${(income / total * 100).toInt()}%',
-                          radius: 60,
-                          titleStyle: const TextStyle(fontWeight: FontWeight.w900, color: Colors.white, fontSize: 13),
+                          radius: 40,
+                          titleStyle: const TextStyle(fontWeight: FontWeight.w900, color: Colors.white, fontSize: 11),
                           gradient: const LinearGradient(colors: [Color(0xFF38B000), Color(0xFF1B5E20)]),
                         ),
                       if (expense > 0)
@@ -632,8 +632,8 @@ class _PremiumChartCard extends StatelessWidget {
                           color: const Color(0xFFEF4444),
                           value: expense,
                           title: '${(expense / total * 100).toInt()}%',
-                          radius: 60,
-                          titleStyle: const TextStyle(fontWeight: FontWeight.w900, color: Colors.white, fontSize: 13),
+                          radius: 40,
+                          titleStyle: const TextStyle(fontWeight: FontWeight.w900, color: Colors.white, fontSize: 11),
                           gradient: const LinearGradient(colors: [Color(0xFFEF4444), Color(0xFFB71C1C)]),
                         ),
                     ],
@@ -642,19 +642,19 @@ class _PremiumChartCard extends StatelessWidget {
                 Column(
                   mainAxisSize: MainAxisSize.min,
                   children: [
-                    const Text("ΣΥΝΟΛΙΚΗ ΡΟΗ", style: TextStyle(fontSize: 8, fontWeight: FontWeight.w900, color: Colors.grey, letterSpacing: 1)),
-                    Text("${total.toStringAsFixed(0)}€", style: const TextStyle(fontSize: 20, fontWeight: FontWeight.w900, color: Color(0xFF1E293B))),
+                    const Text("ΣΥΝΟΛΙΚΗ ΡΟΗ", style: TextStyle(fontSize: 7, fontWeight: FontWeight.w900, color: Colors.grey, letterSpacing: 1)),
+                    Text("${total.toStringAsFixed(0)}€", style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w900, color: Color(0xFF1E293B))),
                   ],
                 ),
               ],
             ),
           ),
-          const SizedBox(height: 48),
+          const SizedBox(height: 24),
           Row(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
               _Legend(color: const Color(0xFF38B000), label: "Εισπράξεις"),
-              const SizedBox(width: 48),
+              const SizedBox(width: 36),
               _Legend(color: const Color(0xFFEF4444), label: "Έξοδα"),
             ],
           ),
