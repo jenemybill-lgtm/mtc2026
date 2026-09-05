@@ -5,6 +5,7 @@ import 'package:http/http.dart' as http;
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:mtc2026/providers/project_provider.dart';
 import 'package:mtc2026/ui/screens/home_screen.dart';
+import 'package:mtc2026/database/database_helper.dart';
 
 class CompanyLoginScreen extends StatefulWidget {
   const CompanyLoginScreen({super.key});
@@ -99,6 +100,16 @@ class _CompanyLoginScreenState extends State<CompanyLoginScreen> {
                       onPressed: () => _showRegisterDialog(),
                       child: const Text("ΔΕΝ ΕΧΕΤΕ ΛΟΓΑΡΙΑΣΜΟ; ΕΓΓΡΑΦΗ ΕΤΑΙΡΕΙΑΣ"),
                     ),
+                    const SizedBox(height: 8),
+                    OutlinedButton.icon(
+                      onPressed: () => _showManagerPinDialog(context),
+                      icon: const Icon(Icons.engineering_rounded, size: 18),
+                      label: const Text("ΣΥΝΔΕΣΗ ΩΣ ΥΠΕΥΘΥΝΟΣ (ΜΕ PIN)", style: TextStyle(fontWeight: FontWeight.bold, fontSize: 11)),
+                      style: OutlinedButton.styleFrom(
+                        minimumSize: const Size(double.infinity, 48),
+                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+                      ),
+                    ),
                   ],
                 ),
               ),
@@ -107,6 +118,74 @@ class _CompanyLoginScreenState extends State<CompanyLoginScreen> {
         ),
       ),
     );
+  }
+
+  void _showManagerPinDialog(BuildContext context) {
+    final pinController = TextEditingController();
+    Manager? selectedManager;
+    final provider = Provider.of<ProjectProvider>(context, listen: false);
+    
+    DatabaseHelper().getManagers().then((managers) {
+      if (managers.isEmpty) {
+        if (context.mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text("Δεν υπάρχουν καταχωρημένοι υπεύθυνοι έργων. Δημιουργήστε έναν από το Κέντρο Ελέγχου.")));
+        }
+        return;
+      }
+      selectedManager = managers.first;
+
+      if (context.mounted) {
+        showDialog(
+          context: context,
+          builder: (context) => StatefulBuilder(
+            builder: (context, setDialogState) => AlertDialog(
+              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(24)),
+              title: const Text("ΣΥΝΔΕΣΗ ΥΠΕΥΘΥΝΟΥ ΕΡΓΟΥ", style: TextStyle(fontWeight: FontWeight.w900)),
+              content: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  DropdownButtonFormField<Manager>(
+                    value: selectedManager,
+                    isExpanded: true,
+                    decoration: const InputDecoration(labelText: "Επιλογή Υπευθύνου", border: OutlineInputBorder()),
+                    items: managers.map((m) => DropdownMenuItem(value: m, child: Text(m.name, style: const TextStyle(fontWeight: FontWeight.bold)))).toList(),
+                    onChanged: (v) => setDialogState(() => selectedManager = v),
+                  ),
+                  const SizedBox(height: 16),
+                  TextField(
+                    controller: pinController,
+                    obscureText: true,
+                    decoration: const InputDecoration(labelText: "PIN Πρόσβασης", border: OutlineInputBorder()),
+                    keyboardType: TextInputType.number,
+                  ),
+                ],
+              ),
+              actions: [
+                TextButton(onPressed: () => Navigator.pop(context), child: const Text("ΑΚΥΡΟ")),
+                ElevatedButton(
+                  onPressed: () async {
+                    if (selectedManager != null && pinController.text.trim() == selectedManager!.pin) {
+                      final prefs = await SharedPreferences.getInstance();
+                      await prefs.setBool('is_logged_in', true);
+                      await provider.setCurrentManagerId(selectedManager!.id);
+                      if (context.mounted) {
+                        Navigator.pop(context);
+                        Navigator.pushReplacement(context, MaterialPageRoute(builder: (context) => const HomeScreen()));
+                      }
+                    } else {
+                      if (context.mounted) {
+                        ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text("Λανθασμένο PIN")));
+                      }
+                    }
+                  },
+                  child: const Text("ΣΥΝΔΕΣΗ"),
+                ),
+              ],
+            ),
+          ),
+        );
+      }
+    });
   }
 
   void _showRegisterDialog() {
@@ -281,6 +360,7 @@ class _CompanyLoginScreenState extends State<CompanyLoginScreen> {
 
         if (mounted) {
           final provider = Provider.of<ProjectProvider>(context, listen: false);
+          await provider.setCurrentManagerId(null);
           await provider.clearLocalData();
           await provider.manualDownloadFromCloud();
           Navigator.of(context).pushReplacement(MaterialPageRoute(builder: (context) => const HomeScreen()));
@@ -324,6 +404,7 @@ class _CompanyLoginScreenState extends State<CompanyLoginScreen> {
 
         if (mounted) {
           final provider = Provider.of<ProjectProvider>(context, listen: false);
+          await provider.setCurrentManagerId(null);
           await provider.clearLocalData();
           await provider.manualDownloadFromCloud();
           Navigator.of(context).pushReplacement(MaterialPageRoute(builder: (context) => const HomeScreen()));

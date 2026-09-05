@@ -143,6 +143,46 @@ class _SettingsScreenState extends State<SettingsScreen> {
                   ),
                   const SizedBox(height: 24),
                   _SettingsSection(
+                    title: "ΠΡΟΣΒΑΣΗ & ΥΠΕΥΘΥΝΟΙ ΕΡΓΩΝ",
+                    icon: Icons.engineering_rounded,
+                    child: FutureBuilder<List<Manager>>(
+                      future: DatabaseHelper().getManagers(),
+                      builder: (context, snapshot) {
+                        final managers = snapshot.data ?? [];
+                        final provider = Provider.of<ProjectProvider>(context);
+                        return Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(
+                              provider.currentManagerId == null 
+                                ? "Τρέχων Ρόλος: ΔΙΑΧΕΙΡΙΣΤΗΣ / ΑΦΕΝΤΙΚΟ (Όλα τα έργα)" 
+                                : "Τρέχων Ρόλος: Υπεύθυνος Έργου",
+                              style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 12, color: Colors.blue),
+                            ),
+                            const SizedBox(height: 12),
+                            DropdownButtonFormField<int?>(
+                              value: provider.currentManagerId,
+                              isExpanded: true,
+                              decoration: const InputDecoration(labelText: "Προβολή ανά Υπεύθυνο", border: OutlineInputBorder()),
+                              items: [
+                                const DropdownMenuItem<int?>(value: null, child: Text("Προβολή Όλων (Διαχειριστής)", style: TextStyle(fontWeight: FontWeight.bold))),
+                                ...managers.map((m) => DropdownMenuItem<int?>(value: m.id, child: Text(m.name))),
+                              ],
+                              onChanged: (v) async {
+                                await provider.setCurrentManagerId(v);
+                                setState(() {});
+                                if (context.mounted) {
+                                  ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(v == null ? "Προβολή όλων των έργων" : "Προβολή έργων υπευθύνου")));
+                                }
+                              },
+                            ),
+                          ],
+                        );
+                      },
+                    ),
+                  ),
+                  const SizedBox(height: 24),
+                  _SettingsSection(
                     title: "CLOUD & ΑΣΦΑΛΕΙΑ",
                     icon: Icons.cloud_done_rounded,
                     child: Column(

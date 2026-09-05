@@ -131,7 +131,7 @@ class DatabaseHelper {
     String path = join(dbDir, 'mtc_database.db');
     final db = await openDatabase(
       path,
-      version: 14,
+      version: 15,
       onCreate: _onCreate,
       onUpgrade: _onUpgrade,
     );
@@ -430,9 +430,32 @@ class DatabaseHelper {
         print("Migration error v14: $e");
       }
     }
+    if (oldVersion < 15) {
+      try {
+        await db.execute('''
+          CREATE TABLE managers (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            name TEXT,
+            pin TEXT
+          )
+        ''');
+        await db.execute("ALTER TABLE projects ADD COLUMN managerId INTEGER");
+        await db.execute("ALTER TABLE quote_items ADD COLUMN showPriceToClient INTEGER DEFAULT 1");
+      } catch (e) {
+        print("Migration error v15: $e");
+      }
+    }
   }
 
   Future _onCreate(Database db, int version) async {
+    await db.execute('''
+      CREATE TABLE managers (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        name TEXT,
+        pin TEXT
+      )
+    ''');
+
     await db.execute('''
       CREATE TABLE projects (
         id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -448,7 +471,8 @@ class DatabaseHelper {
         startDate INTEGER,
         deliveryDate INTEGER,
         status INTEGER DEFAULT 1,
-        proposalValue REAL DEFAULT 0.0
+        proposalValue REAL DEFAULT 0.0,
+        managerId INTEGER
       )
     ''');
 
@@ -534,6 +558,7 @@ class DatabaseHelper {
         hasVat INTEGER,
         isVatInclusive INTEGER,
         showVatToClient INTEGER,
+        showPriceToClient INTEGER DEFAULT 1,
         FOREIGN KEY (projectId) REFERENCES projects (id) ON DELETE CASCADE
       )
     ''');
@@ -937,6 +962,43 @@ class DatabaseHelper {
     }
     Database? db = await database;
     return await db!.delete('partners', where: 'id = ?', whereArgs: [id]);
+  }
+
+  // Managers
+  Future<int> insertManager(Manager manager) async {
+    if (kIsWeb) {
+      return _webInsert('managers', manager.toMap());
+    }
+    Database? db = await database;
+    return await db!.insert('managers', manager.toMap());
+  }
+
+  Future<List<Manager>> getManagers() async {
+    if (kIsWeb) return (_webMemory['managers'] ?? []).map((e) => Manager.fromMap(e)).toList();
+    Database? db = await database;
+    var result = await db!.query('managers');
+    return result.map((e) => Manager.fromMap(e)).toList();
+  }
+
+  Future<int> updateManager(Manager manager) async {
+    if (kIsWeb) {
+      return _webUpdate('managers', manager.toMap(), manager.id);
+    }
+    Database? db = await database;
+    return await db!.update(
+      'managers',
+      manager.toMap(),
+      where: 'id = ?',
+      whereArgs: [manager.id],
+    );
+  }
+
+  Future<int> deleteManager(int id) async {
+    if (kIsWeb) {
+      return _webDelete('managers', id);
+    }
+    Database? db = await database;
+    return await db!.delete('managers', where: 'id = ?', whereArgs: [id]);
   }
 
   // Project Partners (Join Table)

@@ -12,6 +12,7 @@ import 'package:mtc2026/ui/screens/company_expenses_screen.dart';
 import 'package:mtc2026/ui/screens/market_archive_screen.dart';
 import 'package:mtc2026/ui/screens/job_recipes_screen.dart';
 import 'package:mtc2026/ui/screens/global_payroll_screen.dart';
+import 'package:mtc2026/ui/screens/managers_screen.dart';
 
 class CompanyHubScreen extends StatefulWidget {
   const CompanyHubScreen({super.key});
@@ -127,6 +128,7 @@ class _CompanyHubScreenState extends State<CompanyHubScreen> {
       _HomeHub(label: "ΠΡΟΤΥΠΑ ΤΙΜΩΝ", icon: Icons.style_rounded, id: "MANAGE_PRICES", color: const Color(0xFFFF9800)),
       _HomeHub(label: "ΑΡΧΕΙΟ ΑΓΟΡΩΝ", icon: Icons.archive_rounded, id: "MARKET_ARCHIVE", color: const Color(0xFF4361EE)),
       _HomeHub(label: "ΣΥΝΤΑΓΕΣ ΕΡΓΩΝ", icon: Icons.auto_fix_high_rounded, id: "JOB_RECIPES", color: Colors.blueAccent),
+      _HomeHub(label: "ΥΠΕΥΘΥΝΟΙ ΕΡΓΩΝ", icon: Icons.engineering_rounded, id: "MANAGERS", color: Colors.teal),
     ];
     return _HubGrid(hubs: hubs, isDesktop: isDesktop);
   }
@@ -257,6 +259,7 @@ class _HubGrid extends StatelessWidget {
             else if (hub.id == "ECONOMICS") Navigator.push(context, MaterialPageRoute(builder: (context) => const CompanyExpensesScreen()));
             else if (hub.id == "MARKET_ARCHIVE") Navigator.push(context, MaterialPageRoute(builder: (context) => const MarketArchiveScreen()));
             else if (hub.id == "JOB_RECIPES") Navigator.push(context, MaterialPageRoute(builder: (context) => const JobRecipesScreen()));
+            else if (hub.id == "MANAGERS") Navigator.push(context, MaterialPageRoute(builder: (context) => const ManagersScreen()));
           },
         );
       },

@@ -73,10 +73,46 @@ class _QuoteCategoriesScreenState extends State<QuoteCategoriesScreen> {
                               const SizedBox(width: 12),
                               IconButton.filledTonal(
                                 onPressed: () {
-                                  PdfGenerator.generateAndShareQuote(
-                                    projectName: widget.project.name,
-                                    items: items,
-                                    settings: provider.settings,
+                                  bool showTotals = true;
+                                  bool showPrices = true;
+                                  showDialog(
+                                    context: context,
+                                    builder: (context) => StatefulBuilder(
+                                      builder: (context, setDialogState) => AlertDialog(
+                                        title: const Text("ΕΠΙΛΟΓΕΣ ΕΚΤΥΠΩΣΗΣ ΠΡΟΣΦΟΡΑΣ", style: TextStyle(fontWeight: FontWeight.bold, fontSize: 14)),
+                                        content: Column(
+                                          mainAxisSize: MainAxisSize.min,
+                                          children: [
+                                            CheckboxListTile(
+                                              title: const Text("Εμφάνιση συνόλων ανά κατηγορία", style: TextStyle(fontSize: 13)),
+                                              value: showTotals,
+                                              onChanged: (v) => setDialogState(() => showTotals = v ?? true),
+                                            ),
+                                            CheckboxListTile(
+                                              title: const Text("Εμφάνιση τιμών ανά εργασία", style: TextStyle(fontSize: 13)),
+                                              value: showPrices,
+                                              onChanged: (v) => setDialogState(() => showPrices = v ?? true),
+                                            ),
+                                          ],
+                                        ),
+                                        actions: [
+                                          TextButton(onPressed: () => Navigator.pop(context), child: const Text("ΑΚΥΡΟ")),
+                                          ElevatedButton(
+                                            onPressed: () {
+                                              Navigator.pop(context);
+                                              PdfGenerator.generateAndShareQuote(
+                                                projectName: widget.project.name,
+                                                items: items,
+                                                settings: provider.settings,
+                                                showCategoryTotals: showTotals,
+                                                showItemPrices: showPrices,
+                                              );
+                                            },
+                                            child: const Text("ΕΚΔΟΣΗ PDF"),
+                                          ),
+                                        ],
+                                      ),
+                                    ),
                                   );
                                 },
                                 icon: const Icon(Icons.picture_as_pdf_rounded),

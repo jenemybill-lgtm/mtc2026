@@ -16,6 +16,7 @@ class Project {
   final int? deliveryDate;
   final int status; // 0: Lead, 1: Active, 2: Completed
   final double proposalValue;
+  final int? managerId;
 
   Project({
     this.id = 0,
@@ -32,6 +33,7 @@ class Project {
     this.deliveryDate,
     this.status = 1,
     this.proposalValue = 0.0,
+    this.managerId,
   }) : dateCreated = dateCreated ?? DateTime.now().millisecondsSinceEpoch;
 
   Map<String, dynamic> toMap() {
@@ -50,6 +52,7 @@ class Project {
       'deliveryDate': deliveryDate,
       'status': status,
       'proposalValue': proposalValue,
+      'managerId': managerId,
     };
   }
 
@@ -69,6 +72,7 @@ class Project {
       deliveryDate: map['deliveryDate'],
       status: map['status'] ?? (map['isCompleted'] == 1 ? 2 : 1),
       proposalValue: (map['proposalValue'] as num?)?.toDouble() ?? 0.0,
+      managerId: map['managerId'],
     );
   }
 
@@ -87,6 +91,7 @@ class Project {
     int? deliveryDate,
     int? status,
     double? proposalValue,
+    int? managerId,
   }) {
     return Project(
       id: id ?? this.id,
@@ -103,6 +108,7 @@ class Project {
       deliveryDate: deliveryDate ?? this.deliveryDate,
       status: status ?? this.status,
       proposalValue: proposalValue ?? this.proposalValue,
+      managerId: managerId ?? this.managerId,
     );
   }
 }
@@ -438,6 +444,7 @@ class QuoteItem {
   final bool hasVat;
   final bool isVatInclusive;
   final bool showVatToClient;
+  final bool showPriceToClient;
 
   QuoteItem({
     this.id = "",
@@ -454,6 +461,7 @@ class QuoteItem {
     this.hasVat = false,
     this.isVatInclusive = true,
     this.showVatToClient = false,
+    this.showPriceToClient = true,
   });
 
   double get cost {
@@ -500,6 +508,7 @@ class QuoteItem {
       'hasVat': hasVat ? 1 : 0,
       'isVatInclusive': isVatInclusive ? 1 : 0,
       'showVatToClient': showVatToClient ? 1 : 0,
+      'showPriceToClient': showPriceToClient ? 1 : 0,
     };
   }
 
@@ -519,6 +528,7 @@ class QuoteItem {
       hasVat: map['hasVat'] == 1,
       isVatInclusive: map['isVatInclusive'] == 1,
       showVatToClient: map['showVatToClient'] == 1,
+      showPriceToClient: map['showPriceToClient'] == null ? true : map['showPriceToClient'] == 1,
     );
   }
 }
@@ -1418,6 +1428,30 @@ class ProjectDocument {
       filePath: map['filePath'] ?? "",
       fileExtension: map['fileExtension'] ?? "",
       dateAdded: map['dateAdded'],
+    );
+  }
+}
+
+class Manager {
+  final int id;
+  final String name;
+  final String pin;
+
+  Manager({this.id = 0, required this.name, required this.pin});
+
+  Map<String, dynamic> toMap() {
+    return {
+      'id': id == 0 ? null : id,
+      'name': name,
+      'pin': pin,
+    };
+  }
+
+  factory Manager.fromMap(Map<String, dynamic> map) {
+    return Manager(
+      id: map['id'] ?? 0,
+      name: map['name'] ?? '',
+      pin: map['pin'] ?? '',
     );
   }
 }

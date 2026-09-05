@@ -30,6 +30,8 @@ class ProjectProvider with ChangeNotifier {
   List<SystemAlert> _alerts = [];
   bool _hasDownloadedOnWeb = false;
   bool _hasLoadedLocalCache = false;
+  List<Manager> _managers = [];
+  int? _currentManagerId;
 
   List<Project> get projects => _projects;
   List<Client> get clients => _clients;
@@ -48,6 +50,19 @@ class ProjectProvider with ChangeNotifier {
   Settings get settings => _settings;
   Map<String, double> get dashboardStats => _dashboardStats;
   List<SystemAlert> get alerts => _alerts;
+  List<Manager> get managers => _managers;
+  int? get currentManagerId => _currentManagerId;
+
+  Future<void> setCurrentManagerId(int? id) async {
+    _currentManagerId = id;
+    final prefs = await SharedPreferences.getInstance();
+    if (id == null) {
+      await prefs.remove('current_manager_id');
+    } else {
+      await prefs.setInt('current_manager_id', id);
+    }
+    await fetchProjects();
+  }
 
   double get totalQuoteRevenue => _currentProjectQuoteItems.fold(
     0.0,
@@ -280,12 +295,21 @@ class ProjectProvider with ChangeNotifier {
       }
     }
 
+    final prefs = await SharedPreferences.getInstance();
+    _currentManagerId = prefs.getInt('current_manager_id');
+
     final db = DatabaseHelper();
 
     // 1. Critical Core Data
     try {
-      _projects = await db.getProjects();
+      final allProjects = await db.getProjects();
+      if (_currentManagerId != null && _currentManagerId! > 0) {
+        _projects = allProjects.where((p) => p.managerId == _currentManagerId).toList();
+      } else {
+        _projects = allProjects;
+      }
       _clients = await db.getClients();
+      _managers = await db.getManagers();
       _settings = await _loadSettings();
       debugPrint("Loaded ${_projects.length} projects and settings.");
     } catch (e) {
@@ -419,6 +443,25 @@ class ProjectProvider with ChangeNotifier {
     await DatabaseHelper().deletePartner(id);
     await fetchProjects();
     await _autoSync();
+  }
+
+  // --- MANAGERS ---
+  Future<void> addManager(Manager m) async {
+    await DatabaseHelper().insertManager(m);
+    _managers = await DatabaseHelper().getManagers();
+    notifyListeners();
+  }
+
+  Future<void> updateManager(Manager m) async {
+    await DatabaseHelper().updateManager(m);
+    _managers = await DatabaseHelper().getManagers();
+    notifyListeners();
+  }
+
+  Future<void> deleteManager(int id) async {
+    await DatabaseHelper().deleteManager(id);
+    _managers = await DatabaseHelper().getManagers();
+    notifyListeners();
   }
 
   // --- PROJECT NOTES ---

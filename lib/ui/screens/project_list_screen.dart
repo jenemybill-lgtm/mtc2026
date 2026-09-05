@@ -98,7 +98,7 @@ class _ProjectListScreenState extends State<ProjectListScreen> with SingleTicker
       context: context,
       builder: (context) => ProjectEntryDialog(
         initialProject: project,
-        onConfirm: (name, client, address, phone, email, clientId, isCompleted, startDate, deliveryDate, isLead, proposalValue) {
+        onConfirm: (name, client, address, phone, email, clientId, isCompleted, startDate, deliveryDate, isLead, proposalValue, managerId) {
           final status = isLead ? 0 : (isCompleted ? 2 : 1);
           if (project == null) {
             Provider.of<ProjectProvider>(context, listen: false).addProject(Project(
@@ -112,6 +112,7 @@ class _ProjectListScreenState extends State<ProjectListScreen> with SingleTicker
               deliveryDate: deliveryDate,
               status: status,
               proposalValue: proposalValue,
+              managerId: managerId,
             ));
           } else {
             Provider.of<ProjectProvider>(context, listen: false).updateProject(project.copyWith(
@@ -126,6 +127,7 @@ class _ProjectListScreenState extends State<ProjectListScreen> with SingleTicker
               deliveryDate: deliveryDate,
               status: status,
               proposalValue: proposalValue,
+              managerId: managerId,
             ));
           }
         },
@@ -330,7 +332,7 @@ class _ProjectList extends StatelessWidget {
       context: context,
       builder: (context) => ProjectEntryDialog(
         initialProject: project,
-        onConfirm: (name, client, address, phone, email, clientId, isCompleted, startDate, deliveryDate, isLead, proposalValue) {
+        onConfirm: (name, client, address, phone, email, clientId, isCompleted, startDate, deliveryDate, isLead, proposalValue, managerId) {
           final status = isLead ? 0 : (isCompleted ? 2 : 1);
           Provider.of<ProjectProvider>(context, listen: false).updateProject(project.copyWith(
             name: name,
@@ -344,6 +346,7 @@ class _ProjectList extends StatelessWidget {
             deliveryDate: deliveryDate,
             status: status,
             proposalValue: proposalValue,
+            managerId: managerId,
           ));
         },
       ),
@@ -450,7 +453,7 @@ class ProjectCardPremium extends StatelessWidget {
 
 class ProjectEntryDialog extends StatefulWidget {
   final Project? initialProject;
-  final Function(String, String, String, String, String, int?, bool, int, int?, bool, double) onConfirm;
+  final Function(String, String, String, String, String, int?, bool, int, int?, bool, double, int?) onConfirm;
 
   const ProjectEntryDialog({super.key, this.initialProject, required this.onConfirm});
 
@@ -470,6 +473,7 @@ class _ProjectEntryDialogState extends State<ProjectEntryDialog> {
   late int _startDate;
   int? _deliveryDate;
   Client? _selectedClient;
+  int? _selectedManagerId;
 
   @override
   void initState() {
@@ -486,6 +490,7 @@ class _ProjectEntryDialogState extends State<ProjectEntryDialog> {
     _isLead = widget.initialProject?.status == 0;
     _startDate = widget.initialProject?.startDate ?? DateTime.now().millisecondsSinceEpoch;
     _deliveryDate = widget.initialProject?.deliveryDate;
+    _selectedManagerId = widget.initialProject?.managerId;
   }
 
   Client? _findClientByProject(List<Client> clients, Project? project) {
@@ -509,6 +514,7 @@ class _ProjectEntryDialogState extends State<ProjectEntryDialog> {
   Widget build(BuildContext context) {
     final clients = Provider.of<ProjectProvider>(context).clients
       ..sort((a, b) => a.name.toLowerCase().compareTo(b.name.toLowerCase()));
+    final managers = Provider.of<ProjectProvider>(context).managers;
     return AlertDialog(
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(32)),
       title: PremiumHeader(
@@ -592,6 +598,17 @@ class _ProjectEntryDialogState extends State<ProjectEntryDialog> {
               TextField(controller: _addressController, decoration: const InputDecoration(labelText: "Διεύθυνση", prefixIcon: Icon(Icons.location_on_rounded, size: 20))),
               const SizedBox(height: 12),
               TextField(controller: _proposalController, decoration: const InputDecoration(labelText: "Προϋπολογισμός (€)", prefixIcon: Icon(Icons.euro_rounded, size: 20)), keyboardType: TextInputType.number),
+              const SizedBox(height: 12),
+              DropdownButtonFormField<int?>(
+                value: _selectedManagerId,
+                isExpanded: true,
+                decoration: const InputDecoration(labelText: "Υπεύθυνος Έργου", prefixIcon: Icon(Icons.engineering_rounded, size: 20)),
+                items: [
+                  const DropdownMenuItem<int?>(value: null, child: Text("Χωρίς Υπεύθυνο (Γενικό)", style: TextStyle(color: Colors.grey, fontSize: 13))),
+                  ...managers.map((m) => DropdownMenuItem<int?>(value: m.id, child: Text(m.name, style: const TextStyle(fontSize: 14)))),
+                ],
+                onChanged: (v) => setState(() => _selectedManagerId = v),
+              ),
               const SizedBox(height: 24),
               Row(
                 children: [
@@ -702,6 +719,7 @@ class _ProjectEntryDialogState extends State<ProjectEntryDialog> {
                 _deliveryDate,
                 _isLead,
                 double.tryParse(_proposalController.text.replaceAll(',', '.')) ?? 0.0,
+                _selectedManagerId,
               );
               Navigator.pop(context);
             }

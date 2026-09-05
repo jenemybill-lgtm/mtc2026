@@ -14,6 +14,7 @@ class PdfGenerator {
     required List<QuoteItem> items,
     required Settings settings,
     bool showCategoryTotals = true,
+    bool showItemPrices = true,
   }) async {
     final pdf = pw.Document();
     pw.Font font;
@@ -77,12 +78,15 @@ class PdfGenerator {
                   headers: ['ΠΕΡΙΓΡΑΦΗ', 'ΠΟΣΟΤΗΤΑ', 'ΤΙΜΗ ΜΟΝΑΔΑΣ', 'ΣΥΝΟΛΟ'],
                   headerStyle: pw.TextStyle(fontSize: 9, fontWeight: pw.FontWeight.bold),
                   cellStyle: const pw.TextStyle(fontSize: 8),
-                  data: catItems.map((item) => [
-                    item.description,
-                    '${item.quantity} ${item.unit}'.trim(),
-                    '${double.tryParse(item.unitPrice.replaceAll(',', '.'))?.toStringAsFixed(2) ?? item.unitPrice} €',
-                    '${item.priceForClient.toStringAsFixed(2)} €',
-                  ]).toList(),
+                  data: catItems.map((item) {
+                    bool visiblePrice = showItemPrices && item.showPriceToClient;
+                    return [
+                      item.description,
+                      '${item.quantity} ${item.unit}'.trim(),
+                      visiblePrice ? '${double.tryParse(item.unitPrice.replaceAll(',', '.'))?.toStringAsFixed(2) ?? item.unitPrice} €' : '-',
+                      visiblePrice ? '${item.priceForClient.toStringAsFixed(2)} €' : '-',
+                    ];
+                  }).toList(),
                   border: null,
                 ),
                 pw.SizedBox(height: 15),
@@ -120,8 +124,15 @@ class PdfGenerator {
     required List<QuoteItem> items,
     required Settings settings,
     bool showCategoryTotals = true,
+    bool showItemPrices = true,
   }) async {
-    final pdf = await buildQuoteDocument(projectName: projectName, items: items, settings: settings, showCategoryTotals: showCategoryTotals);
+    final pdf = await buildQuoteDocument(
+      projectName: projectName, 
+      items: items, 
+      settings: settings, 
+      showCategoryTotals: showCategoryTotals,
+      showItemPrices: showItemPrices,
+    );
     await Printing.sharePdf(bytes: await pdf.save(), filename: 'MTC_Quote_${projectName.replaceAll(' ', '_')}.pdf');
   }
 

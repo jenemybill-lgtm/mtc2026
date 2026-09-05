@@ -445,15 +445,55 @@ class _WorkerRowPremium extends StatelessWidget {
                     if (dayAtt.isNotEmpty)
                       ...dayAtt.map((a) {
                         final pName = provider.projects.firstWhere((p) => p.id == a.projectId, orElse: () => Project(name: "ΓΕΝΙΚΟ", clientName: "", address: "")).name;
-                        return Column(
-                          children: [
-                            Container(
-                              padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 1),
-                              decoration: BoxDecoration(color: Colors.blue.withValues(alpha: 0.08), borderRadius: BorderRadius.circular(4)),
-                              child: Text(pName.toUpperCase(), style: const TextStyle(fontSize: 7, fontWeight: FontWeight.w900, color: Colors.blue)),
-                            ),
-                            if (a.overtimeAmount > 0) Text("+${a.overtimeAmount.toInt()}", style: const TextStyle(fontSize: 8, color: Color(0xFF38B000), fontWeight: FontWeight.w900)),
-                          ],
+                        return InkWell(
+                          onTap: () {
+                            showModalBottomSheet(
+                              context: context,
+                              builder: (ctx) => SafeArea(
+                                child: Wrap(
+                                  children: [
+                                    ListTile(
+                                      leading: const Icon(Icons.edit, color: Colors.blue),
+                                      title: const Text('Επεξεργασία Μεροκάματου'),
+                                      onTap: () {
+                                        Navigator.pop(ctx);
+                                        showDialog(
+                                          context: context,
+                                          builder: (dialogCtx) => AddAttendanceDialog(
+                                            partners: provider.partners,
+                                            projects: provider.projects,
+                                            initialProjectId: a.projectId,
+                                            initialRecord: a,
+                                            onConfirm: (updatedRecord) {
+                                              provider.updateAttendance(updatedRecord);
+                                            },
+                                          ),
+                                        );
+                                      },
+                                    ),
+                                    ListTile(
+                                      leading: const Icon(Icons.delete, color: Colors.red),
+                                      title: const Text('Διαγραφή Μεροκάματου', style: TextStyle(color: Colors.red)),
+                                      onTap: () {
+                                        Navigator.pop(ctx);
+                                        provider.deleteAttendance(a.id);
+                                      },
+                                    ),
+                                  ],
+                                ),
+                              ),
+                            );
+                          },
+                          child: Column(
+                            children: [
+                              Container(
+                                padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 1),
+                                decoration: BoxDecoration(color: Colors.blue.withValues(alpha: 0.08), borderRadius: BorderRadius.circular(4)),
+                                child: Text(pName.toUpperCase(), style: const TextStyle(fontSize: 7, fontWeight: FontWeight.w900, color: Colors.blue)),
+                              ),
+                              if (a.overtimeAmount > 0) Text("+${a.overtimeAmount.toInt()}", style: const TextStyle(fontSize: 8, color: Color(0xFF38B000), fontWeight: FontWeight.w900)),
+                            ],
+                          ),
                         );
                       }),
                     if (dayPay > 0)
