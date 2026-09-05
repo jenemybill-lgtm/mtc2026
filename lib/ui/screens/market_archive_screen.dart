@@ -267,14 +267,14 @@ class _MarketArchiveScreenState extends State<MarketArchiveScreen> {
     return Container(
       width: double.infinity,
       color: Colors.white,
-      alignment: Alignment.center,
+      alignment: Alignment.centerLeft,
       padding: const EdgeInsets.fromLTRB(16, 12, 16, 16),
       child: Container(
         constraints: BoxConstraints(maxWidth: isDesktop ? 950 : double.infinity),
         child: Wrap(
           spacing: 6,
           runSpacing: 6,
-          alignment: WrapAlignment.center,
+          alignment: WrapAlignment.start,
           children: categoryTabs.map((tab) {
             final isAll = tab == 'ALL';
             final AppDestinations destination = isAll

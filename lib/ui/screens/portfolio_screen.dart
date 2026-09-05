@@ -85,12 +85,12 @@ class _PortfolioScreenState extends State<PortfolioScreen> {
     return Container(
       width: double.infinity,
       color: Colors.white,
-      alignment: Alignment.center,
+      alignment: Alignment.centerLeft,
       padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
       child: Wrap(
         spacing: 8,
         runSpacing: 8,
-        alignment: WrapAlignment.center,
+        alignment: WrapAlignment.start,
         children: _categories.map((cat) {
           final isSelected = cat == _selectedCategory;
           return FilterChip(

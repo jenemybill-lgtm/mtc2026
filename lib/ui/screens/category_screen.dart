@@ -144,14 +144,14 @@ class _CategoryScreenState extends State<CategoryScreen> {
     return Container(
       width: double.infinity,
       color: Colors.white,
-      alignment: Alignment.center,
+      alignment: Alignment.centerLeft,
       padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
       child: Container(
         constraints: BoxConstraints(maxWidth: isDesktop ? 950 : double.infinity),
         child: Wrap(
           spacing: 8,
           runSpacing: 8,
-          alignment: WrapAlignment.center,
+          alignment: WrapAlignment.start,
           children: [
             if (widget.category == AppDestinations.WINDOWS) _calcBtn("Υπολογιστής", Icons.calculate_rounded, WindowCalculator(onResult: _handleCalcResult)),
             if (widget.category == AppDestinations.DRYWALL) _calcBtn("Υλικά & Εργασία", Icons.square_rounded, DrywallCalculator(onResult: _handleCalcResult)),

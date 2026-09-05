@@ -116,13 +116,13 @@ class _ClientsScreenState extends State<ClientsScreen> {
     return Container(
       width: double.infinity,
       color: Colors.white,
-      alignment: Alignment.center,
+      alignment: Alignment.centerLeft,
       margin: const EdgeInsets.only(top: 16),
       padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
       child: Wrap(
         spacing: 8,
         runSpacing: 8,
-        alignment: WrapAlignment.center,
+        alignment: WrapAlignment.start,
         children: statuses.map((s) {
           final isSelected = _filterStatus == s;
           return FilterChip(
