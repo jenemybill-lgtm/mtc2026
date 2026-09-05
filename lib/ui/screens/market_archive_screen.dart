@@ -263,65 +263,71 @@ class _MarketArchiveScreenState extends State<MarketArchiveScreen> {
   }
 
   Widget _buildCategoryTabs(List<String> categoryTabs) {
+    final isDesktop = MediaQuery.of(context).size.width > 900;
     return Container(
       width: double.infinity,
       color: Colors.white,
+      alignment: Alignment.center,
       padding: const EdgeInsets.fromLTRB(16, 12, 16, 16),
-      child: Wrap(
-        spacing: 8,
-        runSpacing: 8,
-        children: categoryTabs.map((tab) {
-          final isAll = tab == 'ALL';
-          final AppDestinations destination = isAll
-              ? AppDestinations.GENERAL
-              : AppDestinations.values.firstWhere(
-                  (d) => d.name == tab,
-                  orElse: () => AppDestinations.GENERAL,
-                );
-          final label = isAll ? 'ΟΛΑ' : destination.label;
-          final color = isAll ? Colors.indigo : destination.color;
-          final isSelected = _selectedCategory == tab;
+      child: Container(
+        constraints: BoxConstraints(maxWidth: isDesktop ? 950 : double.infinity),
+        child: Wrap(
+          spacing: 6,
+          runSpacing: 6,
+          alignment: WrapAlignment.center,
+          children: categoryTabs.map((tab) {
+            final isAll = tab == 'ALL';
+            final AppDestinations destination = isAll
+                ? AppDestinations.GENERAL
+                : AppDestinations.values.firstWhere(
+                    (d) => d.name == tab,
+                    orElse: () => AppDestinations.GENERAL,
+                  );
+            final label = isAll ? 'ΟΛΑ' : destination.label;
+            final color = isAll ? Colors.indigo : destination.color;
+            final isSelected = _selectedCategory == tab;
 
-          return Material(
-            color: isSelected
-                ? color.withValues(alpha: 0.15)
-                : const Color(0xFFF8FAFC),
-            borderRadius: BorderRadius.circular(14),
-            child: InkWell(
-              borderRadius: BorderRadius.circular(14),
-              onTap: () => setState(() => _selectedCategory = tab),
-              child: Container(
-                padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
-                decoration: BoxDecoration(
-                  borderRadius: BorderRadius.circular(14),
-                  border: Border.all(
-                    color: isSelected ? color.withValues(alpha: 0.6) : Colors.black.withValues(alpha: 0.06),
-                    width: isSelected ? 1.5 : 1,
-                  ),
-                ),
-                child: Row(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    Icon(
-                      isAll ? Icons.grid_view_rounded : destination.icon,
-                      size: 16,
-                      color: isSelected ? color : Colors.blueGrey,
+            return Material(
+              color: isSelected
+                  ? color.withValues(alpha: 0.15)
+                  : const Color(0xFFF8FAFC),
+              borderRadius: BorderRadius.circular(12),
+              child: InkWell(
+                borderRadius: BorderRadius.circular(12),
+                onTap: () => setState(() => _selectedCategory = tab),
+                child: Container(
+                  padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+                  decoration: BoxDecoration(
+                    borderRadius: BorderRadius.circular(12),
+                    border: Border.all(
+                      color: isSelected ? color.withValues(alpha: 0.6) : Colors.black.withValues(alpha: 0.06),
+                      width: isSelected ? 1.5 : 1,
                     ),
-                    const SizedBox(width: 6),
-                    Text(
-                      label,
-                      style: TextStyle(
-                        fontSize: 11,
-                        fontWeight: FontWeight.w900,
+                  ),
+                  child: Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Icon(
+                        isAll ? Icons.grid_view_rounded : destination.icon,
+                        size: 14,
                         color: isSelected ? color : Colors.blueGrey,
                       ),
-                    ),
-                  ],
+                      const SizedBox(width: 6),
+                      Text(
+                        label,
+                        style: TextStyle(
+                          fontSize: 10,
+                          fontWeight: FontWeight.w900,
+                          color: isSelected ? color : Colors.blueGrey,
+                        ),
+                      ),
+                    ],
+                  ),
                 ),
               ),
-            ),
-          );
-        }).toList(),
+            );
+          }).toList(),
+        ),
       ),
     );
   }
