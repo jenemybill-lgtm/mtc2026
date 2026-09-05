@@ -266,98 +266,65 @@ class _MarketArchiveScreenState extends State<MarketArchiveScreen> {
     return Container(
       width: double.infinity,
       color: Colors.white,
-      padding: const EdgeInsets.fromLTRB(12, 8, 12, 12),
-      child: SizedBox(
-        height: 88,
-        child: ListView.separated(
-          scrollDirection: Axis.horizontal,
-          itemCount: categoryTabs.length,
-          separatorBuilder: (_, __) => const SizedBox(width: 8),
-          itemBuilder: (context, index) {
-            final tab = categoryTabs[index];
-            final isAll = tab == 'ALL';
-            final AppDestinations destination = isAll
-                ? AppDestinations.GENERAL
-                : AppDestinations.values.firstWhere(
-                    (d) => d.name == tab,
-                    orElse: () => AppDestinations.GENERAL,
-                  );
-            final label = isAll ? 'ΟΛΑ' : destination.label;
-            final color = isAll ? Colors.indigo : destination.color;
-            final isSelected = _selectedCategory == tab;
+      padding: const EdgeInsets.fromLTRB(16, 12, 16, 16),
+      child: Wrap(
+        spacing: 8,
+        runSpacing: 8,
+        children: categoryTabs.map((tab) {
+          final isAll = tab == 'ALL';
+          final AppDestinations destination = isAll
+              ? AppDestinations.GENERAL
+              : AppDestinations.values.firstWhere(
+                  (d) => d.name == tab,
+                  orElse: () => AppDestinations.GENERAL,
+                );
+          final label = isAll ? 'ΟΛΑ' : destination.label;
+          final color = isAll ? Colors.indigo : destination.color;
+          final isSelected = _selectedCategory == tab;
 
-            return SizedBox(
-              width: 144,
-              child: Material(
-                color: isSelected
-                    ? color.withValues(alpha: 0.12)
-                    : const Color(0xFFF8FAFC),
-                borderRadius: BorderRadius.circular(18),
-                child: InkWell(
-                  borderRadius: BorderRadius.circular(18),
-                  onTap: () => setState(() => _selectedCategory = tab),
-                  child: AnimatedContainer(
-                    duration: const Duration(milliseconds: 200),
-                    padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 12),
-                    decoration: BoxDecoration(
-                      borderRadius: BorderRadius.circular(18),
-                      border: Border.all(
-                        color: isSelected
-                            ? color.withValues(alpha: 0.55)
-                            : Colors.transparent,
-                        width: 1.5,
-                      ),
-                      boxShadow: isSelected
-                          ? [
-                              BoxShadow(
-                                color: color.withValues(alpha: 0.12),
-                                blurRadius: 12,
-                                offset: const Offset(0, 4),
-                              ),
-                            ]
-                          : null,
-                    ),
-                    child: Column(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: [
-                        Container(
-                          width: 34,
-                          height: 34,
-                          decoration: BoxDecoration(
-                            color: isSelected
-                                ? color.withValues(alpha: 0.18)
-                                : Colors.white,
-                            borderRadius: BorderRadius.circular(12),
-                          ),
-                          child: Icon(
-                            isAll ? Icons.grid_view_rounded : destination.icon,
-                            size: 18,
-                            color: isSelected ? color : Colors.blueGrey,
-                          ),
-                        ),
-                        const SizedBox(height: 8),
-                        Flexible(
-                          child: Text(
-                            label,
-                            overflow: TextOverflow.ellipsis,
-                            textAlign: TextAlign.center,
-                            style: TextStyle(
-                              fontSize: 10,
-                              fontWeight: FontWeight.w900,
-                              color: isSelected ? color : Colors.blueGrey,
-                            ),
-                          ),
-                        ),
-                      ],
-                    ),
+          return Material(
+            color: isSelected
+                ? color.withValues(alpha: 0.15)
+                : const Color(0xFFF8FAFC),
+            borderRadius: BorderRadius.circular(14),
+            child: InkWell(
+              borderRadius: BorderRadius.circular(14),
+              onTap: () => setState(() => _selectedCategory = tab),
+              child: Container(
+                padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                decoration: BoxDecoration(
+                  borderRadius: BorderRadius.circular(14),
+                  border: Border.all(
+                    color: isSelected ? color.withValues(alpha: 0.6) : Colors.black.withValues(alpha: 0.06),
+                    width: isSelected ? 1.5 : 1,
                   ),
                 ),
+                child: Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Icon(
+                      isAll ? Icons.grid_view_rounded : destination.icon,
+                      size: 16,
+                      color: isSelected ? color : Colors.blueGrey,
+                    ),
+                    const SizedBox(width: 6),
+                    Text(
+                      label,
+                      style: TextStyle(
+                        fontSize: 11,
+                        fontWeight: FontWeight.w900,
+                        color: isSelected ? color : Colors.blueGrey,
+                      ),
+                    ),
+                  ],
+                ),
               ),
-            );
-          },
-        ),
+            ),
+          );
+        }).toList(),
       ),
     );
+  }
   }
 
   List<MarketArchiveItem> _filterBySelectedCategory(
