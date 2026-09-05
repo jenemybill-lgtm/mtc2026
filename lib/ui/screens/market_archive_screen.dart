@@ -22,6 +22,7 @@ class _MarketArchiveScreenState extends State<MarketArchiveScreen> {
   @override
   Widget build(BuildContext context) {
     final provider = Provider.of<ProjectProvider>(context);
+    final isDesktop = MediaQuery.of(context).size.width > 900;
     final categoryTabs = ['ALL', ...AppDestinations.values.map((d) => d.name)];
 
     return Scaffold(
@@ -199,30 +200,37 @@ class _MarketArchiveScreenState extends State<MarketArchiveScreen> {
                                   ),
                                 ),
                               ),
-                              ...nameGroups.entries.map((nameEntry) {
-                                final itemName = nameEntry.key;
-                                final records = nameEntry.value;
-                                return _ItemPriceGroupCard(
-                                  itemName: itemName,
-                                  records: records,
-                                  onAddPrice: () => _showAddEntryDialog(
-                                    context,
-                                    provider,
-                                    prefill: records.first,
-                                  ),
-                                  onEdit: (item) => _showAddEntryDialog(
-                                    context,
-                                    provider,
-                                    item: item,
-                                  ),
-                                  onDelete: (item) async {
-                                    await provider.deleteMarketArchiveItem(
-                                      item.id,
-                                    );
-                                    if (mounted) setState(() {});
-                                  },
-                                );
-                              }),
+                              Wrap(
+                                spacing: 16,
+                                runSpacing: 16,
+                                children: nameGroups.entries.map((nameEntry) {
+                                  final itemName = nameEntry.key;
+                                  final records = nameEntry.value;
+                                  return SizedBox(
+                                    width: isDesktop ? 460 : double.infinity,
+                                    child: _ItemPriceGroupCard(
+                                      itemName: itemName,
+                                      records: records,
+                                      onAddPrice: () => _showAddEntryDialog(
+                                        context,
+                                        provider,
+                                        prefill: records.first,
+                                      ),
+                                      onEdit: (item) => _showAddEntryDialog(
+                                        context,
+                                        provider,
+                                        item: item,
+                                      ),
+                                      onDelete: (item) async {
+                                        await provider.deleteMarketArchiveItem(
+                                          item.id,
+                                        );
+                                        if (mounted) setState(() {});
+                                      },
+                                    ),
+                                  );
+                                }).toList(),
+                              ),
                             ],
                           );
                         }),
