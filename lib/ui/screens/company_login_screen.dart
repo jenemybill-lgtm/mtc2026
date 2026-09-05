@@ -6,6 +6,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 import 'package:mtc2026/providers/project_provider.dart';
 import 'package:mtc2026/ui/screens/home_screen.dart';
 import 'package:mtc2026/database/database_helper.dart';
+import 'package:mtc2026/models/project_models.dart';
 
 class CompanyLoginScreen extends StatefulWidget {
   const CompanyLoginScreen({super.key});
