@@ -231,12 +231,12 @@ class _HubGrid extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return GridView.builder(
-      padding: EdgeInsets.all(isDesktop ? 40 : 24),
+      padding: EdgeInsets.all(isDesktop ? 24 : 16),
       gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
-        crossAxisCount: isDesktop ? 3 : 2,
-        crossAxisSpacing: isDesktop ? 32 : 16,
-        mainAxisSpacing: isDesktop ? 32 : 16,
-        childAspectRatio: isDesktop ? 1.3 : 1.1,
+        crossAxisCount: isDesktop ? 4 : 2,
+        crossAxisSpacing: isDesktop ? 16 : 12,
+        mainAxisSpacing: isDesktop ? 16 : 12,
+        childAspectRatio: isDesktop ? 1.6 : 1.1,
       ),
       itemCount: hubs.length,
       itemBuilder: (context, index) {
@@ -283,39 +283,39 @@ class _PremiumHubCard extends StatelessWidget {
           begin: Alignment.topLeft,
           end: Alignment.bottomRight,
         ),
-        borderRadius: BorderRadius.circular(32),
+        borderRadius: BorderRadius.circular(20),
         border: Border.all(color: hub.color.withValues(alpha: 0.12), width: 1.5),
         boxShadow: [
-          BoxShadow(color: hub.color.withValues(alpha: 0.05), blurRadius: 20, offset: const Offset(0, 4)),
+          BoxShadow(color: hub.color.withValues(alpha: 0.05), blurRadius: 10, offset: const Offset(0, 3)),
         ],
       ),
       child: Material(
         color: Colors.transparent,
         child: InkWell(
           onTap: onClick,
-          borderRadius: BorderRadius.circular(32),
+          borderRadius: BorderRadius.circular(20),
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
               Container(
-                width: isDesktop ? 76 : 56, 
-                height: isDesktop ? 76 : 56,
+                width: isDesktop ? 48 : 42, 
+                height: isDesktop ? 48 : 42,
                 decoration: BoxDecoration(
                   gradient: LinearGradient(colors: [hub.color, hub.color.withValues(alpha: 0.7)]),
                   shape: BoxShape.circle,
-                  boxShadow: [BoxShadow(color: hub.color.withValues(alpha: 0.3), blurRadius: 10, offset: const Offset(0, 4))],
-                  border: Border.all(color: Colors.white.withValues(alpha: 0.2), width: 2),
+                  boxShadow: [BoxShadow(color: hub.color.withValues(alpha: 0.3), blurRadius: 8, offset: const Offset(0, 3))],
+                  border: Border.all(color: Colors.white.withValues(alpha: 0.2), width: 1.5),
                 ),
-                child: Icon(hub.icon, color: Colors.white, size: isDesktop ? 36 : 26),
+                child: Icon(hub.icon, color: Colors.white, size: isDesktop ? 22 : 20),
               ),
-              SizedBox(height: isDesktop ? 20 : 16),
+              SizedBox(height: isDesktop ? 10 : 8),
               Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 12.0),
+                padding: const EdgeInsets.symmetric(horizontal: 8.0),
                 child: FittedBox(
                   fit: BoxFit.scaleDown,
                   child: Text(
                     hub.label, 
-                    style: TextStyle(fontWeight: FontWeight.w900, fontSize: isDesktop ? 14 : 11, color: const Color(0xFF1E293B), letterSpacing: 0.5), 
+                    style: TextStyle(fontWeight: FontWeight.w900, fontSize: isDesktop ? 12 : 10, color: const Color(0xFF1E293B), letterSpacing: 0.5), 
                     textAlign: TextAlign.center
                   ),
                 ),
