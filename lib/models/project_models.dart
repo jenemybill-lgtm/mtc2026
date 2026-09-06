@@ -445,6 +445,7 @@ class QuoteItem {
   final bool isVatInclusive;
   final bool showVatToClient;
   final bool showPriceToClient;
+  final bool showInQuote;
 
   QuoteItem({
     this.id = "",
@@ -462,6 +463,7 @@ class QuoteItem {
     this.isVatInclusive = true,
     this.showVatToClient = false,
     this.showPriceToClient = true,
+    this.showInQuote = true,
   });
 
   double get cost {
@@ -509,6 +511,7 @@ class QuoteItem {
       'isVatInclusive': isVatInclusive ? 1 : 0,
       'showVatToClient': showVatToClient ? 1 : 0,
       'showPriceToClient': showPriceToClient ? 1 : 0,
+      'showInQuote': showInQuote ? 1 : 0,
     };
   }
 
@@ -529,6 +532,7 @@ class QuoteItem {
       isVatInclusive: map['isVatInclusive'] == 1,
       showVatToClient: map['showVatToClient'] == 1,
       showPriceToClient: map['showPriceToClient'] == null ? true : map['showPriceToClient'] == 1,
+      showInQuote: map['showInQuote'] == null ? true : map['showInQuote'] == 1,
     );
   }
 }

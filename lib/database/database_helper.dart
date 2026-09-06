@@ -131,7 +131,7 @@ class DatabaseHelper {
     String path = join(dbDir, 'mtc_database.db');
     final db = await openDatabase(
       path,
-      version: 15,
+      version: 16,
       onCreate: _onCreate,
       onUpgrade: _onUpgrade,
     );
@@ -445,6 +445,13 @@ class DatabaseHelper {
         print("Migration error v15: $e");
       }
     }
+    if (oldVersion < 16) {
+      try {
+        await db.execute("ALTER TABLE quote_items ADD COLUMN showInQuote INTEGER DEFAULT 1");
+      } catch (e) {
+        print("Migration error v16: $e");
+      }
+    }
   }
 
   Future _onCreate(Database db, int version) async {
@@ -559,6 +566,7 @@ class DatabaseHelper {
         isVatInclusive INTEGER,
         showVatToClient INTEGER,
         showPriceToClient INTEGER DEFAULT 1,
+        showInQuote INTEGER DEFAULT 1,
         FOREIGN KEY (projectId) REFERENCES projects (id) ON DELETE CASCADE
       )
     ''');

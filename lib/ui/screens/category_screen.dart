@@ -618,6 +618,7 @@ class _AddEditQuoteItemDialogState extends State<_AddEditQuoteItemDialog> {
   late bool _showVatToClient;
   late bool _useCustomMargin;
   late TextEditingController _customMarginController;
+  late bool _showInQuote;
 
   @override
   void initState() {
@@ -632,6 +633,7 @@ class _AddEditQuoteItemDialogState extends State<_AddEditQuoteItemDialog> {
     _showVatToClient = widget.initialItem?.showVatToClient ?? false;
     _useCustomMargin = widget.initialItem?.useCustomMargin ?? false;
     _customMarginController = TextEditingController(text: widget.initialItem?.customProfitMargin.toString() ?? "20.0");
+    _showInQuote = widget.initialItem?.showInQuote ?? true;
   }
 
   @override
@@ -752,7 +754,15 @@ class _AddEditQuoteItemDialogState extends State<_AddEditQuoteItemDialog> {
                       ),
                     ],
                   ],
-                ),
+                  const SizedBox(height: 12),
+                  CheckboxListTile(
+                    title: const Text("Εμφάνιση εργασίας στην προσφορά (PDF)", style: TextStyle(fontSize: 11, fontWeight: FontWeight.bold)),
+                    value: _showInQuote,
+                    onChanged: (v) => setState(() => _showInQuote = v!),
+                    contentPadding: EdgeInsets.zero,
+                    activeColor: color,
+                  ),
+                ],
               ),
               Padding(
                 padding: const EdgeInsets.all(24),
@@ -782,6 +792,7 @@ class _AddEditQuoteItemDialogState extends State<_AddEditQuoteItemDialog> {
                             showVatToClient: _showVatToClient,
                             useCustomMargin: _useCustomMargin,
                             customProfitMargin: double.tryParse(_customMarginController.text) ?? 20.0,
+                            showInQuote: _showInQuote,
                           );
                           if (widget.initialItem == null) {
                             Provider.of<ProjectProvider>(context, listen: false).addQuoteItem(widget.projectId, item);
