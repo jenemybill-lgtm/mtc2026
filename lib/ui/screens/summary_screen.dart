@@ -24,6 +24,8 @@ class SummaryScreen extends StatefulWidget {
 
 class _SummaryScreenState extends State<SummaryScreen> {
   bool _showCategoryTotals = true;
+  bool _showItemPrices = true;
+  bool _showItemizedTasks = false;
   Uint8List? _contractorSignature;
   Uint8List? _clientSignature;
 
@@ -114,7 +116,8 @@ class _SummaryScreenState extends State<SummaryScreen> {
                       items: items,
                       settings: provider.settings,
                       showCategoryTotals: _showCategoryTotals,
-                      showItemizedTasks: false,
+                      showItemPrices: _showItemPrices,
+                      showItemizedTasks: _showItemizedTasks,
                     ),
                   ),
                   icon: const Icon(Icons.remove_red_eye_rounded),
@@ -150,6 +153,24 @@ class _SummaryScreenState extends State<SummaryScreen> {
             ),
             value: _showCategoryTotals,
             onChanged: (v) => setState(() => _showCategoryTotals = v),
+            contentPadding: EdgeInsets.zero,
+          ),
+          SwitchListTile(
+            title: const Text(
+              "Εμφάνιση Επιμέρους Εργασιών",
+              style: TextStyle(fontWeight: FontWeight.bold, fontSize: 13),
+            ),
+            value: _showItemizedTasks,
+            onChanged: (v) => setState(() => _showItemizedTasks = v),
+            contentPadding: EdgeInsets.zero,
+          ),
+          SwitchListTile(
+            title: const Text(
+              "Εμφάνιση Τιμών ανά Εργασία",
+              style: TextStyle(fontWeight: FontWeight.bold, fontSize: 13),
+            ),
+            value: _showItemPrices,
+            onChanged: (v) => setState(() => _showItemPrices = v),
             contentPadding: EdgeInsets.zero,
           ),
 
