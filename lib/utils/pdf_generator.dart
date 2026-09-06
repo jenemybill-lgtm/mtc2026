@@ -83,7 +83,6 @@ class PdfGenerator {
                       bool visiblePrice = showItemPrices && item.showPriceToClient;
                       
                       if (showItemPrices) {
-                        // Αν θέλουμε να δείξουμε τιμές, δείχνουμε τον πλήρη πίνακα
                         return [
                           item.description,
                           '${item.quantity} ${item.unit}'.trim(),
@@ -91,9 +90,6 @@ class PdfGenerator {
                           visiblePrice ? '${item.priceForClient.toStringAsFixed(2)} €' : '-',
                         ];
                       } else {
-                        // Αν θέλουμε να κρύψουμε τις επιμέρους τιμές εντελώς, αφαιρούμε τη στήλη "ΤΙΜΗ ΜΟΝΑΔΑΣ"
-                        // Το "ΣΥΝΟΛΟ" (της εργασίας) μπορεί να φαίνεται ή όχι ανάλογα με το showPriceToClient.
-                        // Συνήθως αν κρύβουμε τιμές, κρύβουμε και το σύνολο της εργασίας και αφήνουμε μόνο το σύνολο της κατηγορίας.
                         return [
                           item.description,
                           '${item.quantity} ${item.unit}'.trim(),
