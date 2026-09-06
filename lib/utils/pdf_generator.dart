@@ -73,33 +73,25 @@ class PdfGenerator {
                     ],
                   ),
                 ),
-                if (showItemizedTasks) ...[
+                if (showItemizedTasks && showItemPrices) ...[
                   pw.SizedBox(height: 10),
                   pw.Table.fromTextArray(
-                    headers: showItemPrices ? ['ΠΕΡΙΓΡΑΦΗ', 'ΠΟΣΟΤΗΤΑ', 'ΤΙΜΗ ΜΟΝΑΔΑΣ', 'ΣΥΝΟΛΟ'] : ['ΠΕΡΙΓΡΑΦΗ', 'ΠΟΣΟΤΗΤΑ', 'ΣΥΝΟΛΟ'],
+                    headers: ['ΠΕΡΙΓΡΑΦΗ', 'ΠΟΣΟΤΗΤΑ', 'ΤΙΜΗ ΜΟΝΑΔΑΣ', 'ΣΥΝΟΛΟ'],
                     headerStyle: pw.TextStyle(fontSize: 9, fontWeight: pw.FontWeight.bold),
                     cellStyle: const pw.TextStyle(fontSize: 8),
-                    data: catItems.map((item) {
-                      bool visiblePrice = showItemPrices && item.showPriceToClient;
-                      
-                      if (showItemPrices) {
-                        return [
-                          item.description,
-                          '${item.quantity} ${item.unit}'.trim(),
-                          visiblePrice ? '${double.tryParse(item.unitPrice.replaceAll(',', '.'))?.toStringAsFixed(2) ?? item.unitPrice} €' : '-',
-                          visiblePrice ? '${item.priceForClient.toStringAsFixed(2)} €' : '-',
-                        ];
-                      } else {
-                        return [
-                          item.description,
-                          '${item.quantity} ${item.unit}'.trim(),
-                          visiblePrice ? '${item.priceForClient.toStringAsFixed(2)} €' : '-',
-                        ];
-                      }
+                    data: catItems.where((item) => item.showInQuote).map((item) {
+                      return [
+                        item.description,
+                        '${item.quantity} ${item.unit}'.trim(),
+                        '${double.tryParse(item.unitPrice.replaceAll(',', '.'))?.toStringAsFixed(2) ?? item.unitPrice} €',
+                        '${item.priceForClient.toStringAsFixed(2)} €',
+                      ];
                     }).toList(),
                     border: null,
                   ),
                   pw.SizedBox(height: 15),
+                ] else ...[
+                  pw.SizedBox(height: 10),
                 ],
               ],
             );
