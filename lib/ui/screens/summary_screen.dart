@@ -114,6 +114,7 @@ class _SummaryScreenState extends State<SummaryScreen> {
                       items: items,
                       settings: provider.settings,
                       showCategoryTotals: _showCategoryTotals,
+                      showItemizedTasks: true,
                     ),
                   ),
                   icon: const Icon(Icons.remove_red_eye_rounded),

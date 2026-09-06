@@ -15,7 +15,7 @@ class PdfGenerator {
     required Settings settings,
     bool showCategoryTotals = true,
     bool showItemPrices = true,
-    bool showItemizedTasks = true,
+    bool showItemizedTasks = false,
   }) async {
     final pdf = pw.Document();
     pw.Font font;
@@ -130,7 +130,7 @@ class PdfGenerator {
     required Settings settings,
     bool showCategoryTotals = true,
     bool showItemPrices = true,
-    bool showItemizedTasks = true,
+    bool showItemizedTasks = false,
   }) async {
     final pdf = await buildQuoteDocument(
       projectName: projectName, 
