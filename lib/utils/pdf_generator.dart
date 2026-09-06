@@ -76,17 +76,30 @@ class PdfGenerator {
                 if (showItemizedTasks) ...[
                   pw.SizedBox(height: 10),
                   pw.Table.fromTextArray(
-                    headers: ['ΠΕΡΙΓΡΑΦΗ', 'ΠΟΣΟΤΗΤΑ', 'ΤΙΜΗ ΜΟΝΑΔΑΣ', 'ΣΥΝΟΛΟ'],
+                    headers: showItemPrices ? ['ΠΕΡΙΓΡΑΦΗ', 'ΠΟΣΟΤΗΤΑ', 'ΤΙΜΗ ΜΟΝΑΔΑΣ', 'ΣΥΝΟΛΟ'] : ['ΠΕΡΙΓΡΑΦΗ', 'ΠΟΣΟΤΗΤΑ', 'ΣΥΝΟΛΟ'],
                     headerStyle: pw.TextStyle(fontSize: 9, fontWeight: pw.FontWeight.bold),
                     cellStyle: const pw.TextStyle(fontSize: 8),
                     data: catItems.map((item) {
                       bool visiblePrice = showItemPrices && item.showPriceToClient;
-                      return [
-                        item.description,
-                        '${item.quantity} ${item.unit}'.trim(),
-                        visiblePrice ? '${double.tryParse(item.unitPrice.replaceAll(',', '.'))?.toStringAsFixed(2) ?? item.unitPrice} €' : '-',
-                        visiblePrice ? '${item.priceForClient.toStringAsFixed(2)} €' : '-',
-                      ];
+                      
+                      if (showItemPrices) {
+                        // Αν θέλουμε να δείξουμε τιμές, δείχνουμε τον πλήρη πίνακα
+                        return [
+                          item.description,
+                          '${item.quantity} ${item.unit}'.trim(),
+                          visiblePrice ? '${double.tryParse(item.unitPrice.replaceAll(',', '.'))?.toStringAsFixed(2) ?? item.unitPrice} €' : '-',
+                          visiblePrice ? '${item.priceForClient.toStringAsFixed(2)} €' : '-',
+                        ];
+                      } else {
+                        // Αν θέλουμε να κρύψουμε τις επιμέρους τιμές εντελώς, αφαιρούμε τη στήλη "ΤΙΜΗ ΜΟΝΑΔΑΣ"
+                        // Το "ΣΥΝΟΛΟ" (της εργασίας) μπορεί να φαίνεται ή όχι ανάλογα με το showPriceToClient.
+                        // Συνήθως αν κρύβουμε τιμές, κρύβουμε και το σύνολο της εργασίας και αφήνουμε μόνο το σύνολο της κατηγορίας.
+                        return [
+                          item.description,
+                          '${item.quantity} ${item.unit}'.trim(),
+                          visiblePrice ? '${item.priceForClient.toStringAsFixed(2)} €' : '-',
+                        ];
+                      }
                     }).toList(),
                     border: null,
                   ),
