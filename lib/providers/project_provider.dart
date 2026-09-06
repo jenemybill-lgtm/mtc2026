@@ -1,4 +1,5 @@
 import 'dart:convert';
+import 'dart:async';
 
 import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
@@ -52,6 +53,37 @@ class ProjectProvider with ChangeNotifier {
   List<SystemAlert> get alerts => _alerts;
   List<Manager> get managers => _managers;
   int? get currentManagerId => _currentManagerId;
+
+  Timer? _syncTimer;
+
+  ProjectProvider() {
+    _initPeriodicSync();
+  }
+
+  void _initPeriodicSync() {
+    _syncTimer?.cancel();
+    _syncTimer = Timer.periodic(const Duration(seconds: 10), (timer) async {
+      try {
+        final prefs = await SharedPreferences.getInstance();
+        if (prefs.getBool('is_logged_in') ?? false) {
+          final response = await ApiClient().get("/api/sync/download");
+          if (response.statusCode == 200) {
+            final Map<String, dynamic> responseData = jsonDecode(response.body);
+            await DatabaseHelper().importDataFromSync(responseData);
+            await fetchProjects();
+          }
+        }
+      } catch (e) {
+        debugPrint("Background Sync Error: $e");
+      }
+    });
+  }
+
+  @override
+  void dispose() {
+    _syncTimer?.cancel();
+    super.dispose();
+  }
 
   Future<void> setCurrentManagerId(int? id) async {
     _currentManagerId = id;
@@ -284,12 +316,12 @@ class ProjectProvider with ChangeNotifier {
       await DatabaseHelper().loadWebMemoryFromLocal();
     }
 
-    // 1. Auto-download on Web at startup if logged in
-    if (kIsWeb && !_hasDownloadedOnWeb) {
+    // 1. Auto-download at startup if logged in
+    if (!_hasDownloadedOnWeb) {
       final prefs = await SharedPreferences.getInstance();
       if (prefs.getBool('is_logged_in') ?? false) {
         _hasDownloadedOnWeb = true;
-        debugPrint("Web Startup: Auto-downloading data...");
+        debugPrint("Startup: Auto-downloading data from cloud...");
         await manualDownloadFromCloud();
         return; 
       }
