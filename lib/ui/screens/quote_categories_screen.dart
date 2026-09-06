@@ -75,6 +75,7 @@ class _QuoteCategoriesScreenState extends State<QuoteCategoriesScreen> {
                                 onPressed: () {
                                   bool showTotals = true;
                                   bool showPrices = true;
+                                  bool showTasks = true;
                                   showDialog(
                                     context: context,
                                     builder: (context) => StatefulBuilder(
@@ -87,6 +88,11 @@ class _QuoteCategoriesScreenState extends State<QuoteCategoriesScreen> {
                                               title: const Text("Εμφάνιση συνόλων ανά κατηγορία", style: TextStyle(fontSize: 13)),
                                               value: showTotals,
                                               onChanged: (v) => setDialogState(() => showTotals = v ?? true),
+                                            ),
+                                            CheckboxListTile(
+                                              title: const Text("Εμφάνιση επιμέρους εργασιών", style: TextStyle(fontSize: 13)),
+                                              value: showTasks,
+                                              onChanged: (v) => setDialogState(() => showTasks = v ?? true),
                                             ),
                                             CheckboxListTile(
                                               title: const Text("Εμφάνιση τιμών ανά εργασία", style: TextStyle(fontSize: 13)),
@@ -106,8 +112,16 @@ class _QuoteCategoriesScreenState extends State<QuoteCategoriesScreen> {
                                                 settings: provider.settings,
                                                 showCategoryTotals: showTotals,
                                                 showItemPrices: showPrices,
+                                                showItemizedTasks: showTasks,
                                               );
                                             },
+                                            child: const Text("ΕΚΔΟΣΗ PDF"),
+                                          ),
+                                        ],
+                                      ),
+                                    ),
+                                  );
+                                },
                                             child: const Text("ΕΚΔΟΣΗ PDF"),
                                           ),
                                         ],
