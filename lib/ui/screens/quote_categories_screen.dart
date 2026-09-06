@@ -104,8 +104,12 @@ class _QuoteCategoriesScreenState extends State<QuoteCategoriesScreen> {
                                         actions: [
                                           TextButton(onPressed: () => Navigator.pop(context), child: const Text("ΑΚΥΡΟ")),
                                           ElevatedButton(
-                                            onPressed: () {
+                                            onPressed: () async {
                                               Navigator.pop(context);
+                                              
+                                              // Add a tiny delay to allow the dialog to close before generating PDF
+                                              await Future.delayed(const Duration(milliseconds: 100));
+                                              
                                               PdfGenerator.generateAndShareQuote(
                                                 projectName: widget.project.name,
                                                 items: items,

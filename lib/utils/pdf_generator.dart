@@ -75,7 +75,6 @@ class PdfGenerator {
                 ),
                 if (showItemizedTasks) ...[
                   pw.SizedBox(height: 10),
-                  pw.SizedBox(height: 8),
                   pw.Table.fromTextArray(
                     headers: ['ΠΕΡΙΓΡΑΦΗ', 'ΠΟΣΟΤΗΤΑ', 'ΤΙΜΗ ΜΟΝΑΔΑΣ', 'ΣΥΝΟΛΟ'],
                     headerStyle: pw.TextStyle(fontSize: 9, fontWeight: pw.FontWeight.bold),
@@ -92,8 +91,6 @@ class PdfGenerator {
                     border: null,
                   ),
                   pw.SizedBox(height: 15),
-                ] else ...[
-                  pw.SizedBox(height: 10),
                 ],
               ],
             );
