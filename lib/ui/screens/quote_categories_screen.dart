@@ -75,7 +75,7 @@ class _QuoteCategoriesScreenState extends State<QuoteCategoriesScreen> {
                                 onPressed: () {
                                   bool showTotals = true;
                                   bool showPrices = true;
-                                  bool showTasks = true;
+                                  bool showTasks = false;
                                   showDialog(
                                     context: context,
                                     builder: (context) => StatefulBuilder(
