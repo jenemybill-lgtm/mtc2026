@@ -122,13 +122,6 @@ class _QuoteCategoriesScreenState extends State<QuoteCategoriesScreen> {
                                     ),
                                   );
                                 },
-                                            child: const Text("ΕΚΔΟΣΗ PDF"),
-                                          ),
-                                        ],
-                                      ),
-                                    ),
-                                  );
-                                },
                                 icon: const Icon(Icons.picture_as_pdf_rounded),
                                 style: IconButton.styleFrom(
                                   backgroundColor: Colors.red.withValues(alpha: 0.1),
