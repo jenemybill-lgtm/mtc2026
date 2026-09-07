@@ -76,16 +76,24 @@ class PdfGenerator {
                 if (showItemizedTasks) ...[
                   pw.SizedBox(height: 10),
                   pw.Table.fromTextArray(
-                    headers: ['ΠΕΡΙΓΡΑΦΗ', 'ΠΟΣΟΤΗΤΑ', 'ΤΙΜΗ ΜΟΝΑΔΑΣ', 'ΣΥΝΟΛΟ'],
+                    headers: showItemPrices ? ['ΠΕΡΙΓΡΑΦΗ', 'ΠΟΣΟΤΗΤΑ', 'ΤΙΜΗ ΜΟΝΑΔΑΣ', 'ΣΥΝΟΛΟ'] : ['ΠΕΡΙΓΡΑΦΗ', 'ΠΟΣΟΤΗΤΑ', 'ΣΥΝΟΛΟ'],
                     headerStyle: pw.TextStyle(fontSize: 9, fontWeight: pw.FontWeight.bold),
                     cellStyle: const pw.TextStyle(fontSize: 8),
                     data: catItems.where((item) => item.showInQuote).map((item) {
-                      return [
-                        item.description,
-                        '${item.quantity} ${item.unit}'.trim(),
-                        '${double.tryParse(item.unitPrice.replaceAll(',', '.'))?.toStringAsFixed(2) ?? item.unitPrice} €',
-                        '${item.priceForClient.toStringAsFixed(2)} €',
-                      ];
+                      if (showItemPrices) {
+                        return [
+                          item.description,
+                          '${item.quantity} ${item.unit}'.trim(),
+                          '${double.tryParse(item.unitPrice.replaceAll(',', '.'))?.toStringAsFixed(2) ?? item.unitPrice} €',
+                          '${item.priceForClient.toStringAsFixed(2)} €',
+                        ];
+                      } else {
+                        return [
+                          item.description,
+                          '${item.quantity} ${item.unit}'.trim(),
+                          '${item.priceForClient.toStringAsFixed(2)} €',
+                        ];
+                      }
                     }).toList(),
                     border: null,
                   ),
