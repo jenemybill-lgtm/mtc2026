@@ -73,7 +73,7 @@ class PdfGenerator {
                     ],
                   ),
                 ),
-                if (showItemizedTasks && showItemPrices) ...[
+                if (showItemizedTasks) ...[
                   pw.SizedBox(height: 10),
                   pw.Table.fromTextArray(
                     headers: ['ΠΕΡΙΓΡΑΦΗ', 'ΠΟΣΟΤΗΤΑ', 'ΤΙΜΗ ΜΟΝΑΔΑΣ', 'ΣΥΝΟΛΟ'],
