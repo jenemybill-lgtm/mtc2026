@@ -76,19 +76,23 @@ class PdfGenerator {
                 if (showItemizedTasks) ...[
                   pw.SizedBox(height: 10),
                   pw.Table.fromTextArray(
-                    headers: showItemPrices ? ['ΠΕΡΙΓΡΑΦΗ', 'ΠΟΣΟΤΗΤΑ', 'ΣΥΝΟΛΟ'] : ['ΠΕΡΙΓΡΑΦΗ', 'ΠΟΣΟΤΗΤΑ'],
+                    headers: showItemPrices ? ['ΠΕΡΙΓΡΑΦΗ & ΑΝΑΛΥΣΗ', 'ΠΟΣΟΤΗΤΑ', 'ΣΥΝΟΛΟ'] : ['ΠΕΡΙΓΡΑΦΗ & ΑΝΑΛΥΣΗ', 'ΠΟΣΟΤΗΤΑ'],
                     headerStyle: pw.TextStyle(fontSize: 9, fontWeight: pw.FontWeight.bold),
                     cellStyle: const pw.TextStyle(fontSize: 8),
                     data: catItems.where((item) => item.showInQuote).map((item) {
+                      final fullDescription = item.internalNote.trim().isNotEmpty 
+                          ? '${item.description}\n${item.internalNote}'
+                          : item.description;
+
                       if (showItemPrices) {
                         return [
-                          item.description,
+                          fullDescription,
                           '${item.quantity} ${item.unit}'.trim(),
                           '${item.priceForClient.toStringAsFixed(2)} €',
                         ];
                       } else {
                         return [
-                          item.description,
+                          fullDescription,
                           '${item.quantity} ${item.unit}'.trim(),
                         ];
                       }
