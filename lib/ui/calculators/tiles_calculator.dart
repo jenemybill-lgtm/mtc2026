@@ -194,17 +194,16 @@ class _TilesCalculatorState extends State<TilesCalculator> {
               onPressed: unitPriceTotal > 0 ? () async {
                 await _savePrices();
                 
-                String detailNote = "ΥΠΟΛΟΓΙΣΜΟΣ ΠΛΑΚΙΔΙΩΝ:\n";
-                if (bCount > 0) detailNote += "- $bCount Μπάνια\n";
-                if (wCount > 0) detailNote += "- $wCount WC\n";
-                if (kCount > 0) detailNote += "- $kCount Κουζίνες\n";
-                if (fiVal > 0) detailNote += "- ${fiVal.toStringAsFixed(1)} m² Πατώματα\n";
-                if (sVal > 0) detailNote += "- ${sVal.toStringAsFixed(1)} m Σοβατεπί\n";
-                detailNote += "\nΥΛΙΚΑ:";
-                detailNote += "\n- Πλακάκια: ${fVal.toStringAsFixed(1)} m²";
-                detailNote += "\n- Κόλλα: $totalGlue σακιά";
+                String detailNote = "ΠΕΡΙΛΑΜΒΑΝΟΝΤΑΙ:\n";
+                if (bCount > 0) detailNote += "- Τοποθέτηση Πλακιδίων (Μπάνιο): $bCount τεμ.\n";
+                if (wCount > 0) detailNote += "- Τοποθέτηση Πλακιδίων (WC): $wCount τεμ.\n";
+                if (kCount > 0) detailNote += "- Τοποθέτηση Πλακιδίων (Κουζίνα/Καθρέπτης): $kCount τεμ.\n";
+                if (fiVal > 0) detailNote += "- Τοποθέτηση Πλακιδίων (Δάπεδα): ${fiVal.toStringAsFixed(1)} m²\n";
+                if (sVal > 0) detailNote += "- Τοποθέτηση Σοβατεπί: ${sVal.toStringAsFixed(1)} m\n";
+                if (fVal > 0) detailNote += "- Προμήθεια Πλακιδίων: ${fVal.toStringAsFixed(1)} m²\n";
+                if (totalGlue > 0) detailNote += "- Προμήθεια Κόλλας: $totalGlue σακιά\n";
 
-                widget.onResult("Τοποθέτηση Πλακιδίων", _multiplierController.text, unitPriceTotal.toStringAsFixed(2), detailNote);
+                widget.onResult("Τοποθέτηση & Προμήθεια Πλακιδίων", _multiplierController.text, unitPriceTotal.toStringAsFixed(2), detailNote);
                 Navigator.pop(context);
               } : null,
               child: const Text("ΜΕΤΑΦΟΡΑ ΣΤΗΝ ΠΡΟΣΦΟΡΑ", style: TextStyle(fontWeight: FontWeight.bold)),
