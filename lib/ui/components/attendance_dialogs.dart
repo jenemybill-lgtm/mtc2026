@@ -207,12 +207,15 @@ class _AddWeeklyAttendanceDialogState extends State<AddWeeklyAttendanceDialog> {
             const Divider(),
             const Text("Επιλογή Ημερών:", style: TextStyle(fontSize: 11, fontWeight: FontWeight.bold, color: Colors.grey)),
             const SizedBox(height: 8),
-            ToggleButtons(
-              isSelected: _selectedDays,
-              onPressed: (index) => setState(() => _selectedDays[index] = !_selectedDays[index]),
-              borderRadius: BorderRadius.circular(8),
-              constraints: const BoxConstraints(minWidth: 40, minHeight: 40),
-              children: _dayNames.map((n) => Text(n, style: const TextStyle(fontSize: 10, fontWeight: FontWeight.bold))).toList(),
+            SingleChildScrollView(
+              scrollDirection: Axis.horizontal,
+              child: ToggleButtons(
+                isSelected: _selectedDays,
+                onPressed: (index) => setState(() => _selectedDays[index] = !_selectedDays[index]),
+                borderRadius: BorderRadius.circular(8),
+                constraints: const BoxConstraints(minWidth: 40, minHeight: 40),
+                children: _dayNames.map((n) => Text(n, style: const TextStyle(fontSize: 10, fontWeight: FontWeight.bold))).toList(),
+              ),
             ),
             const SizedBox(height: 16),
             DropdownButtonFormField<String>(
