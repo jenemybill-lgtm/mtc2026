@@ -281,7 +281,9 @@ class ProjectProvider with ChangeNotifier {
       final response = await ApiClient().get("/api/sync/download");
       
       if (response.statusCode == 200) {
-        final Map<String, dynamic> responseData = jsonDecode(response.body);
+        final decodedData = jsonDecode(response.body);
+        print("Sync: Data received from server. Keys: ${decodedData.keys}");
+        final Map<String, dynamic> responseData = decodedData is Map<String, dynamic> ? decodedData : {'data': decodedData};
         await DatabaseHelper().importDataFromSync(responseData);
         await fetchProjects();
         print("Sync: Download Successful");
