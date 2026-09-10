@@ -2487,8 +2487,13 @@ class DatabaseHelper {
       final Map<String, dynamic> source = (backup.containsKey('data') && backup['data'] is Map)
           ? Map<String, dynamic>.from(backup['data'])
           : backup;
+          
+      // Check if source contains data wrapper (sometimes nested twice)
+      final actualData = (source.containsKey('data') && source['data'] is Map)
+          ? Map<String, dynamic>.from(source['data'])
+          : source;
 
-      source.forEach((key, value) {
+      actualData.forEach((key, value) {
         if (value is List) {
           _webMemory[key] = List<Map<String, dynamic>>.from(value);
           print("Web Import: Loaded $key (${(value).length} rows)");
@@ -2497,6 +2502,17 @@ class DatabaseHelper {
       _saveWebMemoryToLocal();
       return;
     }
+    
+    // Windows/Desktop native DB import logic
+    // Unpack data wrapper if present from JSON API
+    final Map<String, dynamic> actualData = (backup.containsKey('data') && backup['data'] is Map)
+        ? Map<String, dynamic>.from(backup['data'])
+        : backup;
+        
+    final Map<String, dynamic> finalData = (actualData.containsKey('data') && actualData['data'] is Map)
+        ? Map<String, dynamic>.from(actualData['data'])
+        : actualData;
+        
     Database? db = await database;
     final appDir = await getApplicationDocumentsDirectory();
     final currentAppDirPath = appDir.path;
@@ -2536,7 +2552,7 @@ class DatabaseHelper {
     };
 
     await db!.transaction((txn) async {
-      for (var jsonKey in backup.keys) {
+      for (var jsonKey in finalData.keys) {
         final tableName = tableMapping[jsonKey];
         if (tableName == null) continue;
 
@@ -2548,7 +2564,7 @@ class DatabaseHelper {
 
         await txn.delete(tableName);
 
-        final rows = backup[jsonKey];
+        final rows = finalData[jsonKey];
         if (rows is List) {
           for (var row in rows) {
             if (row is Map) {
