@@ -44,11 +44,7 @@ class _HomeScreenState extends State<HomeScreen> {
           if (provider.isSyncing)
             const Padding(
               padding: EdgeInsets.only(right: 16),
-              child: SizedBox(
-                width: 20, 
-                height: 20, 
-                child: CircularProgressIndicator(strokeWidth: 2)
-              ),
+              child: SizedBox(width: 20, height: 20, child: CircularProgressIndicator(strokeWidth: 2)),
             ),
           IconButton(
             icon: const Icon(Icons.refresh_rounded),
@@ -109,7 +105,6 @@ class _HomeScreenState extends State<HomeScreen> {
                   children: [
                     Row(
                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                      crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
