@@ -2256,13 +2256,24 @@ class DatabaseHelper {
         jsonData = await zipFile.readAsString();
       } catch (e) {
         throw Exception(
-          "Invalid backup file: data.json not found and not a valid JSON",
+          "Το αρχείο δεν είναι σωστό αντίγραφο ασφαλείας (Invalid ZIP ή JSON).",
         );
       }
     }
 
     Database? db = await database;
-    Map<String, dynamic> backup = jsonDecode(jsonData);
+    
+    // Αφαίρεση του BOM αν υπάρχει (προκαλεί το "Unexpected character" error)
+    if (jsonData.startsWith('\xEF\xBB\xBF')) {
+      jsonData = jsonData.substring(3);
+    }
+    
+    Map<String, dynamic> backup;
+    try {
+      backup = jsonDecode(jsonData);
+    } catch (e) {
+      throw Exception("Το αρχείο περιέχει κατεστραμμένα δεδομένα JSON: $e");
+    }
 
     // Map old app keys to new table names
     final tableMapping = {
