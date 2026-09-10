@@ -45,6 +45,7 @@ class _HomeScreenState extends State<HomeScreen> {
             const Padding(
               padding: EdgeInsets.only(right: 16),
               child: SizedBox(width: 20, height: 20, child: CircularProgressIndicator(strokeWidth: 2)),
+width: 20, height: 20, child: CircularProgressIndicator(strokeWidth: 2)),
             ),
           IconButton(
             icon: const Icon(Icons.refresh_rounded),
@@ -104,8 +105,7 @@ class _HomeScreenState extends State<HomeScreen> {
                   padding: const EdgeInsets.all(40),
                   children: [
                     Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                      children: [
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween                      children: [
                         Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
