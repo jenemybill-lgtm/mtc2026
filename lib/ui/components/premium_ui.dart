@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 
-class PremiumCard extends StatelessWidget {
+class PremiumCard extends StatefulWidget {
   final Widget child;
   final EdgeInsetsGeometry? padding;
   final Color? accentColor;
@@ -23,31 +23,129 @@ class PremiumCard extends StatelessWidget {
   });
 
   @override
+  State<PremiumCard> createState() => _PremiumCardState();
+}
+
+class _PremiumCardState extends State<PremiumCard> {
+  bool _isHovered = false;
+
+  @override
   Widget build(BuildContext context) {
-    final bool hasAccent = accentColor != null;
+    final bool hasAccent = widget.accentColor != null;
+    final isDark = Theme.of(context).brightness == Brightness.dark;
     
-    return Container(
-      width: width,
-      height: height,
-      decoration: BoxDecoration(
-        color: isGlass 
-            ? Colors.white.withValues(alpha: 0.8)
-            : (hasAccent ? accentColor!.withValues(alpha: 0.08) : Colors.white),
-        borderRadius: BorderRadius.circular(32),
-        border: Border.all(
-          color: hasAccent ? accentColor!.withValues(alpha: 0.25) : Colors.black.withValues(alpha: 0.1),
-          width: 1.0,
+    // Use theme surface color if not glass, not accent, etc.
+    final baseColor = widget.isGlass 
+        ? (isDark ? Colors.black.withValues(alpha: 0.5) : Colors.white.withValues(alpha: 0.8))
+        : (hasAccent ? widget.accentColor!.withValues(alpha: 0.08) : Theme.of(context).cardTheme.color ?? Theme.of(context).colorScheme.surface);
+
+    return MouseRegion(
+      onEnter: (_) => setState(() => _isHovered = true),
+      onExit: (_) => setState(() => _isHovered = false),
+      cursor: widget.onTap != null ? SystemMouseCursors.click : SystemMouseCursors.basic,
+      child: AnimatedContainer(
+        duration: const Duration(milliseconds: 200),
+        width: widget.width,
+        height: widget.height,
+        transform: Matrix4.translationValues(0, _isHovered && widget.onTap != null ? -4 : 0, 0),
+        decoration: BoxDecoration(
+          color: baseColor,
+          borderRadius: BorderRadius.circular(32),
+          border: Border.all(
+            color: _isHovered && hasAccent
+                ? widget.accentColor!.withValues(alpha: 0.5)
+                : (hasAccent ? widget.accentColor!.withValues(alpha: 0.25) : (isDark ? Colors.white.withValues(alpha: 0.1) : Colors.black.withValues(alpha: 0.05))),
+            width: _isHovered && hasAccent ? 1.5 : 1.0,
+          ),
+          boxShadow: [
+            BoxShadow(
+              color: hasAccent && _isHovered
+                  ? widget.accentColor!.withValues(alpha: 0.2)
+                  : Colors.black.withValues(alpha: _isHovered ? 0.06 : 0.03),
+              blurRadius: _isHovered ? 20 : 15,
+              offset: Offset(0, _isHovered ? 10 : 6),
+            ),
+          ],
         ),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withValues(alpha: 0.03),
-            blurRadius: 15,
-            offset: const Offset(0, 6),
+        child: ClipRRect(
+          borderRadius: BorderRadius.circular(32),
+          child: Material(
+            color: Colors.transparent,
+            child: InkWell(
+              onTap: widget.onTap,
+              onLongPress: widget.onLongPress,
+              splashColor: hasAccent ? widget.accentColor!.withValues(alpha: 0.05) : Colors.black.withValues(alpha: 0.02),
+              highlightColor: Colors.transparent,
+              child: Padding(
+                padding: widget.padding ?? const EdgeInsets.all(20.0),
+                child: widget.child,
+              ),
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+class PremiumEmptyState extends StatelessWidget {
+  final IconData icon;
+  final String title;
+  final String subtitle;
+  final Color? color;
+
+  const PremiumEmptyState({
+    super.key,
+    required this.icon,
+    required this.title,
+    required this.subtitle,
+    this.color,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    final themeColor = color ?? Theme.of(context).colorScheme.primary;
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    
+    return Center(
+      child: Column(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          Container(
+            padding: const EdgeInsets.all(32),
+            decoration: BoxDecoration(
+              color: themeColor.withValues(alpha: 0.05),
+              shape: BoxShape.circle,
+              boxShadow: [
+                BoxShadow(color: themeColor.withValues(alpha: 0.1), blurRadius: 40, spreadRadius: 10),
+              ],
+            ),
+            child: Icon(icon, size: 64, color: themeColor.withValues(alpha: 0.5)),
+          ),
+          const SizedBox(height: 24),
+          Text(
+            title,
+            style: TextStyle(
+              fontWeight: FontWeight.w900,
+              color: isDark ? Colors.white : const Color(0xFF1E293B),
+              fontSize: 16,
+              letterSpacing: 0.5,
+            ),
+          ),
+          const SizedBox(height: 8),
+          Text(
+            subtitle,
+            style: TextStyle(
+              fontWeight: FontWeight.w600,
+              color: isDark ? Colors.white60 : Colors.blueGrey,
+              fontSize: 12,
+            ),
           ),
         ],
       ),
-      child: ClipRRect(
-        borderRadius: BorderRadius.circular(32),
+    );
+  }
+}
         child: Material(
           color: Colors.transparent,
           child: InkWell(
