@@ -2228,7 +2228,12 @@ class DatabaseHelper {
     final appDir = await getApplicationDocumentsDirectory();
 
     final bytes = await zipFile.readAsBytes();
-    final archive = ZipDecoder().decodeBytes(bytes);
+    Archive archive;
+    try {
+      archive = ZipDecoder().decodeBytes(bytes);
+    } catch (e) {
+      throw Exception("Το αρχείο δεν είναι έγκυρο ZIP.");
+    }
 
     String? jsonData;
 
