@@ -6,6 +6,7 @@ import 'package:sqflite/sqflite.dart';
 import 'package:path/path.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:share_plus/share_plus.dart';
+import 'package:file_picker/file_picker.dart';
 import 'package:archive/archive_io.dart';
 import 'package:mtc2026/models/project_models.dart';
 import 'package:flutter/foundation.dart' show kIsWeb;
@@ -2237,6 +2238,28 @@ class DatabaseHelper {
     }
 
     encoder.close();
+
+    if (!kIsWeb && (Platform.isWindows || Platform.isMacOS || Platform.isLinux)) {
+      final dateStr = DateFormat('yyyyMMdd_HHmm').format(DateTime.now());
+      final zipBytes = await zipFile.readAsBytes();
+      final Uri? saveUri = await FilePicker.saveFile(
+        dialogTitle: 'Αποθήκευση Αντιγράφου Ασφαλείας (Backup)',
+        fileName: 'mtc_full_backup_$dateStr.zip',
+        type: FileType.custom,
+        allowedExtensions: ['zip'],
+        bytes: zipBytes,
+      );
+
+      if (saveUri != null) {
+        final savePath = saveUri.toFilePath();
+        final saveFile = File(savePath);
+        if (!await saveFile.exists()) {
+          await saveFile.writeAsBytes(zipBytes);
+        }
+        print("Backup: Successfully saved to $savePath");
+      }
+      return;
+    }
 
     await Share.shareXFiles([
       XFile(zipFile.path),
