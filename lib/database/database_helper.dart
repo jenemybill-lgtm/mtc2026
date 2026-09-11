@@ -2213,26 +2213,49 @@ class DatabaseHelper {
     await jsonFile.writeAsString(jsonString);
     await encoder.addFile(jsonFile);
 
-    // 2. Add media files (photos, sketches, documents) from app directory
-    // Exclude SQLite database files (.db, .db-journal, .lock) to prevent OS file lock errors
-    if (await appDir.exists()) {
-      final files = appDir.listSync(recursive: true);
-      for (var file in files) {
-        if (file is File) {
-          final pathLower = file.path.toLowerCase();
-          if (pathLower.endsWith('.db') ||
-              pathLower.endsWith('.db-journal') ||
-              pathLower.endsWith('.lock') ||
-              pathLower.endsWith('.tmp') ||
-              file.path == zipFile.path) {
-            continue;
-          }
+    // Helper function to safely list app files without crashing on Windows junction points (e.g. "Η μουσική μου")
+    List<File> safeGetAppFiles(Directory rootDir) {
+      List<File> result = [];
+      try {
+        final entities = rootDir.listSync(recursive: false, followLinks: false);
+        for (var entity in entities) {
           try {
-            final relativePath = file.path.replaceFirst(appDir.path, 'files');
-            await encoder.addFile(file, relativePath);
+            if (entity is File) {
+              result.add(entity);
+            } else if (entity is Directory) {
+              final dirName = entity.path.split(Platform.pathSeparator).last.toLowerCase();
+              // Only traverse app media directories
+              if (dirName == 'photos' || dirName == 'documents' || dirName == 'sketches' || dirName == 'files') {
+                result.addAll(safeGetAppFiles(entity));
+              }
+            }
           } catch (e) {
-            print("Backup: Could not add file ${file.path}: $e");
+            print("Backup: Skipping restricted folder: ${entity.path}");
           }
+        }
+      } catch (e) {
+        print("Backup: Error scanning directory ${rootDir.path}: $e");
+      }
+      return result;
+    }
+
+    // 2. Add media files (photos, sketches, documents) from app directory
+    if (await appDir.exists()) {
+      final files = safeGetAppFiles(appDir);
+      for (var file in files) {
+        final pathLower = file.path.toLowerCase();
+        if (pathLower.endsWith('.db') ||
+            pathLower.endsWith('.db-journal') ||
+            pathLower.endsWith('.lock') ||
+            pathLower.endsWith('.tmp') ||
+            file.path == zipFile.path) {
+          continue;
+        }
+        try {
+          final relativePath = file.path.replaceFirst(appDir.path, 'files');
+          await encoder.addFile(file, relativePath);
+        } catch (e) {
+          print("Backup: Could not add file ${file.path}: $e");
         }
       }
     }
