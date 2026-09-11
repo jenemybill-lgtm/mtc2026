@@ -433,7 +433,7 @@ class _WorkerRowPremium extends StatelessWidget {
           ),
           ...days.map((day) {
             final dayAtt = attendance.where((a) => _isSameDay(DateTime.fromMillisecondsSinceEpoch(a.date), day)).toList();
-            final dayPay = payments.where((p) => _isSameDay(DateTime.fromMillisecondsSinceEpoch(p.date), day)).fold(0.0, (sum, p) => sum + p.amount);
+            final dayPayments = payments.where((p) => _isSameDay(DateTime.fromMillisecondsSinceEpoch(p.date), day)).toList();
             return Container(
               width: dayWidth,
               height: 64,
@@ -496,13 +496,42 @@ class _WorkerRowPremium extends StatelessWidget {
                           ),
                         );
                       }),
-                    if (dayPay > 0)
-                      Container(
-                        margin: const EdgeInsets.only(top: 2),
-                        padding: const EdgeInsets.symmetric(horizontal: 5, vertical: 1),
-                        decoration: BoxDecoration(color: Colors.red.withValues(alpha: 0.1), borderRadius: BorderRadius.circular(4)),
-                        child: Text("-${dayPay.toInt()}€", style: const TextStyle(fontSize: 8, fontWeight: FontWeight.w900, color: Colors.red)),
-                      ),
+                    if (dayPayments.isNotEmpty)
+                      ...dayPayments.map((p) => InkWell(
+                        onTap: () {
+                          showModalBottomSheet(
+                            context: context,
+                            builder: (ctx) => SafeArea(
+                              child: Wrap(
+                                children: [
+                                  ListTile(
+                                    leading: const Icon(Icons.edit, color: Colors.blue),
+                                    title: const Text('Επεξεργασία Πληρωμής'),
+                                    onTap: () {
+                                      Navigator.pop(ctx);
+                                      _showEditPaymentDialog(context, p, worker, provider);
+                                    },
+                                  ),
+                                  ListTile(
+                                    leading: const Icon(Icons.delete, color: Colors.red),
+                                    title: const Text('Διαγραφή Πληρωμής', style: TextStyle(color: Colors.red)),
+                                    onTap: () {
+                                      Navigator.pop(ctx);
+                                      provider.deleteExpense(p.projectId ?? 0, p.id);
+                                    },
+                                  ),
+                                ],
+                              ),
+                            ),
+                          );
+                        },
+                        child: Container(
+                          margin: const EdgeInsets.only(top: 2),
+                          padding: const EdgeInsets.symmetric(horizontal: 5, vertical: 1),
+                          decoration: BoxDecoration(color: Colors.red.withValues(alpha: 0.1), borderRadius: BorderRadius.circular(4)),
+                          child: Text("-${p.amount.toInt()}€", style: const TextStyle(fontSize: 8, fontWeight: FontWeight.w900, color: Colors.red)),
+                        ),
+                      )),
                   ],
                 ),
               ),
@@ -571,6 +600,57 @@ class _WorkerRowPremium extends StatelessWidget {
               Navigator.pop(context);
             }
           }, child: const Text("ΚΑΤΑΧΩΡΗΣΗ", style: TextStyle(fontWeight: FontWeight.w900))),
+        ],
+      ),
+    );
+  }
+
+  void _showEditPaymentDialog(BuildContext context, Expense payment, String workerName, ProjectProvider provider) {
+    final amountController = TextEditingController(text: payment.amount.toString());
+    final descController = TextEditingController(text: payment.description);
+    
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(32)),
+        title: PremiumHeader(title: "ΕΠΕΞΕΡΓΑΣΙΑ ΠΛΗΡΩΜΗΣ", subtitle: workerName.toUpperCase(), icon: Icons.payments_rounded),
+        content: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            TextField(
+              controller: amountController, 
+              decoration: const InputDecoration(labelText: "Ποσό (€)", prefixIcon: Icon(Icons.euro_rounded)), 
+              keyboardType: TextInputType.number,
+            ),
+            const SizedBox(height: 12),
+            TextField(
+              controller: descController, 
+              decoration: const InputDecoration(labelText: "Αιτιολογία", prefixIcon: Icon(Icons.description_outlined)), 
+            ),
+          ],
+        ),
+        actions: [
+          TextButton(onPressed: () => Navigator.pop(context), child: const Text("ΑΚΥΡΟ", style: TextStyle(fontWeight: FontWeight.w900))),
+          ElevatedButton(
+            onPressed: () async {
+              final amount = double.tryParse(amountController.text.replaceAll(',', '.')) ?? 0.0;
+              if (amount > 0) {
+                final updated = Expense(
+                  id: payment.id,
+                  projectId: payment.projectId,
+                  date: payment.date,
+                  description: descController.text.trim().isEmpty ? "ΠΛΗΡΩΜΗ ΕΝΑΝΤΙ" : descController.text.trim(),
+                  workerName: workerName,
+                  amount: amount,
+                  hasVat: payment.hasVat,
+                  expenseType: "PAYMENT",
+                );
+                await provider.updateExpense(payment.projectId ?? 0, updated);
+                if (context.mounted) Navigator.pop(context);
+              }
+            }, 
+            child: const Text("ΑΠΟΘΗΚΕΥΣΗ", style: TextStyle(fontWeight: FontWeight.w900)),
+          ),
         ],
       ),
     );
