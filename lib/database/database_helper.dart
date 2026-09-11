@@ -9,6 +9,7 @@ import 'package:share_plus/share_plus.dart';
 import 'package:archive/archive_io.dart';
 import 'package:mtc2026/models/project_models.dart';
 import 'package:flutter/foundation.dart' show kIsWeb;
+import 'package:intl/intl.dart';
 
 class DatabaseHelper {
   static final DatabaseHelper _instance = DatabaseHelper._internal();
@@ -2151,7 +2152,7 @@ class DatabaseHelper {
     return await db!.delete('global_prices', where: 'id = ?', whereArgs: [id]);
   }
 
-  // Backup & Restore (Full ZIP)
+  // Backup & Restore
   Future<void> backupDatabase() async {
     if (kIsWeb) return;
     Database? db = await database;
@@ -2194,32 +2195,14 @@ class DatabaseHelper {
     }
 
     final jsonString = jsonEncode(backup);
-
-    final appDir = await getApplicationDocumentsDirectory();
     final tempDir = await getTemporaryDirectory();
-    final zipFile = File('${tempDir.path}/mtc_full_backup.zip');
-
-    final encoder = ZipFileEncoder();
-    encoder.create(zipFile.path);
-
-    // 1. Add JSON data
-    final jsonFile = File('${tempDir.path}/data.json');
+    final dateStr = DateFormat('yyyyMMdd_HHmm').format(DateTime.now());
+    final jsonFile = File('${tempDir.path}/mtc_backup_$dateStr.json');
     await jsonFile.writeAsString(jsonString);
-    encoder.addFile(jsonFile);
 
-    // 2. Add all files from app directory (photos, etc.)
-    final files = appDir.listSync(recursive: true);
-    for (var file in files) {
-      if (file is File) {
-        final relativePath = file.path.replaceFirst(appDir.path, 'files');
-        encoder.addFile(file, relativePath);
-      }
-    }
-
-    encoder.close();
     await Share.shareXFiles([
-      XFile(zipFile.path),
-    ], text: 'MTC Full Backup (ZIP)');
+      XFile(jsonFile.path),
+    ], text: 'MTC Backup (JSON)');
   }
 
   Future<void> restoreDatabase(File zipFile) async {
@@ -2227,42 +2210,40 @@ class DatabaseHelper {
     print("Restore: Starting database restoration...");
     final appDir = await getApplicationDocumentsDirectory();
 
-    final bytes = await zipFile.readAsBytes();
-    Archive archive;
-    try {
-      archive = ZipDecoder().decodeBytes(bytes);
-    } catch (e) {
-      throw Exception("Το αρχείο δεν είναι έγκυρο ZIP.");
-    }
-
     String? jsonData;
 
-    for (final file in archive) {
-      if (file.isFile) {
-        if (file.name.endsWith('data.json')) {
-          print("Restore: Found data.json inside ZIP.");
-          jsonData = utf8.decode(file.content as List<int>);
-        } else if (file.name.contains('/files/') ||
-            file.name.startsWith('files/')) {
-          String fileName = file.name.split('/').last;
-          final destFile = File('${appDir.path}/$fileName');
-          await destFile.create(recursive: true);
-          await destFile.writeAsBytes(file.content as List<int>);
-          print("Restore: Extracted file: $fileName");
-        }
-      }
-    }
-
-    if (jsonData == null) {
+    if (zipFile.path.toLowerCase().endsWith('.json')) {
+      jsonData = await zipFile.readAsString();
+    } else {
       try {
-        print(
-          "Restore: ZIP didn't contain data.json, trying to read ZIP as raw JSON...",
-        );
-        jsonData = await zipFile.readAsString();
+        final bytes = await zipFile.readAsBytes();
+        final archive = ZipDecoder().decodeBytes(bytes);
+
+        for (final file in archive) {
+          if (file.isFile) {
+            if (file.name.endsWith('data.json')) {
+              print("Restore: Found data.json inside ZIP.");
+              jsonData = utf8.decode(file.content as List<int>);
+            } else if (file.name.contains('/files/') ||
+                file.name.startsWith('files/')) {
+              String fileName = file.name.split('/').last;
+              final destFile = File('${appDir.path}/$fileName');
+              await destFile.create(recursive: true);
+              await destFile.writeAsBytes(file.content as List<int>);
+              print("Restore: Extracted file: $fileName");
+            }
+          }
+        }
       } catch (e) {
-        throw Exception(
-          "Το αρχείο δεν είναι σωστό αντίγραφο ασφαλείας (Invalid ZIP ή JSON).",
-        );
+        print("Restore: ZIP decoding failed, falling back to reading file as raw JSON...");
+      }
+
+      if (jsonData == null) {
+        try {
+          jsonData = await zipFile.readAsString();
+        } catch (e) {
+          throw Exception("Το αρχείο δεν είναι σωστό αντίγραφο ασφαλείας (JSON ή ZIP).");
+        }
       }
     }
 

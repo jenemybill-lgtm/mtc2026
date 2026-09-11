@@ -306,7 +306,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
     try {
       PlatformFile? result = await FilePicker.pickFile(
         type: FileType.custom,
-        allowedExtensions: ['zip'],
+        allowedExtensions: ['json', 'zip'],
       );
       if (result != null) {
         File file = File(result.path!);
