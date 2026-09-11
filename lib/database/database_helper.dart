@@ -2152,7 +2152,7 @@ class DatabaseHelper {
     return await db!.delete('global_prices', where: 'id = ?', whereArgs: [id]);
   }
 
-  // Backup & Restore
+  // Backup & Restore (Full ZIP including data.json and media files)
   Future<void> backupDatabase() async {
     if (kIsWeb) return;
     Database? db = await database;
@@ -2195,14 +2195,52 @@ class DatabaseHelper {
     }
 
     final jsonString = jsonEncode(backup);
+
+    final appDir = await getApplicationDocumentsDirectory();
     final tempDir = await getTemporaryDirectory();
-    final dateStr = DateFormat('yyyyMMdd_HHmm').format(DateTime.now());
-    final jsonFile = File('${tempDir.path}/mtc_backup_$dateStr.json');
+    final zipFile = File('${tempDir.path}/mtc_full_backup.zip');
+
+    if (await zipFile.exists()) {
+      try { await zipFile.delete(); } catch (_) {}
+    }
+
+    final encoder = ZipFileEncoder();
+    encoder.create(zipFile.path);
+
+    // 1. Add JSON data
+    final jsonFile = File('${tempDir.path}/data.json');
     await jsonFile.writeAsString(jsonString);
+    await encoder.addFile(jsonFile);
+
+    // 2. Add media files (photos, sketches, documents) from app directory
+    // Exclude SQLite database files (.db, .db-journal, .lock) to prevent OS file lock errors
+    if (await appDir.exists()) {
+      final files = appDir.listSync(recursive: true);
+      for (var file in files) {
+        if (file is File) {
+          final pathLower = file.path.toLowerCase();
+          if (pathLower.endsWith('.db') ||
+              pathLower.endsWith('.db-journal') ||
+              pathLower.endsWith('.lock') ||
+              pathLower.endsWith('.tmp') ||
+              file.path == zipFile.path) {
+            continue;
+          }
+          try {
+            final relativePath = file.path.replaceFirst(appDir.path, 'files');
+            await encoder.addFile(file, relativePath);
+          } catch (e) {
+            print("Backup: Could not add file ${file.path}: $e");
+          }
+        }
+      }
+    }
+
+    encoder.close();
 
     await Share.shareXFiles([
-      XFile(jsonFile.path),
-    ], text: 'MTC Backup (JSON)');
+      XFile(zipFile.path),
+    ], text: 'MTC Full Backup (ZIP)');
   }
 
   Future<void> restoreDatabase(File zipFile) async {
