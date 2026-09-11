@@ -2259,29 +2259,36 @@ class DatabaseHelper {
 
         for (final file in archive) {
           if (file.isFile) {
+            final dynamic content = file.content;
+            List<int> fileBytes = [];
+            if (content is List<int>) {
+              fileBytes = content;
+            } else if (content != null) {
+              try {
+                fileBytes = (content as dynamic).toList() as List<int>;
+              } catch (_) {}
+            }
+
             if (file.name.endsWith('data.json')) {
               print("Restore: Found data.json inside ZIP.");
-              jsonData = utf8.decode(file.content as List<int>);
+              jsonData = utf8.decode(fileBytes, allowMalformed: true);
             } else if (file.name.contains('/files/') ||
                 file.name.startsWith('files/')) {
               String fileName = file.name.split('/').last;
               final destFile = File('${appDir.path}/$fileName');
               await destFile.create(recursive: true);
-              await destFile.writeAsBytes(file.content as List<int>);
+              await destFile.writeAsBytes(fileBytes);
               print("Restore: Extracted file: $fileName");
             }
           }
         }
       } catch (e) {
-        print("Restore: ZIP decoding failed, falling back to reading file as raw JSON...");
+        print("Restore: ZIP decoding error: $e");
+        throw Exception("Σφάλμα κατά την αποσυμπίεση του αρχείου ZIP: $e");
       }
 
       if (jsonData == null) {
-        try {
-          jsonData = await zipFile.readAsString();
-        } catch (e) {
-          throw Exception("Το αρχείο δεν είναι σωστό αντίγραφο ασφαλείας (JSON ή ZIP).");
-        }
+        throw Exception("Το αρχείο ZIP δεν περιέχει το αρχείο δεδομένων (data.json).");
       }
     }
 
