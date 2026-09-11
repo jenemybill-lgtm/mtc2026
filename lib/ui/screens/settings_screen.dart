@@ -194,7 +194,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
                                 label: "BACKUP",
                                 icon: Icons.upload_rounded,
                                 color: Colors.blueGrey,
-                                onTap: () => DatabaseHelper().backupDatabase(),
+                                onTap: _handleBackup,
                               ),
                             ),
                             const SizedBox(width: 12),
@@ -300,6 +300,54 @@ class _SettingsScreenState extends State<SettingsScreen> {
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
       ),
     );
+  }
+
+  Future<void> _handleBackup() async {
+    showDialog(
+      context: context,
+      barrierDismissible: false,
+      builder: (context) => const Center(
+        child: Card(
+          child: Padding(
+            padding: EdgeInsets.all(24.0),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                CircularProgressIndicator(),
+                SizedBox(height: 16),
+                Text("Δημιουργία Αντιγράφου Ασφαλείας...", style: TextStyle(fontWeight: FontWeight.bold)),
+              ],
+            ),
+          ),
+        ),
+      ),
+    );
+
+    try {
+      final path = await DatabaseHelper().backupDatabase();
+      if (mounted) Navigator.pop(context);
+
+      if (path != null && mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text("Το Backup δημιουργήθηκε επιτυχώς!"),
+            backgroundColor: Colors.green,
+            duration: Duration(seconds: 4),
+          ),
+        );
+      }
+    } catch (e) {
+      if (mounted) Navigator.pop(context);
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text("Σφάλμα κατά το Backup: $e"),
+            backgroundColor: Colors.red,
+            duration: const Duration(seconds: 5),
+          ),
+        );
+      }
+    }
   }
 
   Future<void> _handleRestore() async {

@@ -2154,8 +2154,8 @@ class DatabaseHelper {
   }
 
   // Backup & Restore (Full ZIP including data.json and media files)
-  Future<void> backupDatabase() async {
-    if (kIsWeb) return;
+  Future<String?> backupDatabase() async {
+    if (kIsWeb) return null;
     Database? db = await database;
     Map<String, dynamic> backup = {};
     final tables = [
@@ -2257,13 +2257,15 @@ class DatabaseHelper {
           await saveFile.writeAsBytes(zipBytes);
         }
         print("Backup: Successfully saved to $savePath");
+        return savePath;
       }
-      return;
+      return null;
     }
 
     await Share.shareXFiles([
       XFile(zipFile.path),
     ], text: 'MTC Full Backup (ZIP)');
+    return zipFile.path;
   }
 
   Future<void> restoreDatabase(File zipFile) async {
