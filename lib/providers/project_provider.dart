@@ -62,21 +62,8 @@ class ProjectProvider with ChangeNotifier {
 
   void _initPeriodicSync() {
     _syncTimer?.cancel();
-    _syncTimer = Timer.periodic(const Duration(seconds: 30), (timer) async {
-      try {
-        final prefs = await SharedPreferences.getInstance();
-        if (prefs.getBool('is_logged_in') ?? false) {
-          final response = await ApiClient().get("/api/sync/download");
-          if (response.statusCode == 200) {
-            final Map<String, dynamic> responseData = jsonDecode(response.body);
-            await DatabaseHelper().importDataFromSync(responseData);
-            await fetchProjects();
-          }
-        }
-      } catch (e) {
-        debugPrint("Background Sync Error: $e");
-      }
-    });
+    // Periodic background timer removed per user preference
+    // Uploads happen strictly on local database changes (Delta updates)
   }
 
   @override
@@ -269,6 +256,38 @@ class ProjectProvider with ChangeNotifier {
     }
   }
 
+  Future<bool> syncSingleTable(String tableName) async {
+    final prefs = await SharedPreferences.getInstance();
+    if (!(prefs.getBool('is_logged_in') ?? false)) return false;
+
+    _isSyncing = true;
+    notifyListeners();
+
+    try {
+      final tableData = await DatabaseHelper().getTableDataForSync(tableName);
+      print("Sync Delta: Uploading $tableName (${tableData.length} rows)...");
+      
+      final response = await ApiClient().post("/api/sync/upload", {
+        "table": tableName,
+        "data": tableData,
+      });
+      
+      if (response.statusCode == 200) {
+        print("Sync Delta: $tableName upload successful");
+        return true;
+      } else {
+        print("Sync Delta: Upload failed (${response.statusCode}): ${response.body}");
+        return false;
+      }
+    } catch (e) {
+      print("Sync Delta: Upload error: $e");
+      return false;
+    } finally {
+      _isSyncing = false;
+      notifyListeners();
+    }
+  }
+
   Future<bool> manualDownloadFromCloud() async {
     final prefs = await SharedPreferences.getInstance();
     if (!(prefs.getBool('is_logged_in') ?? false)) return false;
@@ -414,10 +433,13 @@ class ProjectProvider with ChangeNotifier {
     notifyListeners();
   }
 
-  Future<void> _autoSync() async {
+  Future<void> _autoSync([String? tableName]) async {
     try {
-      // Non-blocking lightweight upload (text/numeric only, ~20KB) to save server bandwidth
-      manualUploadToCloud(includePhotos: false);
+      if (tableName != null) {
+        await syncSingleTable(tableName);
+      } else {
+        await manualUploadToCloud(includePhotos: false);
+      }
     } catch (e) {
       debugPrint("AutoSync Error: $e");
     }
@@ -427,19 +449,19 @@ class ProjectProvider with ChangeNotifier {
   Future<void> addProject(Project p) async {
     await DatabaseHelper().insertProject(p);
     await fetchProjects();
-    await _autoSync();
+    await _autoSync('projects');
   }
 
   Future<void> updateProject(Project p) async {
     await DatabaseHelper().updateProject(p);
     await fetchProjects();
-    await _autoSync();
+    await _autoSync('projects');
   }
 
   Future<void> deleteProject(int id) async {
     await DatabaseHelper().deleteProject(id);
     await fetchProjects();
-    await _autoSync();
+    await _autoSync('projects');
   }
 
   Future<List<Project>> getProjectsForClient(int clientId) async =>
@@ -448,37 +470,37 @@ class ProjectProvider with ChangeNotifier {
   Future<void> addClient(Client c) async {
     await DatabaseHelper().insertClient(c);
     await fetchProjects();
-    await _autoSync();
+    await _autoSync('clients');
   }
 
   Future<void> updateClient(Client c) async {
     await DatabaseHelper().updateClient(c);
     await fetchProjects();
-    await _autoSync();
+    await _autoSync('clients');
   }
 
   Future<void> deleteClient(int id) async {
     await DatabaseHelper().deleteClient(id);
     await fetchProjects();
-    await _autoSync();
+    await _autoSync('clients');
   }
 
   Future<void> addPartner(Partner p) async {
     await DatabaseHelper().insertPartner(p);
     await fetchProjects();
-    await _autoSync();
+    await _autoSync('partners');
   }
 
   Future<void> updatePartner(Partner p) async {
     await DatabaseHelper().updatePartner(p);
     await fetchProjects();
-    await _autoSync();
+    await _autoSync('partners');
   }
 
   Future<void> deletePartner(int id) async {
     await DatabaseHelper().deletePartner(id);
     await fetchProjects();
-    await _autoSync();
+    await _autoSync('partners');
   }
 
   // --- MANAGERS ---
@@ -486,18 +508,21 @@ class ProjectProvider with ChangeNotifier {
     await DatabaseHelper().insertManager(m);
     _managers = await DatabaseHelper().getManagers();
     notifyListeners();
+    await _autoSync('managers');
   }
 
   Future<void> updateManager(Manager m) async {
     await DatabaseHelper().updateManager(m);
     _managers = await DatabaseHelper().getManagers();
     notifyListeners();
+    await _autoSync('managers');
   }
 
   Future<void> deleteManager(int id) async {
     await DatabaseHelper().deleteManager(id);
     _managers = await DatabaseHelper().getManagers();
     notifyListeners();
+    await _autoSync('managers');
   }
 
   // --- PROJECT NOTES ---
@@ -602,61 +627,61 @@ class ProjectProvider with ChangeNotifier {
   Future<void> addQuoteItem(int pid, QuoteItem item) async {
     await DatabaseHelper().insertQuoteItem(pid, item);
     await fetchProjectData(pid);
-    await _autoSync();
+    await _autoSync('quote_items');
   }
 
   Future<void> updateQuoteItem(int pid, QuoteItem item) async {
     await DatabaseHelper().updateQuoteItem(pid, item);
     await fetchProjectData(pid);
-    await _autoSync();
+    await _autoSync('quote_items');
   }
 
   Future<void> deleteQuoteItem(int pid, int id) async {
     await DatabaseHelper().deleteQuoteItem(id);
     await fetchProjectData(pid);
-    await _autoSync();
+    await _autoSync('quote_items');
   }
 
   Future<void> addIncome(int pid, Income i) async {
     await DatabaseHelper().insertIncome(i);
     await fetchProjectData(pid);
     await calculateDashboardStats();
-    await _autoSync();
+    await _autoSync('incomes');
   }
 
   Future<void> updateIncome(int pid, Income i) async {
     await DatabaseHelper().updateIncome(i);
     await fetchProjectData(pid);
     await calculateDashboardStats();
-    await _autoSync();
+    await _autoSync('incomes');
   }
 
   Future<void> deleteIncome(int pid, int id) async {
     await DatabaseHelper().deleteIncome(id);
     await fetchProjectData(pid);
     await calculateDashboardStats();
-    await _autoSync();
+    await _autoSync('incomes');
   }
 
   Future<void> addExpense(int pid, Expense e) async {
     await DatabaseHelper().insertExpense(e);
     await fetchProjectData(pid);
     await calculateDashboardStats();
-    await _autoSync();
+    await _autoSync('expenses');
   }
 
   Future<void> updateExpense(int pid, Expense e) async {
     await DatabaseHelper().updateExpense(e);
     await fetchProjectData(pid);
     await calculateDashboardStats();
-    await _autoSync();
+    await _autoSync('expenses');
   }
 
   Future<void> deleteExpense(int pid, int id) async {
     await DatabaseHelper().deleteExpense(id);
     await fetchProjectData(pid);
     await calculateDashboardStats();
-    await _autoSync();
+    await _autoSync('expenses');
   }
 
   Future<List<Expense>> getAllExpenses() async => await DatabaseHelper().getAllExpenses();
@@ -730,19 +755,19 @@ class ProjectProvider with ChangeNotifier {
       await DatabaseHelper().insertAttendance(r);
     }
     await calculateDashboardStats();
-    await _autoSync();
+    await _autoSync('attendance');
   }
 
   Future<void> updateAttendance(AttendanceEntity r) async {
     await DatabaseHelper().updateAttendance(r);
     await calculateDashboardStats();
-    await _autoSync();
+    await _autoSync('attendance');
   }
 
   Future<void> deleteAttendance(int id) async {
     await DatabaseHelper().deleteAttendance(id);
     await calculateDashboardStats();
-    await _autoSync();
+    await _autoSync('attendance');
   }
 
   Future<List<AttendanceEntity>> getAttendance(int? pid, int? s, int? e) async =>

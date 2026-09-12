@@ -2489,6 +2489,46 @@ class DatabaseHelper {
 
   // --- MANUAL CLOUD SYNC HELPERS ---
 
+  Future<List<Map<String, dynamic>>> getTableDataForSync(String table) async {
+    if (kIsWeb) {
+      return _webMemory[table] ?? [];
+    }
+    Database? db = await database;
+    var rows = await db!.query(table);
+
+    if (table == 'project_photos') {
+      List<Map<String, dynamic>> rowsWithImageData = [];
+      for (var row in rows) {
+        Map<String, dynamic> mutableRow = Map<String, dynamic>.from(row);
+        String? uri = mutableRow['uri'];
+        if (uri != null && File(uri).existsSync()) {
+          try {
+            List<int> imageBytes = await File(uri).readAsBytes();
+            mutableRow['base64Data'] = base64Encode(imageBytes);
+          } catch (_) {}
+        }
+        rowsWithImageData.add(mutableRow);
+      }
+      return rowsWithImageData;
+    } else if (table == 'global_settings') {
+      List<Map<String, dynamic>> rowsWithLogo = [];
+      for (var row in rows) {
+        Map<String, dynamic> mutableRow = Map<String, dynamic>.from(row);
+        String? logoUri = mutableRow['logoUri'];
+        if (logoUri != null && File(logoUri).existsSync()) {
+          try {
+            List<int> imageBytes = await File(logoUri).readAsBytes();
+            mutableRow['logoBase64'] = base64Encode(imageBytes);
+          } catch (_) {}
+        }
+        rowsWithLogo.add(mutableRow);
+      }
+      return rowsWithLogo;
+    }
+
+    return rows;
+  }
+
   Future<Map<String, dynamic>> getAllDataForSync({bool includePhotos = false}) async {
     if (kIsWeb) {
       return Map<String, dynamic>.from(_webMemory);
