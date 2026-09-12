@@ -2489,7 +2489,7 @@ class DatabaseHelper {
 
   // --- MANUAL CLOUD SYNC HELPERS ---
 
-  Future<Map<String, dynamic>> getAllDataForSync() async {
+  Future<Map<String, dynamic>> getAllDataForSync({bool includePhotos = false}) async {
     if (kIsWeb) {
       return Map<String, dynamic>.from(_webMemory);
     }
@@ -2533,8 +2533,8 @@ class DatabaseHelper {
     for (var table in tables) {
       var rows = await db!.query(table);
 
-      // Handle Photos & Global Logo: Convert to Base64 to store in MongoDB
-      if (table == 'project_photos') {
+      // Handle Photos & Global Logo: Convert to Base64 only if requested to save server bandwidth
+      if (table == 'project_photos' && includePhotos) {
         List<Map<String, dynamic>> rowsWithImageData = [];
         for (var row in rows) {
           Map<String, dynamic> mutableRow = Map<String, dynamic>.from(row);
@@ -2550,7 +2550,7 @@ class DatabaseHelper {
           rowsWithImageData.add(mutableRow);
         }
         data[table] = rowsWithImageData;
-      } else if (table == 'global_settings') {
+      } else if (table == 'global_settings' && includePhotos) {
         List<Map<String, dynamic>> rowsWithLogo = [];
         for (var row in rows) {
           Map<String, dynamic> mutableRow = Map<String, dynamic>.from(row);

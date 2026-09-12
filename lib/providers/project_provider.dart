@@ -62,7 +62,7 @@ class ProjectProvider with ChangeNotifier {
 
   void _initPeriodicSync() {
     _syncTimer?.cancel();
-    _syncTimer = Timer.periodic(const Duration(seconds: 10), (timer) async {
+    _syncTimer = Timer.periodic(const Duration(seconds: 30), (timer) async {
       try {
         final prefs = await SharedPreferences.getInstance();
         if (prefs.getBool('is_logged_in') ?? false) {
@@ -238,7 +238,7 @@ class ProjectProvider with ChangeNotifier {
   bool _isSyncing = false;
   bool get isSyncing => _isSyncing;
 
-  Future<bool> manualUploadToCloud() async {
+  Future<bool> manualUploadToCloud({bool includePhotos = false}) async {
     final prefs = await SharedPreferences.getInstance();
     if (!(prefs.getBool('is_logged_in') ?? false)) return false;
 
@@ -246,8 +246,8 @@ class ProjectProvider with ChangeNotifier {
     notifyListeners();
 
     try {
-      final data = await DatabaseHelper().getAllDataForSync();
-      print("Sync: Uploading ${data.keys.length} tables...");
+      final data = await DatabaseHelper().getAllDataForSync(includePhotos: includePhotos);
+      print("Sync: Uploading ${data.keys.length} tables (includePhotos: $includePhotos)...");
       
       final response = await ApiClient().post("/api/sync/upload", {
         "data": data,
@@ -416,8 +416,8 @@ class ProjectProvider with ChangeNotifier {
 
   Future<void> _autoSync() async {
     try {
-      // Non-blocking upload to cloud on all platforms
-      manualUploadToCloud();
+      // Non-blocking lightweight upload (text/numeric only, ~20KB) to save server bandwidth
+      manualUploadToCloud(includePhotos: false);
     } catch (e) {
       debugPrint("AutoSync Error: $e");
     }
