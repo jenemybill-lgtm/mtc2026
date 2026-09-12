@@ -31,8 +31,8 @@ class PremiumCard extends StatelessWidget {
       height: height,
       decoration: BoxDecoration(
         color: isGlass
-            ? Colors.white.withValues(alpha: 0.8)
-            : (hasAccent ? accentColor!.withValues(alpha: 0.08) : Colors.white),
+            ? const Color(0xFFF8FAFC).withValues(alpha: 0.9)
+            : (hasAccent ? accentColor!.withValues(alpha: 0.08) : const Color(0xFFF8FAFC)),
         borderRadius: BorderRadius.circular(32),
         border: Border.all(
           color: hasAccent ? accentColor!.withValues(alpha: 0.25) : Colors.black.withValues(alpha: 0.1),

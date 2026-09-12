@@ -1,12 +1,13 @@
 import 'package:flutter/material.dart';
 
 class AppTheme {
-  static const Color primaryBlue = Color(0xFF2563EB); // Executive Corporate Blue
-  static const Color primaryNavy = Color(0xFF0A192F); // Deep Corporate Navy
-  static const Color accentSlate = Color(0xFF64748B); // Professional Slate Gray
-  static const Color successGreen = Color(0xFF16A34A); // Formal Green
-  static const Color dangerRed = Color(0xFFDC2626); // Formal Red
-  static const Color backgroundLight = Color(0xFFF8FAFC); // Clean Crisp Surface
+  static const Color primaryBlue = Color(0xFF4361EE); 
+  static const Color primaryNavy = Color(0xFF1E293B); 
+  static const Color accentSlate = Color(0xFF64748B); 
+  static const Color successGreen = Color(0xFF16A34A); 
+  static const Color dangerRed = Color(0xFFDC2626); 
+  static const Color backgroundLight = Color(0xFFE2E8F0); // Soft, eye-soothing slate background
+  static const Color surfaceSoft = Color(0xFFF8FAFC); // Eye-soothing soft fill for cards
 
   static ThemeData lightTheme = ThemeData(
     useMaterial3: true,
@@ -14,25 +15,28 @@ class AppTheme {
       seedColor: primaryBlue,
       primary: primaryBlue,
       secondary: primaryNavy,
-      surface: Colors.white,
-      background: backgroundLight,
+      surface: surfaceSoft,
       brightness: Brightness.light,
     ),
     appBarTheme: const AppBarTheme(
       centerTitle: false,
       elevation: 0,
-      backgroundColor: Colors.white,
+      backgroundColor: surfaceSoft,
       foregroundColor: primaryNavy,
       titleTextStyle: TextStyle(fontWeight: FontWeight.w900, fontSize: 16, color: primaryNavy, letterSpacing: -0.2),
       iconTheme: IconThemeData(color: primaryNavy),
     ),
+    dialogTheme: DialogThemeData(
+      backgroundColor: surfaceSoft,
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(28)),
+    ),
     cardTheme: CardThemeData(
       elevation: 0,
       shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(20),
+        borderRadius: BorderRadius.circular(24),
         side: BorderSide(color: Colors.black.withValues(alpha: 0.08), width: 1.0),
       ),
-      color: Colors.white,
+      color: surfaceSoft,
       clipBehavior: Clip.antiAlias,
     ),
     floatingActionButtonTheme: FloatingActionButtonThemeData(
@@ -45,12 +49,12 @@ class AppTheme {
     ),
     inputDecorationTheme: InputDecorationTheme(
       filled: true,
-      fillColor: Colors.white,
+      fillColor: const Color(0xFFF1F5F9), // Soft eye-soothing fill
       contentPadding: const EdgeInsets.symmetric(horizontal: 18, vertical: 16),
-      border: OutlineInputBorder(borderRadius: BorderRadius.circular(14), borderSide: BorderSide(color: Colors.black.withValues(alpha: 0.12))),
-      enabledBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(14), borderSide: BorderSide(color: Colors.black.withValues(alpha: 0.08))),
-      focusedBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(14), borderSide: const BorderSide(color: primaryBlue, width: 2.0)),
-      labelStyle: const TextStyle(fontSize: 12, fontWeight: FontWeight.w700, color: accentSlate),
+      border: OutlineInputBorder(borderRadius: BorderRadius.circular(16), borderSide: BorderSide(color: Colors.black.withValues(alpha: 0.12))),
+      enabledBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(16), borderSide: BorderSide(color: Colors.black.withValues(alpha: 0.1))),
+      focusedBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(16), borderSide: const BorderSide(color: primaryBlue, width: 2.0)),
+      labelStyle: const TextStyle(fontSize: 12, fontWeight: FontWeight.w700, color: Color(0xFF475569)),
     ),
     elevatedButtonTheme: ElevatedButtonThemeData(
       style: ElevatedButton.styleFrom(
@@ -66,7 +70,7 @@ class AppTheme {
     scaffoldBackgroundColor: backgroundLight,
     dividerTheme: DividerThemeData(
       thickness: 1,
-      color: Colors.black.withValues(alpha: 0.06),
+      color: Colors.black.withValues(alpha: 0.08),
     ),
   );
 

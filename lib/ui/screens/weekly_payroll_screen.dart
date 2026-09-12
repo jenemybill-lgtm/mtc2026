@@ -226,10 +226,10 @@ class _WeeklyPayrollScreenState extends State<WeeklyPayrollScreen> {
       child: Container(
         margin: const EdgeInsets.symmetric(horizontal: 16),
         decoration: BoxDecoration(
-          color: Colors.white,
+          color: const Color(0xFFF8FAFC),
           borderRadius: BorderRadius.circular(32),
-          border: Border.all(color: Colors.black.withValues(alpha: 0.04)),
-          boxShadow: [BoxShadow(color: Colors.black.withValues(alpha: 0.02), blurRadius: 20)],
+          border: Border.all(color: Colors.black.withValues(alpha: 0.08)),
+          boxShadow: [BoxShadow(color: Colors.black.withValues(alpha: 0.03), blurRadius: 20)],
         ),
         clipBehavior: Clip.antiAlias,
         child: SingleChildScrollView(
@@ -238,7 +238,7 @@ class _WeeklyPayrollScreenState extends State<WeeklyPayrollScreen> {
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               Container(
-                color: const Color(0xFFF8FAFC),
+                color: const Color(0xFFEEF2FF),
                 child: Row(
                   children: [
                     SizedBox(width: workerWidth, child: const Padding(padding: EdgeInsets.symmetric(horizontal: 20, vertical: 16), child: Text("ΕΡΓΑΤΗΣ", style: TextStyle(fontWeight: FontWeight.w900, fontSize: 10, color: Colors.blueGrey, letterSpacing: 1)))),
