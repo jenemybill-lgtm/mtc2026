@@ -270,6 +270,7 @@ class _WeeklyPayrollScreenState extends State<WeeklyPayrollScreen> {
                 workerWidth: workerWidth,
                 dayWidth: dayWidth,
                 balanceWidth: balanceWidth,
+                onRefresh: () => setState(() {}),
               )),
             ],
           ),
@@ -397,8 +398,21 @@ class _WorkerRowPremium extends StatelessWidget {
   final int? projectId;
   final DateTime endOfPeriod;
   final double workerWidth, dayWidth, balanceWidth;
+  final VoidCallback onRefresh;
 
-  const _WorkerRowPremium({required this.worker, required this.days, required this.attendance, required this.payments, required this.provider, this.projectId, required this.endOfPeriod, required this.workerWidth, required this.dayWidth, required this.balanceWidth});
+  const _WorkerRowPremium({
+    required this.worker, 
+    required this.days, 
+    required this.attendance, 
+    required this.payments, 
+    required this.provider, 
+    this.projectId, 
+    required this.endOfPeriod, 
+    required this.workerWidth, 
+    required this.dayWidth, 
+    required this.balanceWidth,
+    required this.onRefresh,
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -464,8 +478,9 @@ class _WorkerRowPremium extends StatelessWidget {
                                             projects: provider.projects,
                                             initialProjectId: a.projectId,
                                             initialRecord: a,
-                                            onConfirm: (updatedRecord) {
-                                              provider.updateAttendance(updatedRecord);
+                                            onConfirm: (updatedRecord) async {
+                                              await provider.updateAttendance(updatedRecord);
+                                              onRefresh();
                                             },
                                           ),
                                         );
@@ -474,9 +489,10 @@ class _WorkerRowPremium extends StatelessWidget {
                                     ListTile(
                                       leading: const Icon(Icons.delete, color: Colors.red),
                                       title: const Text('Διαγραφή Μεροκάματου', style: TextStyle(color: Colors.red)),
-                                      onTap: () {
+                                      onTap: () async {
                                         Navigator.pop(ctx);
-                                        provider.deleteAttendance(a.id);
+                                        await provider.deleteAttendance(a.id);
+                                        onRefresh();
                                       },
                                     ),
                                   ],
@@ -515,9 +531,10 @@ class _WorkerRowPremium extends StatelessWidget {
                                   ListTile(
                                     leading: const Icon(Icons.delete, color: Colors.red),
                                     title: const Text('Διαγραφή Πληρωμής', style: TextStyle(color: Colors.red)),
-                                    onTap: () {
+                                    onTap: () async {
                                       Navigator.pop(ctx);
-                                      provider.deleteExpense(p.projectId ?? 0, p.id);
+                                      await provider.deleteExpense(p.projectId ?? 0, p.id);
+                                      onRefresh();
                                     },
                                   ),
                                 ],
@@ -593,11 +610,12 @@ class _WorkerRowPremium extends StatelessWidget {
         content: TextField(controller: amountController, decoration: const InputDecoration(labelText: "Ποσό (€)", prefixIcon: Icon(Icons.euro_rounded)), keyboardType: TextInputType.number),
         actions: [
           TextButton(onPressed: () => Navigator.pop(context), child: const Text("ΑΚΥΡΟ", style: TextStyle(fontWeight: FontWeight.w900))),
-          ElevatedButton(onPressed: () {
+          ElevatedButton(onPressed: () async {
             final amount = double.tryParse(amountController.text) ?? 0.0;
             if (amount > 0) {
-              provider.addExpense(projectId ?? 0, Expense(date: DateTime.now().millisecondsSinceEpoch, description: "ΠΛΗΡΩΜΗ ΕΝΑΝΤΙ", workerName: worker, amount: amount, expenseType: "PAYMENT", projectId: projectId));
-              Navigator.pop(context);
+              await provider.addExpense(projectId ?? 0, Expense(date: DateTime.now().millisecondsSinceEpoch, description: "ΠΛΗΡΩΜΗ ΕΝΑΝΤΙ", workerName: worker, amount: amount, expenseType: "PAYMENT", projectId: projectId));
+              if (context.mounted) Navigator.pop(context);
+              onRefresh();
             }
           }, child: const Text("ΚΑΤΑΧΩΡΗΣΗ", style: TextStyle(fontWeight: FontWeight.w900))),
         ],
@@ -647,7 +665,16 @@ class _WorkerRowPremium extends StatelessWidget {
                 );
                 await provider.updateExpense(payment.projectId ?? 0, updated);
                 if (context.mounted) Navigator.pop(context);
+                onRefresh();
               }
+            }, 
+            child: const Text("ΑΠΟΘΗΚΕΥΣΗ", style: TextStyle(fontWeight: FontWeight.w900)),
+          ),
+        ],
+      ),
+    );
+  }
+}
             }, 
             child: const Text("ΑΠΟΘΗΚΕΥΣΗ", style: TextStyle(fontWeight: FontWeight.w900)),
           ),
