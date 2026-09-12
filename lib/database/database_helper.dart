@@ -2190,6 +2190,7 @@ class DatabaseHelper {
       'project_sketches',
       'project_documents',
       'global_settings',
+      'managers',
     ];
     for (var table in tables) {
       backup[table] = await db!.query(table);
@@ -2400,6 +2401,7 @@ class DatabaseHelper {
       'project_sketches': 'project_sketches',
       'project_documents': 'project_documents',
       'global_settings': 'global_settings',
+      'managers': 'managers',
     };
 
     final currentAppDirPath = appDir.path;
@@ -2525,6 +2527,7 @@ class DatabaseHelper {
       'project_sketches',
       'project_documents',
       'global_settings',
+      'managers',
     ];
 
     for (var table in tables) {
@@ -2639,6 +2642,7 @@ class DatabaseHelper {
       'project_sketches': 'project_sketches',
       'project_documents': 'project_documents',
       'global_settings': 'global_settings',
+      'managers': 'managers',
     };
 
     await db!.transaction((txn) async {
