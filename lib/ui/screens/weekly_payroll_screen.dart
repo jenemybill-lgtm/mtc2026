@@ -675,14 +675,6 @@ class _WorkerRowPremium extends StatelessWidget {
     );
   }
 }
-            }, 
-            child: const Text("ΑΠΟΘΗΚΕΥΣΗ", style: TextStyle(fontWeight: FontWeight.w900)),
-          ),
-        ],
-      ),
-    );
-  }
-}
 
 class _ProjectCategoryTotalsSectionPremium extends StatelessWidget {
   final List<AttendanceEntity> attendance;
