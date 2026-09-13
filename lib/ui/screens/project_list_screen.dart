@@ -373,11 +373,11 @@ class ProjectCardPremium extends StatelessWidget {
 
     return Container(
       decoration: BoxDecoration(
-        color: Colors.white,
+        color: accentColor.withValues(alpha: 0.08),
         borderRadius: BorderRadius.circular(32),
-        border: Border.all(color: Colors.black.withValues(alpha: 0.08), width: 1.0),
+        border: Border.all(color: accentColor.withValues(alpha: 0.25), width: 1.2),
         boxShadow: [
-          BoxShadow(color: Colors.black.withValues(alpha: 0.02), blurRadius: 15, offset: const Offset(0, 6)),
+          BoxShadow(color: accentColor.withValues(alpha: 0.04), blurRadius: 15, offset: const Offset(0, 6)),
         ],
       ),
       child: Material(
