@@ -24,23 +24,21 @@ class PremiumCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final bool hasAccent = accentColor != null;
+    final effectiveColor = accentColor ?? const Color(0xFF4361EE);
     
     return Container(
       width: width,
       height: height,
       decoration: BoxDecoration(
-        color: isGlass
-            ? const Color(0xFFF8FAFC).withValues(alpha: 0.9)
-            : (hasAccent ? accentColor!.withValues(alpha: 0.08) : const Color(0xFFF8FAFC)),
+        color: effectiveColor.withValues(alpha: 0.08),
         borderRadius: BorderRadius.circular(32),
         border: Border.all(
-          color: hasAccent ? accentColor!.withValues(alpha: 0.25) : Colors.black.withValues(alpha: 0.1),
-          width: 1.0,
+          color: effectiveColor.withValues(alpha: 0.25),
+          width: 1.2,
         ),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withValues(alpha: 0.03),
+            color: effectiveColor.withValues(alpha: 0.04),
             blurRadius: 15,
             offset: const Offset(0, 6),
           ),
@@ -53,7 +51,7 @@ class PremiumCard extends StatelessWidget {
           child: InkWell(
             onTap: onTap,
             onLongPress: onLongPress,
-            splashColor: hasAccent ? accentColor!.withValues(alpha: 0.05) : Colors.black.withValues(alpha: 0.02),
+            splashColor: effectiveColor.withValues(alpha: 0.08),
             highlightColor: Colors.transparent,
             child: Padding(
               padding: padding ?? const EdgeInsets.all(20.0),

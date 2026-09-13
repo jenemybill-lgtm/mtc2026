@@ -178,9 +178,9 @@ class _HomeScreenState extends State<HomeScreen> {
               Container(
                 width: 380,
                 decoration: BoxDecoration(
-                  color: Colors.white,
-                  border: Border(left: BorderSide(color: Colors.black.withValues(alpha: 0.04), width: 1.5)),
-                  boxShadow: [BoxShadow(color: Colors.black.withValues(alpha: 0.01), blurRadius: 40, offset: const Offset(-10, 0))],
+                  color: const Color(0xFFF8FAFC),
+                  border: Border(left: BorderSide(color: Colors.black.withValues(alpha: 0.05), width: 1.5)),
+                  boxShadow: [BoxShadow(color: Colors.black.withValues(alpha: 0.02), blurRadius: 40, offset: const Offset(-10, 0))],
                 ),
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
@@ -544,11 +544,11 @@ class _PremiumStatCard extends StatelessWidget {
   Widget build(BuildContext context) {
     return Container(
       decoration: BoxDecoration(
-        color: Colors.white,
+        color: color.withValues(alpha: 0.08),
         borderRadius: BorderRadius.circular(20),
-        border: Border.all(color: Colors.black.withValues(alpha: 0.08), width: 1.0),
+        border: Border.all(color: color.withValues(alpha: 0.25), width: 1.2),
         boxShadow: [
-          BoxShadow(color: Colors.black.withValues(alpha: 0.02), blurRadius: 10, offset: const Offset(0, 4)),
+          BoxShadow(color: color.withValues(alpha: 0.04), blurRadius: 10, offset: const Offset(0, 4)),
         ],
       ),
       child: Padding(
@@ -694,11 +694,11 @@ class _PremiumNavCard extends StatelessWidget {
     return Container(
       margin: const EdgeInsets.only(bottom: 16),
       decoration: BoxDecoration(
-        color: Colors.white,
+        color: color.withValues(alpha: 0.08),
         borderRadius: BorderRadius.circular(32),
-        border: Border.all(color: Colors.black.withValues(alpha: 0.08), width: 1.0),
+        border: Border.all(color: color.withValues(alpha: 0.25), width: 1.2),
         boxShadow: [
-          BoxShadow(color: Colors.black.withValues(alpha: 0.02), blurRadius: 15, offset: const Offset(0, 6)),
+          BoxShadow(color: color.withValues(alpha: 0.04), blurRadius: 15, offset: const Offset(0, 6)),
         ],
       ),
       child: Material(
