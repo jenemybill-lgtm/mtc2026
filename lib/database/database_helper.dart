@@ -1316,6 +1316,17 @@ class DatabaseHelper {
     return result.map((e) => ProjectNote.fromMap(e)).toList();
   }
 
+  Future<List<ProjectNote>> getAllProjectNotes() async {
+    if (kIsWeb) {
+      return (_webMemory['project_notes'] ?? [])
+          .map((e) => ProjectNote.fromMap(e))
+          .toList();
+    }
+    Database? db = await database;
+    var result = await db!.query('project_notes', orderBy: 'dateAdded DESC');
+    return result.map((e) => ProjectNote.fromMap(e)).toList();
+  }
+
   Future<int> insertProjectNote(ProjectNote note) async {
     if (kIsWeb) {
       return _webInsert('project_notes', note.toMap());

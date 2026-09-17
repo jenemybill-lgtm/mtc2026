@@ -37,9 +37,9 @@ class _ToolCategoryPickerScreenState extends State<ToolCategoryPickerScreen> {
             padding: const EdgeInsets.all(32),
             gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
               crossAxisCount: isDesktop ? 3 : 2,
-              mainAxisSpacing: 24,
-              crossAxisSpacing: 24,
-              childAspectRatio: 1.2,
+              mainAxisSpacing: 16,
+              crossAxisSpacing: 16,
+              childAspectRatio: isDesktop ? 1.3 : 0.95,
             ),
             itemCount: categories.length + 1,
             itemBuilder: (context, index) {
@@ -135,25 +135,28 @@ class _CategoryCard extends StatelessWidget {
     return PremiumCard(
       onTap: onClick,
       accentColor: color,
-      padding: EdgeInsets.zero,
+      padding: const EdgeInsets.all(12),
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
           Container(
-            width: 64,
-            height: 64,
+            width: 56,
+            height: 56,
             decoration: BoxDecoration(
               color: color.withValues(alpha: 0.1), 
               shape: BoxShape.circle,
               border: Border.all(color: color.withValues(alpha: 0.2), width: 1.5),
             ),
-            child: Icon(icon, color: color, size: 32),
+            child: Icon(icon, color: color, size: 28),
           ),
-          const SizedBox(height: 16),
-          Text(
-            name, 
-            style: const TextStyle(fontWeight: FontWeight.w900, fontSize: 10, letterSpacing: 0.5, color: Color(0xFF1E293B)), 
-            textAlign: TextAlign.center
+          const SizedBox(height: 10),
+          FittedBox(
+            fit: BoxFit.scaleDown,
+            child: Text(
+              name, 
+              style: const TextStyle(fontWeight: FontWeight.w900, fontSize: 10, letterSpacing: 0.5, color: Color(0xFF1E293B)), 
+              textAlign: TextAlign.center
+            ),
           ),
         ],
       ),

@@ -1,4 +1,9 @@
 import 'package:flutter/material.dart';
+import 'package:intl/intl.dart';
+import 'package:provider/provider.dart';
+import 'package:mtc2026/providers/project_provider.dart';
+import 'package:mtc2026/models/project_models.dart';
+import 'package:mtc2026/database/database_helper.dart';
 import 'package:mtc2026/ui/components/premium_ui.dart';
 import 'package:mtc2026/ui/screens/manage_prices_screen.dart';
 import 'package:mtc2026/ui/screens/vehicle_log_screen.dart';
@@ -101,8 +106,84 @@ class _CompanyHubScreenState extends State<CompanyHubScreen> {
           onClick: () => setState(() => _viewMode = "JOBS"),
           isDesktop: isDesktop,
         ),
+        const SizedBox(height: 32),
+        _buildAllProjectsNotesSection(context, isDesktop),
         const SizedBox(height: 40),
       ],
+    );
+  }
+
+  Widget _buildAllProjectsNotesSection(BuildContext context, bool isDesktop) {
+    final provider = Provider.of<ProjectProvider>(context);
+    return FutureBuilder<List<ProjectNote>>(
+      future: DatabaseHelper().getAllProjectNotes(),
+      builder: (context, snapshot) {
+        final notes = snapshot.data ?? [];
+        return PremiumCard(
+          accentColor: const Color(0xFFFF9800),
+          padding: EdgeInsets.all(isDesktop ? 28 : 20),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              const PremiumHeader(
+                title: "ΣΗΜΕΙΩΣΕΙΣ ΟΛΩΝ ΤΩΝ ΕΡΓΩΝ",
+                icon: Icons.assignment_rounded,
+                color: Color(0xFFFF9800),
+              ),
+              const SizedBox(height: 16),
+              if (notes.isEmpty)
+                const Padding(
+                  padding: EdgeInsets.symmetric(vertical: 16),
+                  child: Text(
+                    "Δεν υπάρχουν καταγεγραμμένες σημειώσεις στα έργα.",
+                    style: TextStyle(color: Colors.blueGrey, fontSize: 12, fontStyle: FontStyle.italic),
+                  ),
+                )
+              else
+                Column(
+                  children: notes.take(10).map((note) {
+                    final proj = provider.projects.firstWhere(
+                      (p) => p.id == note.projectId,
+                      orElse: () => Project(name: "ΕΡΓΟ #${note.projectId}", clientName: "", address: ""),
+                    );
+                    final dateStr = DateFormat('dd/MM/yyyy HH:mm').format(DateTime.fromMillisecondsSinceEpoch(note.dateAdded));
+                    return Container(
+                      width: double.infinity,
+                      margin: const EdgeInsets.only(bottom: 10),
+                      padding: const EdgeInsets.all(14),
+                      decoration: BoxDecoration(
+                        color: Colors.white,
+                        borderRadius: BorderRadius.circular(16),
+                        border: Border.all(color: const Color(0xFFFF9800).withValues(alpha: 0.2)),
+                      ),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Row(
+                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                            children: [
+                              Container(
+                                padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+                                decoration: BoxDecoration(
+                                  color: const Color(0xFFFF9800).withValues(alpha: 0.1),
+                                  borderRadius: BorderRadius.circular(8),
+                                ),
+                                child: Text(proj.name.toUpperCase(), style: const TextStyle(fontSize: 10, fontWeight: FontWeight.w900, color: Color(0xFFFF9800))),
+                              ),
+                              Text(dateStr, style: const TextStyle(fontSize: 10, fontWeight: FontWeight.bold, color: Colors.blueGrey)),
+                            ],
+                          ),
+                          const SizedBox(height: 8),
+                          Text(note.content, style: const TextStyle(fontSize: 12, color: Color(0xFF1E293B), fontWeight: FontWeight.w600)),
+                        ],
+                      ),
+                    );
+                  }).toList(),
+                ),
+            ],
+          ),
+        );
+      },
     );
   }
 

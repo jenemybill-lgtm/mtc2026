@@ -1,7 +1,9 @@
 import 'package:flutter/material.dart';
+import 'package:intl/intl.dart';
 import 'package:provider/provider.dart';
 import 'package:mtc2026/models/project_models.dart';
 import 'package:mtc2026/providers/project_provider.dart';
+import 'package:mtc2026/database/database_helper.dart';
 import 'package:mtc2026/ui/components/premium_ui.dart';
 import 'package:mtc2026/ui/screens/project_economics_screen.dart';
 import 'package:mtc2026/ui/screens/project_photos_screen.dart';
@@ -87,6 +89,8 @@ class _ProjectManagementHubScreenState extends State<ProjectManagementHubScreen>
                   _buildCategoryCard(context, 3, widget.project, provider, false),
                 ],
               ),
+            const SizedBox(height: 32),
+            _buildProjectNotesSection(context, provider),
             const SizedBox(height: 60),
           ],
         ),
@@ -202,6 +206,93 @@ class _ProjectManagementHubScreenState extends State<ProjectManagementHubScreen>
     final breakdown = await provider.getProjectDetailedBreakdown(projectId);
     final roi = await provider.calculateProjectROIData(projectId);
     return {'breakdown': breakdown, 'roi': roi};
+  }
+
+  Widget _buildProjectNotesSection(BuildContext context, ProjectProvider provider) {
+    return FutureBuilder<List<ProjectNote>>(
+      future: DatabaseHelper().getProjectNotes(widget.project.id),
+      builder: (context, snapshot) {
+        final notes = snapshot.data ?? [];
+        return PremiumCard(
+          accentColor: const Color(0xFFFF9800),
+          padding: const EdgeInsets.all(24),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  const PremiumHeader(
+                    title: "ΣΗΜΕΙΩΣΕΙΣ ΕΡΓΟΥ",
+                    icon: Icons.note_alt_rounded,
+                    color: Color(0xFFFF9800),
+                  ),
+                  IconButton.filledTonal(
+                    onPressed: () {
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (context) => ProjectNotesScreen(project: widget.project),
+                        ),
+                      ).then((_) => setState(() {}));
+                    },
+                    icon: const Icon(Icons.add_rounded),
+                    style: IconButton.styleFrom(
+                      backgroundColor: const Color(0xFFFF9800).withValues(alpha: 0.1),
+                      foregroundColor: const Color(0xFFFF9800),
+                    ),
+                  ),
+                ],
+              ),
+              const SizedBox(height: 16),
+              if (notes.isEmpty)
+                const Padding(
+                  padding: EdgeInsets.symmetric(vertical: 12),
+                  child: Text(
+                    "Δεν υπάρχουν σημειώσεις για αυτό το έργο. Πατήστε + για προσθήκη.",
+                    style: TextStyle(color: Colors.blueGrey, fontSize: 12, fontStyle: FontStyle.italic),
+                  ),
+                )
+              else
+                Column(
+                  children: notes.map((note) {
+                    final dateStr = DateFormat('dd/MM/yyyy HH:mm').format(DateTime.fromMillisecondsSinceEpoch(note.dateAdded));
+                    return Container(
+                      width: double.infinity,
+                      margin: const EdgeInsets.only(bottom: 8),
+                      padding: const EdgeInsets.all(12),
+                      decoration: BoxDecoration(
+                        color: Colors.white,
+                        borderRadius: BorderRadius.circular(16),
+                        border: Border.all(color: const Color(0xFFFF9800).withValues(alpha: 0.2)),
+                      ),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Row(
+                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                            children: [
+                              Text(dateStr, style: const TextStyle(fontSize: 10, fontWeight: FontWeight.bold, color: Colors.blueGrey)),
+                              IconButton(
+                                icon: const Icon(Icons.delete_outline_rounded, size: 16, color: Colors.redAccent),
+                                onPressed: () async {
+                                  await provider.deleteProjectNote(widget.project.id, note.id);
+                                  setState(() {});
+                                },
+                              ),
+                            ],
+                          ),
+                          Text(note.content, style: const TextStyle(fontSize: 12, color: Color(0xFF1E293B), fontWeight: FontWeight.w600)),
+                        ],
+                      ),
+                    );
+                  }).toList(),
+                ),
+            ],
+          ),
+        );
+      },
+    );
   }
 
   void _openCategory(BuildContext context, String title, List<_MgmtModule> modules) {

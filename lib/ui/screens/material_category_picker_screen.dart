@@ -43,9 +43,9 @@ class _MaterialCategoryPickerScreenState extends State<MaterialCategoryPickerScr
             padding: const EdgeInsets.all(32),
             gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
               crossAxisCount: isDesktop ? 3 : 2,
-              mainAxisSpacing: 24,
-              crossAxisSpacing: 24,
-              childAspectRatio: 1.2,
+              mainAxisSpacing: 16,
+              crossAxisSpacing: 16,
+              childAspectRatio: isDesktop ? 1.3 : 0.95,
             ),
             itemCount: categories.length + 1,
             itemBuilder: (context, index) {
@@ -145,12 +145,12 @@ class _PremiumCategoryCard extends StatelessWidget {
     return PremiumCard(
       onTap: onClick,
       accentColor: color,
-      padding: const EdgeInsets.all(16),
+      padding: const EdgeInsets.all(12),
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
           Container(
-            width: 72, height: 72,
+            width: 56, height: 56,
             decoration: BoxDecoration(
               gradient: LinearGradient(
                 colors: [color.withValues(alpha: 0.2), color.withValues(alpha: 0.05)],
@@ -158,19 +158,19 @@ class _PremiumCategoryCard extends StatelessWidget {
                 end: Alignment.bottomRight,
               ),
               shape: BoxShape.circle,
-              border: Border.all(color: color.withValues(alpha: 0.3), width: 2),
+              border: Border.all(color: color.withValues(alpha: 0.3), width: 1.5),
               boxShadow: [
-                BoxShadow(color: color.withValues(alpha: 0.15), blurRadius: 15, offset: const Offset(0, 5)),
+                BoxShadow(color: color.withValues(alpha: 0.15), blurRadius: 10, offset: const Offset(0, 4)),
               ],
             ),
-            child: Icon(icon, color: color, size: 36),
+            child: Icon(icon, color: color, size: 28),
           ),
-          const SizedBox(height: 18),
+          const SizedBox(height: 10),
           FittedBox(
             fit: BoxFit.scaleDown,
             child: Text(
               name, 
-              style: const TextStyle(fontWeight: FontWeight.w900, fontSize: 11, letterSpacing: 1, color: Color(0xFF1E293B)), 
+              style: const TextStyle(fontWeight: FontWeight.w900, fontSize: 10, letterSpacing: 0.5, color: Color(0xFF1E293B)), 
               textAlign: TextAlign.center
             ),
           ),
