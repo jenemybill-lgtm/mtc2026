@@ -2256,10 +2256,14 @@ class DatabaseHelper {
       final files = safeGetAppFiles(appDir);
       for (var file in files) {
         final pathLower = file.path.toLowerCase();
+        final nameLower = file.path.split(Platform.pathSeparator).last.toLowerCase();
         if (pathLower.endsWith('.db') ||
             pathLower.endsWith('.db-journal') ||
             pathLower.endsWith('.lock') ||
             pathLower.endsWith('.tmp') ||
+            nameLower == 'desktop.ini' ||
+            nameLower == 'thumbs.db' ||
+            nameLower == '.ds_store' ||
             file.path == zipFile.path) {
           continue;
         }
@@ -2335,10 +2339,22 @@ class DatabaseHelper {
             } else if (file.name.contains('/files/') ||
                 file.name.startsWith('files/')) {
               String fileName = file.name.split('/').last;
-              final destFile = File('${appDir.path}/$fileName');
-              await destFile.create(recursive: true);
-              await destFile.writeAsBytes(fileBytes);
-              print("Restore: Extracted file: $fileName");
+              final fileNameLower = fileName.toLowerCase();
+              if (fileNameLower == 'desktop.ini' ||
+                  fileNameLower == 'thumbs.db' ||
+                  fileNameLower == '.ds_store' ||
+                  fileNameLower.endsWith('.db') ||
+                  fileNameLower.endsWith('.lock')) {
+                continue;
+              }
+              try {
+                final destFile = File('${appDir.path}/$fileName');
+                await destFile.create(recursive: true);
+                await destFile.writeAsBytes(fileBytes);
+                print("Restore: Extracted file: $fileName");
+              } catch (e) {
+                print("Restore: Warning - Could not extract $fileName: $e");
+              }
             }
           }
         }
