@@ -89,7 +89,7 @@ class _HomeScreenState extends State<HomeScreen> {
 
   Widget _buildBody(BuildContext context, ProjectProvider provider, bool isDesktop) {
     final stats = provider.dashboardStats;
-    final balance = stats['income']! - stats['expense']!;
+    final netBalance = (stats['netIncome'] ?? 0.0) - (stats['netExpense'] ?? 0.0);
 
     if (isDesktop) {
       return Center(
@@ -131,7 +131,7 @@ class _HomeScreenState extends State<HomeScreen> {
                               const SizedBox(height: 8),
                               _PremiumStatCard(label: "ΥΠΟΛΟΙΠΟ ΦΠΑ", amount: stats['vatBalance'] ?? 0.0, color: Colors.orange, icon: Icons.account_balance_rounded),
                               const SizedBox(height: 8),
-                              _PremiumStatCard(label: "ΚΑΘΑΡΟ ΥΠΟΛΟΙΠΟ", amount: balance, color: balance >= 0 ? const Color(0xFF4361EE) : Colors.red, isBalance: true, icon: Icons.account_balance_wallet_rounded),
+                              _PremiumStatCard(label: "ΚΑΘΑΡΟ ΥΠΟΛΟΙΠΟ", amount: netBalance, color: netBalance >= 0 ? const Color(0xFF4361EE) : Colors.red, isBalance: true, icon: Icons.account_balance_wallet_rounded),
                             ],
                           ),
                         ),
@@ -293,11 +293,11 @@ class _HomeScreenState extends State<HomeScreen> {
                             FittedBox(
                               fit: BoxFit.scaleDown,
                               child: Text(
-                                "${balance.toStringAsFixed(2)} €",
+                                "${netBalance.toStringAsFixed(2)} €",
                                 style: TextStyle(
                                   fontWeight: FontWeight.w900,
                                   fontSize: 22,
-                                  color: balance >= 0 ? const Color(0xFF4361EE) : Colors.red,
+                                  color: netBalance >= 0 ? const Color(0xFF4361EE) : Colors.red,
                                   letterSpacing: -1
                                 ),
                               ),

@@ -180,19 +180,13 @@ class ProjectProvider with ChangeNotifier {
         "Stats Calc: Incomes=${allIncomes.length}, ProjectExps=${allProjectExpenses.length}, CompanyExps=${allCompanyExpenses.length}",
       );
 
-      final income = allIncomes.fold(
-        0.0,
-        (sum, i) => sum + (i.hasVat ? i.amount / 1.24 : i.amount),
-      );
-      final totalExpense =
-          allProjectExpenses.fold(
-            0.0,
-            (sum, e) => sum + (e.hasVat ? e.amount / 1.24 : e.amount),
-          ) +
-          allCompanyExpenses.fold(
-            0.0,
-            (sum, e) => sum + (e.hasVat ? e.amount / 1.24 : e.amount),
-          );
+      final grossIncome = allIncomes.fold(0.0, (sum, i) => sum + i.amount);
+      final netIncome = allIncomes.fold(0.0, (sum, i) => sum + (i.hasVat ? i.amount / 1.24 : i.amount));
+
+      final grossExpense = allProjectExpenses.fold(0.0, (sum, e) => sum + e.amount) +
+          allCompanyExpenses.fold(0.0, (sum, e) => sum + e.amount);
+      final netExpense = allProjectExpenses.fold(0.0, (sum, e) => sum + (e.hasVat ? e.amount / 1.24 : e.amount)) +
+          allCompanyExpenses.fold(0.0, (sum, e) => sum + (e.hasVat ? e.amount / 1.24 : e.amount));
 
       final vatCollected = allIncomes.fold(
         0.0,
@@ -209,13 +203,15 @@ class ProjectProvider with ChangeNotifier {
           ));
 
       _dashboardStats = {
-        'income': income,
-        'expense': totalExpense,
+        'income': grossIncome,
+        'expense': grossExpense,
+        'netIncome': netIncome,
+        'netExpense': netExpense,
         'vatCollected': vatCollected,
         'vatPaid': vatPaid,
         'vatBalance': vatCollected - vatPaid,
       };
-      debugPrint("Stats Calc: Final Income=$income, Expense=$totalExpense");
+      debugPrint("Stats Calc: GrossIncome=$grossIncome, GrossExpense=$grossExpense, NetIncome=$netIncome, NetExpense=$netExpense");
       notifyListeners();
     } catch (e) {
       debugPrint("Error calculating stats: $e");
