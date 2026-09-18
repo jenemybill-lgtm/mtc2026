@@ -161,23 +161,36 @@ class _CompanyHubScreenState extends State<CompanyHubScreen> {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              const PremiumHeader(
-                title: "ΣΗΜΕΙΩΣΕΙΣ ΟΛΩΝ ΤΩΝ ΕΡΓΩΝ",
-                icon: Icons.assignment_rounded,
-                color: Color(0xFFFF9800),
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  const PremiumHeader(
+                    title: "ΣΗΜΕΙΩΣΕΙΣ ΟΛΩΝ ΤΩΝ ΕΡΓΩΝ",
+                    icon: Icons.assignment_rounded,
+                    color: Color(0xFFFF9800),
+                  ),
+                  IconButton.filledTonal(
+                    onPressed: () => _showAddNoteDialog(context, provider),
+                    icon: const Icon(Icons.add_rounded),
+                    style: IconButton.styleFrom(
+                      backgroundColor: const Color(0xFFFF9800).withValues(alpha: 0.1),
+                      foregroundColor: const Color(0xFFFF9800),
+                    ),
+                  ),
+                ],
               ),
               const SizedBox(height: 16),
               if (notes.isEmpty)
                 const Padding(
                   padding: EdgeInsets.symmetric(vertical: 16),
                   child: Text(
-                    "Δεν υπάρχουν καταγεγραμμένες σημειώσεις στα έργα.",
+                    "Δεν υπάρχουν καταγεγραμμένες σημειώσεις στα έργα. Πατήστε + για προσθήκη.",
                     style: TextStyle(color: Colors.blueGrey, fontSize: 12, fontStyle: FontStyle.italic),
                   ),
                 )
               else
                 Column(
-                  children: notes.take(10).map((note) {
+                  children: notes.map((note) {
                     final proj = provider.projects.firstWhere(
                       (p) => p.id == note.projectId,
                       orElse: () => Project(name: "ΕΡΓΟ #${note.projectId}", clientName: "", address: ""),
@@ -206,7 +219,19 @@ class _CompanyHubScreenState extends State<CompanyHubScreen> {
                                 ),
                                 child: Text(proj.name.toUpperCase(), style: const TextStyle(fontSize: 10, fontWeight: FontWeight.w900, color: Color(0xFFFF9800))),
                               ),
-                              Text(dateStr, style: const TextStyle(fontSize: 10, fontWeight: FontWeight.bold, color: Colors.blueGrey)),
+                              Row(
+                                children: [
+                                  Text(dateStr, style: const TextStyle(fontSize: 10, fontWeight: FontWeight.bold, color: Colors.blueGrey)),
+                                  const SizedBox(width: 8),
+                                  IconButton(
+                                    icon: const Icon(Icons.delete_outline_rounded, size: 16, color: Colors.redAccent),
+                                    onPressed: () async {
+                                      await provider.deleteProjectNote(note.projectId, note.id);
+                                      setState(() {});
+                                    },
+                                  ),
+                                ],
+                              ),
                             ],
                           ),
                           const SizedBox(height: 8),
@@ -220,6 +245,92 @@ class _CompanyHubScreenState extends State<CompanyHubScreen> {
           ),
         );
       },
+    );
+  }
+
+  void _showAddNoteDialog(BuildContext context, ProjectProvider provider) {
+    if (provider.projects.isEmpty) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text("Δεν υπάρχουν έργα για προσθήκη σημείωσης.")),
+      );
+      return;
+    }
+
+    int? selectedProjectId = provider.projects.first.id;
+    final noteController = TextEditingController();
+
+    showDialog(
+      context: context,
+      builder: (context) => StatefulBuilder(
+        builder: (context, setDialogState) => AlertDialog(
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(28)),
+          title: const PremiumHeader(
+            title: "ΝΕΑ ΣΗΜΕΙΩΣΗ ΕΡΓΟΥ",
+            icon: Icons.note_add_rounded,
+            color: Color(0xFFFF9800),
+          ),
+          content: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              DropdownButtonFormField<int>(
+                value: selectedProjectId,
+                isExpanded: true,
+                decoration: const InputDecoration(
+                  labelText: "Επιλογή Έργου",
+                  prefixIcon: Icon(Icons.business_center_rounded),
+                  border: OutlineInputBorder(),
+                ),
+                items: provider.projects.map((p) => DropdownMenuItem<int>(
+                  value: p.id,
+                  child: Text(p.name.toUpperCase(), style: const TextStyle(fontSize: 13, fontWeight: FontWeight.bold)),
+                )).toList(),
+                onChanged: (v) {
+                  if (v != null) setDialogState(() => selectedProjectId = v);
+                },
+              ),
+              const SizedBox(height: 16),
+              TextField(
+                controller: noteController,
+                maxLines: 3,
+                decoration: const InputDecoration(
+                  labelText: "Περιεχόμενο Σημείωσης",
+                  hintText: "Γράψτε εδώ τη σημείωσή σας...",
+                  prefixIcon: Icon(Icons.description_outlined),
+                  border: OutlineInputBorder(),
+                ),
+              ),
+            ],
+          ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.pop(context),
+              child: const Text("ΑΚΥΡΟ", style: TextStyle(fontWeight: FontWeight.bold)),
+            ),
+            ElevatedButton(
+              onPressed: () async {
+                final content = noteController.text.trim();
+                if (content.isNotEmpty && selectedProjectId != null) {
+                  await provider.addProjectNote(
+                    ProjectNote(
+                      projectId: selectedProjectId!,
+                      content: content,
+                      dateAdded: DateTime.now().millisecondsSinceEpoch,
+                    ),
+                  );
+                  if (context.mounted) Navigator.pop(context);
+                  setState(() {});
+                }
+              },
+              style: ElevatedButton.styleFrom(
+                backgroundColor: const Color(0xFFFF9800),
+                foregroundColor: Colors.white,
+              ),
+              child: const Text("ΠΡΟΣΘΗΚΗ", style: TextStyle(fontWeight: FontWeight.bold)),
+            ),
+          ],
+        ),
+      ),
     );
   }
 
