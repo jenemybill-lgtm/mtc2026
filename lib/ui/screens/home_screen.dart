@@ -248,7 +248,7 @@ class _HomeScreenState extends State<HomeScreen> {
             children: [
               PremiumCard(
                 accentColor: const Color(0xFF4361EE),
-                padding: const EdgeInsets.all(28),
+                padding: const EdgeInsets.all(14),
                 child: Column(
                   children: [
                     Row(
@@ -263,7 +263,7 @@ class _HomeScreenState extends State<HomeScreen> {
                                 transitionsBuilder: (c, a1, a2, child) => FadeTransition(opacity: a1, child: child),
                               ));
                             }),
-                            const SizedBox(width: 8),
+                            const SizedBox(width: 6),
                             _buildIconButton(context, Icons.analytics_rounded, const Color(0xFF4361EE), () {
                               Navigator.push(context, PageRouteBuilder(
                                 pageBuilder: (c, a1, a2) => const ProjectComparisonScreen(),
@@ -274,7 +274,7 @@ class _HomeScreenState extends State<HomeScreen> {
                         ),
                       ],
                     ),
-                    const SizedBox(height: 32),
+                    const SizedBox(height: 12),
                     Row(
                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       children: [
@@ -283,7 +283,7 @@ class _HomeScreenState extends State<HomeScreen> {
                         Expanded(child: _buildStatColumn("ΕΞΟΔΑ (ΚΑΘΑΡΑ)", "${stats['expense']!.toStringAsFixed(0)}€", Colors.red, crossAxisAlignment: CrossAxisAlignment.end)),
                       ],
                     ),
-                    const SizedBox(height: 16),
+                    const SizedBox(height: 8),
                     Row(
                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       children: [
@@ -293,7 +293,7 @@ class _HomeScreenState extends State<HomeScreen> {
                       ],
                     ),
                     const Padding(
-                      padding: EdgeInsets.symmetric(vertical: 20.0),
+                      padding: EdgeInsets.symmetric(vertical: 8.0),
                       child: Divider(),
                     ),
                     Row(
@@ -302,39 +302,39 @@ class _HomeScreenState extends State<HomeScreen> {
                         Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
-                            const Text("ΚΑΘΑΡΟ ΥΠΟΛΟΙΠΟ:", style: TextStyle(fontWeight: FontWeight.w900, fontSize: 11, color: Colors.blueGrey)),
-                            const SizedBox(height: 4),
+                            const Text("ΚΑΘΑΡΟ ΥΠΟΛΟΙΠΟ:", style: TextStyle(fontWeight: FontWeight.w900, fontSize: 10, color: Colors.blueGrey)),
+                            const SizedBox(height: 2),
                             FittedBox(
                               fit: BoxFit.scaleDown,
                               child: Text(
                                 "${netBalance.toStringAsFixed(2)} €",
                                 style: TextStyle(
                                   fontWeight: FontWeight.w900,
-                                  fontSize: 22,
+                                  fontSize: 18,
                                   color: netBalance >= 0 ? const Color(0xFF4361EE) : Colors.red,
-                                  letterSpacing: -1
+                                  letterSpacing: -0.5
                                 ),
                               ),
                             ),
                           ],
                         ),
                         Container(
-                          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
+                          padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
                           decoration: BoxDecoration(
                             gradient: LinearGradient(
                               colors: [Colors.orange.withValues(alpha: 0.12), Colors.orange.withValues(alpha: 0.05)],
                               begin: Alignment.topLeft,
                               end: Alignment.bottomRight,
                             ),
-                            borderRadius: BorderRadius.circular(16),
+                            borderRadius: BorderRadius.circular(12),
                             border: Border.all(color: Colors.orange.withValues(alpha: 0.15)),
                           ),
                           child: Column(
                             crossAxisAlignment: CrossAxisAlignment.end,
                             children: [
-                              const Text("ΥΠΟΛΟΙΠΟ ΦΠΑ", style: TextStyle(fontWeight: FontWeight.w900, fontSize: 8, color: Colors.orange, letterSpacing: 0.5)),
+                              const Text("ΥΠΟΛΟΙΠΟ ΦΠΑ", style: TextStyle(fontWeight: FontWeight.w900, fontSize: 7, color: Colors.orange, letterSpacing: 0.5)),
                               const SizedBox(height: 2),
-                              Text("${(stats['vatBalance'] ?? 0.0).toStringAsFixed(2)} €", style: const TextStyle(fontWeight: FontWeight.w900, fontSize: 14, color: Colors.orange, letterSpacing: -0.5)),
+                              Text("${(stats['vatBalance'] ?? 0.0).toStringAsFixed(2)} €", style: const TextStyle(fontWeight: FontWeight.w900, fontSize: 12, color: Colors.orange, letterSpacing: -0.5)),
                             ],
                           ),
                         ),
