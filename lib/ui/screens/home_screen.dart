@@ -1,9 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'dart:io';
+import 'package:intl/intl.dart';
 import 'package:fl_chart/fl_chart.dart';
 import 'package:mtc2026/providers/project_provider.dart';
 import 'package:mtc2026/models/project_models.dart';
+import 'package:mtc2026/database/database_helper.dart';
 import 'package:mtc2026/models/alert_model.dart';
 import 'package:mtc2026/utils/responsive.dart';
 import 'package:mtc2026/ui/components/premium_ui.dart';
@@ -170,6 +172,8 @@ class _HomeScreenState extends State<HomeScreen> {
                       isFullWidth: true,
                       onClick: () => Navigator.push(context, MaterialPageRoute(builder: (context) => const PortfolioScreen())),
                     ),
+                    const SizedBox(height: 24),
+                    _buildAllProjectsNotesSection(context, provider),
                     const SizedBox(height: 24),
                     _buildSyncControl(context, provider),
                   ],
@@ -378,6 +382,8 @@ class _HomeScreenState extends State<HomeScreen> {
                 )),
               ),
               const SizedBox(height: 24),
+              _buildAllProjectsNotesSection(context, provider),
+              const SizedBox(height: 24),
               _buildSyncControl(context, provider),
               const SizedBox(height: 40),
             ],
@@ -436,6 +442,190 @@ class _HomeScreenState extends State<HomeScreen> {
             ],
           ),
         ],
+      ),
+    );
+  }
+
+  Widget _buildAllProjectsNotesSection(BuildContext context, ProjectProvider provider) {
+    return FutureBuilder<List<ProjectNote>>(
+      future: DatabaseHelper().getAllProjectNotes(),
+      builder: (context, snapshot) {
+        final notes = snapshot.data ?? [];
+        return PremiumCard(
+          accentColor: const Color(0xFFFF9800),
+          padding: const EdgeInsets.all(24),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  const PremiumHeader(
+                    title: "ΣΗΜΕΙΩΣΕΙΣ ΟΛΩΝ ΤΩΝ ΕΡΓΩΝ",
+                    icon: Icons.assignment_rounded,
+                    color: Color(0xFFFF9800),
+                  ),
+                  IconButton.filledTonal(
+                    onPressed: () => _showAddNoteDialog(context, provider),
+                    icon: const Icon(Icons.add_rounded),
+                    style: IconButton.styleFrom(
+                      backgroundColor: const Color(0xFFFF9800).withValues(alpha: 0.1),
+                      foregroundColor: const Color(0xFFFF9800),
+                    ),
+                  ),
+                ],
+              ),
+              const SizedBox(height: 16),
+              if (notes.isEmpty)
+                const Padding(
+                  padding: EdgeInsets.symmetric(vertical: 16),
+                  child: Text(
+                    "Δεν υπάρχουν καταγεγραμμένες σημειώσεις στα έργα. Πατήστε + για προσθήκη.",
+                    style: TextStyle(color: Colors.blueGrey, fontSize: 12, fontStyle: FontStyle.italic),
+                  ),
+                )
+              else
+                Column(
+                  children: notes.map((note) {
+                    final proj = provider.projects.firstWhere(
+                      (p) => p.id == note.projectId,
+                      orElse: () => Project(name: "ΕΡΓΟ #${note.projectId}", clientName: "", address: ""),
+                    );
+                    final dateStr = DateFormat('dd/MM/yyyy HH:mm').format(DateTime.fromMillisecondsSinceEpoch(note.dateAdded));
+                    return Container(
+                      width: double.infinity,
+                      margin: const EdgeInsets.only(bottom: 10),
+                      padding: const EdgeInsets.all(14),
+                      decoration: BoxDecoration(
+                        color: Colors.white,
+                        borderRadius: BorderRadius.circular(16),
+                        border: Border.all(color: const Color(0xFFFF9800).withValues(alpha: 0.2)),
+                      ),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Row(
+                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                            children: [
+                              Container(
+                                padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+                                decoration: BoxDecoration(
+                                  color: const Color(0xFFFF9800).withValues(alpha: 0.1),
+                                  borderRadius: BorderRadius.circular(8),
+                                ),
+                                child: Text(proj.name.toUpperCase(), style: const TextStyle(fontSize: 10, fontWeight: FontWeight.w900, color: Color(0xFFFF9800))),
+                              ),
+                              Row(
+                                children: [
+                                  Text(dateStr, style: const TextStyle(fontSize: 10, fontWeight: FontWeight.bold, color: Colors.blueGrey)),
+                                  const SizedBox(width: 8),
+                                  IconButton(
+                                    icon: const Icon(Icons.delete_outline_rounded, size: 16, color: Colors.redAccent),
+                                    onPressed: () async {
+                                      await provider.deleteProjectNote(note.projectId, note.id);
+                                      setState(() {});
+                                    },
+                                  ),
+                                ],
+                              ),
+                            ],
+                          ),
+                          const SizedBox(height: 8),
+                          Text(note.content, style: const TextStyle(fontSize: 12, color: Color(0xFF1E293B), fontWeight: FontWeight.w600)),
+                        ],
+                      ),
+                    );
+                  }).toList(),
+                ),
+            ],
+          ),
+        );
+      },
+    );
+  }
+
+  void _showAddNoteDialog(BuildContext context, ProjectProvider provider) {
+    if (provider.projects.isEmpty) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text("Δεν υπάρχουν έργα για προσθήκη σημείωσης.")),
+      );
+      return;
+    }
+
+    int? selectedProjectId = provider.projects.first.id;
+    final noteController = TextEditingController();
+
+    showDialog(
+      context: context,
+      builder: (context) => StatefulBuilder(
+        builder: (context, setDialogState) => AlertDialog(
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(28)),
+          title: const PremiumHeader(
+            title: "ΝΕΑ ΣΗΜΕΙΩΣΗ ΕΡΓΟΥ",
+            icon: Icons.note_add_rounded,
+            color: Color(0xFFFF9800),
+          ),
+          content: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              DropdownButtonFormField<int>(
+                value: selectedProjectId,
+                isExpanded: true,
+                decoration: const InputDecoration(
+                  labelText: "Επιλογή Έργου",
+                  prefixIcon: Icon(Icons.business_center_rounded),
+                  border: OutlineInputBorder(),
+                ),
+                items: provider.projects.map((p) => DropdownMenuItem<int>(
+                  value: p.id,
+                  child: Text(p.name.toUpperCase(), style: const TextStyle(fontSize: 13, fontWeight: FontWeight.bold)),
+                )).toList(),
+                onChanged: (v) {
+                  if (v != null) setDialogState(() => selectedProjectId = v);
+                },
+              ),
+              const SizedBox(height: 16),
+              TextField(
+                controller: noteController,
+                maxLines: 3,
+                decoration: const InputDecoration(
+                  labelText: "Περιεχόμενο Σημείωσης",
+                  hintText: "Γράψτε εδώ τη σημείωσή σας...",
+                  prefixIcon: Icon(Icons.description_outlined),
+                  border: OutlineInputBorder(),
+                ),
+              ),
+            ],
+          ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.pop(context),
+              child: const Text("ΑΚΥΡΟ", style: TextStyle(fontWeight: FontWeight.bold)),
+            ),
+            ElevatedButton(
+              onPressed: () async {
+                final content = noteController.text.trim();
+                if (content.isNotEmpty && selectedProjectId != null) {
+                  await provider.addProjectNote(
+                    ProjectNote(
+                      projectId: selectedProjectId!,
+                      content: content,
+                      dateAdded: DateTime.now().millisecondsSinceEpoch,
+                    ),
+                  );
+                  if (context.mounted) Navigator.pop(context);
+                  setState(() {});
+                }
+              },
+              style: ElevatedButton.styleFrom(
+                backgroundColor: const Color(0xFFFF9800),
+                foregroundColor: Colors.white,
+              ),
+              child: const Text("ΠΡΟΣΘΗΚΗ", style: TextStyle(fontWeight: FontWeight.bold)),
+            ),
+          ],
+        ),
       ),
     );
   }
