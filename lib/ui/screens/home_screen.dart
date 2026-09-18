@@ -16,6 +16,7 @@ import 'package:mtc2026/ui/screens/project_list_screen.dart';
 import 'package:mtc2026/ui/screens/project_comparison_screen.dart';
 import 'package:mtc2026/ui/screens/ai_assistant_screen.dart';
 import 'package:mtc2026/ui/screens/portfolio_screen.dart';
+import 'package:mtc2026/ui/screens/global_calendar_screen.dart';
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
@@ -153,6 +154,15 @@ class _HomeScreenState extends State<HomeScreen> {
                         const SizedBox(width: 24),
                         Expanded(child: _PremiumNavCard(title: "ΚΕΝΤΡΟ ΕΛΕΓΧΟΥ", subtitle: "Εταιρικά & Εργαλεία", icon: Icons.settings_suggest_rounded, color: const Color(0xFF7209B7), onClick: () => Navigator.push(context, MaterialPageRoute(builder: (context) => const CompanyHubScreen())))),
                       ],
+                    ),
+                    const SizedBox(height: 24),
+                    _PremiumNavCard(
+                      title: "ΗΜΕΡΟΛΟΓΙΟ",
+                      subtitle: "Πρόγραμμα, Παραδόσεις & Ραντεβού",
+                      icon: Icons.date_range_rounded,
+                      color: const Color(0xFF4361EE),
+                      isFullWidth: true,
+                      onClick: () => Navigator.push(context, MaterialPageRoute(builder: (context) => const GlobalCalendarScreen())),
                     ),
                     const SizedBox(height: 24),
                     _PremiumNavCard(
@@ -354,6 +364,18 @@ class _HomeScreenState extends State<HomeScreen> {
                 isFullWidth: true,
                 onClick: () => Navigator.push(context, PageRouteBuilder(
                   pageBuilder: (c, a1, a2) => const CompanyHubScreen(),
+                  transitionsBuilder: (c, a1, a2, child) => FadeTransition(opacity: a1, child: child),
+                )),
+              ),
+              const SizedBox(height: 16),
+              _PremiumNavCard(
+                title: "ΗΜΕΡΟΛΟΓΙΟ",
+                subtitle: "ΠΡΟΓΡΑΜΜΑ & ΡΑΝΤΕΒΟΥ",
+                icon: Icons.date_range_rounded,
+                color: const Color(0xFF4361EE),
+                isFullWidth: true,
+                onClick: () => Navigator.push(context, PageRouteBuilder(
+                  pageBuilder: (c, a1, a2) => const GlobalCalendarScreen(),
                   transitionsBuilder: (c, a1, a2, child) => FadeTransition(opacity: a1, child: child),
                 )),
               ),
