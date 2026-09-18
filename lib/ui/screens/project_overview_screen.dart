@@ -128,22 +128,18 @@ class _ProjectOverviewScreenState extends State<ProjectOverviewScreen> {
             materials: materials,
             isMobile: true,
           ),
-          const SizedBox(height: 24),
-          _PremiumClientCard(project: widget.project),
-          const SizedBox(height: 32),
-          _PremiumCalendarCard(tasks: tasks),
-          const SizedBox(height: 32),
-          const PremiumHeader(title: "ΓΡΗΓΟΡΕΣ ΕΝΕΡΓΕΙΕΣ", color: Color(0xFF4361EE), icon: Icons.bolt_rounded),
+          const SizedBox(height: 12),
+          _PremiumClientCard(project: widget.project, isMobile: true),
           const SizedBox(height: 20),
+          const PremiumHeader(title: "ΓΡΗΓΟΡΕΣ ΕΝΕΡΓΕΙΕΣ", color: Color(0xFF4361EE), icon: Icons.bolt_rounded),
+          const SizedBox(height: 12),
           Row(
             children: [
               Expanded(child: _QuickActionItem(label: "ΠΡΟΣΦΟΡΑ", icon: Icons.assignment_rounded, color: Colors.indigo, width: double.infinity, onClick: () => widget.onModuleClick(1))),
               const SizedBox(width: 12),
-              Expanded(child: _QuickActionItem(label: "ΗΜΕΡΟΛΟΓΙΟ", icon: Icons.today_rounded, color: const Color(0xFF4361EE), width: double.infinity, onClick: () => widget.onModuleClick(3))),
+              Expanded(child: _QuickActionItem(label: "ΚΕΝΤΡΟ ΔΙΑΧΕΙΡΙΣΗΣ", icon: Icons.settings_suggest_rounded, color: const Color(0xFF7209B7), width: double.infinity, onClick: () => widget.onModuleClick(4))),
             ],
           ),
-          const SizedBox(height: 12),
-          _QuickActionItem(label: "ΚΕΝΤΡΟ ΔΙΑΧΕΙΡΙΣΗΣ", icon: Icons.settings_suggest_rounded, color: const Color(0xFF7209B7), width: double.infinity, onClick: () => widget.onModuleClick(4)),
           const SizedBox(height: 60),
       ],
     );
@@ -164,7 +160,7 @@ class _PremiumProjectSummaryCard extends StatelessWidget {
 
     return PremiumCard(
       accentColor: Colors.blue,
-      padding: EdgeInsets.all(isMobile ? 20 : 32),
+      padding: EdgeInsets.all(isMobile ? 12 : 32),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
@@ -180,22 +176,22 @@ class _PremiumProjectSummaryCard extends StatelessWidget {
                 ),
             ],
           ),
-          const SizedBox(height: 24),
-          _summaryRow("ΣΥΝΟΛΟ ΠΡΟΣΦΟΡΑΣ", quoteRevenue, Colors.blueGrey, Icons.assignment_rounded),
-          const SizedBox(height: 12),
-          _summaryRow("ΣΥΝΟΛΟ ΕΙΣΠΡΑΞΕΩΝ", income, Colors.blue, Icons.payments_rounded, trailing: "${(collectionRate * 100).toInt()}%"),
-          const SizedBox(height: 12),
-          _summaryRow("ΚΕΡΔΟΣ (ΠΡΑΓΜΑΤΙΚΟ)", netBalance, color, Icons.account_balance_wallet_rounded, isBold: true),
+          SizedBox(height: isMobile ? 10 : 24),
+          _summaryRow("ΣΥΝΟΛΟ ΠΡΟΣΦΟΡΑΣ", quoteRevenue, Colors.blueGrey, Icons.assignment_rounded, isMobile: isMobile),
+          SizedBox(height: isMobile ? 6 : 12),
+          _summaryRow("ΣΥΝΟΛΟ ΕΙΣΠΡΑΞΕΩΝ", income, Colors.blue, Icons.payments_rounded, trailing: "${(collectionRate * 100).toInt()}%", isMobile: isMobile),
+          SizedBox(height: isMobile ? 6 : 12),
+          _summaryRow("ΚΕΡΔΟΣ (ΠΡΑΓΜΑΤΙΚΟ)", netBalance, color, Icons.account_balance_wallet_rounded, isBold: true, isMobile: isMobile),
           
-          const Padding(
-            padding: EdgeInsets.symmetric(vertical: 20.0),
-            child: Divider(),
+          Padding(
+            padding: EdgeInsets.symmetric(vertical: isMobile ? 10.0 : 20.0),
+            child: const Divider(),
           ),
           
           Row(
             children: [
               Expanded(child: _miniStat("Εργατικά", labor, const Color(0xFF4361EE))),
-              Container(width: 1, height: 24, color: Colors.black12, margin: const EdgeInsets.symmetric(horizontal: 12)),
+              Container(width: 1, height: 20, color: Colors.black12, margin: const EdgeInsets.symmetric(horizontal: 10)),
               Expanded(child: _miniStat("Υλικά", materials, Colors.orange)),
               if (!isMobile) ...[
                 const Spacer(),
@@ -218,30 +214,30 @@ class _PremiumProjectSummaryCard extends StatelessWidget {
     );
   }
 
-  Widget _summaryRow(String label, double amount, Color color, IconData icon, {String? trailing, bool isBold = false}) {
+  Widget _summaryRow(String label, double amount, Color color, IconData icon, {String? trailing, bool isBold = false, bool isMobile = false}) {
     return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+      padding: EdgeInsets.symmetric(horizontal: isMobile ? 12 : 16, vertical: isMobile ? 7 : 14),
       decoration: BoxDecoration(
         color: color.withValues(alpha: 0.08),
-        borderRadius: BorderRadius.circular(20),
+        borderRadius: BorderRadius.circular(16),
         border: Border.all(color: color.withValues(alpha: 0.15)),
       ),
       child: Row(
         children: [
-          Icon(icon, size: 18, color: color),
-          const SizedBox(width: 14),
-          Text(label, style: TextStyle(fontSize: 10, fontWeight: FontWeight.w900, color: Colors.blueGrey.withValues(alpha: 0.9), letterSpacing: 0.5)),
+          Icon(icon, size: isMobile ? 15 : 18, color: color),
+          SizedBox(width: isMobile ? 10 : 14),
+          Text(label, style: TextStyle(fontSize: isMobile ? 9 : 10, fontWeight: FontWeight.w900, color: Colors.blueGrey.withValues(alpha: 0.9), letterSpacing: 0.5)),
           const Spacer(),
           if (trailing != null) ...[
-            Text(trailing, style: TextStyle(fontSize: 11, fontWeight: FontWeight.w900, color: color.withValues(alpha: 0.6))),
-            const SizedBox(width: 12),
+            Text(trailing, style: TextStyle(fontSize: isMobile ? 10 : 11, fontWeight: FontWeight.w900, color: color.withValues(alpha: 0.6))),
+            const SizedBox(width: 8),
           ],
           Flexible(
             child: FittedBox(
               fit: BoxFit.scaleDown,
               child: Text(
                 "${amount.toStringAsFixed(2)} €", 
-                style: TextStyle(fontWeight: FontWeight.w900, fontSize: isBold ? 18 : 15, color: color, letterSpacing: -0.2)
+                style: TextStyle(fontWeight: FontWeight.w900, fontSize: isBold ? (isMobile ? 15 : 18) : (isMobile ? 13 : 15), color: color, letterSpacing: -0.2)
               ),
             ),
           ),
@@ -264,18 +260,19 @@ class _PremiumProjectSummaryCard extends StatelessWidget {
 
 class _PremiumClientCard extends StatelessWidget {
   final Project project;
-  const _PremiumClientCard({required this.project});
+  final bool isMobile;
+  const _PremiumClientCard({required this.project, this.isMobile = false});
 
   @override
   Widget build(BuildContext context) {
     return PremiumCard(
       accentColor: Colors.blueGrey,
-      padding: const EdgeInsets.all(20),
+      padding: EdgeInsets.all(isMobile ? 12 : 20),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           const PremiumHeader(title: "ΣΤΟΙΧΕΙΑ ΠΕΛΑΤΗ", icon: Icons.person_pin_rounded, color: Colors.blueGrey),
-          const SizedBox(height: 20),
+          SizedBox(height: isMobile ? 10 : 20),
           Row(
             children: [
               Expanded(
@@ -284,27 +281,30 @@ class _PremiumClientCard extends StatelessWidget {
                   "ΤΗΛΕΦΩΝΟ", 
                   project.clientPhone.isEmpty ? "-" : project.clientPhone, 
                   Colors.blue,
+                  isMobile: isMobile,
                   onTap: () => project.clientPhone.isNotEmpty ? launchUrl(Uri.parse("tel:${project.clientPhone}")) : null
                 ),
               ),
-              const SizedBox(width: 12),
+              const SizedBox(width: 8),
               Expanded(
                 child: _infoRow(
                   Icons.email_rounded, 
                   "EMAIL", 
                   project.clientEmail.isEmpty ? "-" : project.clientEmail, 
                   Colors.purple,
+                  isMobile: isMobile,
                   onTap: () => project.clientEmail.isNotEmpty ? launchUrl(Uri.parse("mailto:${project.clientEmail}")) : null
                 ),
               ),
             ],
           ),
-          const SizedBox(height: 12),
+          SizedBox(height: isMobile ? 8 : 12),
           _infoRow(
             Icons.location_on_rounded, 
             "ΔΙΕΥΘΥΝΣΗ ΕΡΓΟΥ", 
             project.address.isEmpty ? "-" : project.address, 
             Colors.orange,
+            isMobile: isMobile,
             onTap: () => project.address.isNotEmpty ? launchUrl(Uri.parse("https://www.google.com/maps/search/?api=1&query=${Uri.encodeComponent(project.address)}")) : null
           ),
         ],
@@ -312,12 +312,12 @@ class _PremiumClientCard extends StatelessWidget {
     );
   }
 
-  Widget _infoRow(IconData icon, String label, String value, Color color, {VoidCallback? onTap}) {
+  Widget _infoRow(IconData icon, String label, String value, Color color, {VoidCallback? onTap, bool isMobile = false}) {
     return InkWell(
       onTap: onTap,
       borderRadius: BorderRadius.circular(12),
       child: Container(
-        padding: const EdgeInsets.symmetric(vertical: 8, horizontal: 12),
+        padding: EdgeInsets.symmetric(vertical: isMobile ? 5 : 8, horizontal: isMobile ? 8 : 12),
         decoration: BoxDecoration(
           color: color.withValues(alpha: 0.04),
           borderRadius: BorderRadius.circular(12),
@@ -325,8 +325,8 @@ class _PremiumClientCard extends StatelessWidget {
         ),
         child: Row(
           children: [
-            Icon(icon, size: 14, color: color),
-            const SizedBox(width: 12),
+            Icon(icon, size: isMobile ? 12 : 14, color: color),
+            const SizedBox(width: 8),
             Expanded(
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
@@ -334,7 +334,7 @@ class _PremiumClientCard extends StatelessWidget {
                   Text(label, style: const TextStyle(fontSize: 7, fontWeight: FontWeight.w900, color: Colors.grey, letterSpacing: 0.5)),
                   Text(
                     value, 
-                    style: TextStyle(fontSize: 11, fontWeight: FontWeight.bold, color: onTap != null && value != "-" ? Colors.blue : const Color(0xFF334155)),
+                    style: TextStyle(fontSize: isMobile ? 10 : 11, fontWeight: FontWeight.bold, color: onTap != null && value != "-" ? Colors.blue : const Color(0xFF334155)),
                     maxLines: 1, 
                     overflow: TextOverflow.ellipsis
                   ),
