@@ -33,7 +33,6 @@ class ProjectManagementHubScreen extends StatefulWidget {
 }
 
 class _ProjectManagementHubScreenState extends State<ProjectManagementHubScreen> {
-  late Future<ProjectROIData> _roiFuture;
   late Future<List<Partner>> _partnersFuture;
   late Future<List<MaterialEntity>> _materialsFuture;
   late Future<List<ProjectPhotoEntity>> _photosFuture;
@@ -46,7 +45,6 @@ class _ProjectManagementHubScreenState extends State<ProjectManagementHubScreen>
   }
 
   void _loadFutures(ProjectProvider provider) {
-    _roiFuture = provider.calculateProjectROIData(widget.project.id);
     _partnersFuture = provider.getPartnersForProject(widget.project.id);
     _materialsFuture = provider.getMaterials(widget.project.id, "PROJECT", "ΟΛΑ");
     _photosFuture = provider.getProjectPhotos(widget.project.id);
@@ -100,42 +98,28 @@ class _ProjectManagementHubScreenState extends State<ProjectManagementHubScreen>
 
   Widget _buildCategoryCard(BuildContext context, int index, Project project, ProjectProvider provider, bool isDesktop) {
     if (index == 0) {
-      return FutureBuilder<ProjectROIData>(
-        future: _roiFuture,
-        builder: (context, snapshot) {
-          final roi = snapshot.data?.roiPercentage ?? 0.0;
-          return _ManagementCategoryCard(
-            title: "ΟΙΚΟΝΟΜΙΚΗ ΔΙΑΧΕΙΡΙΣΗ",
-            subtitle: "ROI: ${roi.toStringAsFixed(1)}% • Έξοδα & Timeline",
-            icon: Icons.account_balance_rounded,
-            color: const Color(0xFF0EA5E9),
-            onClick: () => _openCategory(context, "ΟΙΚΟΝΟΜΙΚΗ ΔΙΑΧΕΙΡΙΣΗ", [
-              _MgmtModule("Οικονομικά", Icons.account_balance_rounded, const Color(0xFF0EA5E9), ProjectEconomicsScreen(project: project)),
-              _MgmtModule("Γραφήματα", Icons.pie_chart_rounded, const Color(0xFF0284C7), FutureBuilder<Map<String, dynamic>>(
-                future: _prepareChartData(provider, project.id),
-                builder: (context, snapshot) {
-                  if (!snapshot.hasData) return const Center(child: CircularProgressIndicator());
-                  return FinancialChartsScreen(
-                    projectName: project.name,
-                    roiData: snapshot.data!['roi'],
-                    detailedBreakdown: snapshot.data!['breakdown'],
-                  );
-                },
-              )),
-              _MgmtModule("Τιμολόγια", Icons.receipt_rounded, const Color(0xFF0369A1), InvoicesMaterialsScreen(expenses: provider.currentProjectExpenses, onDelete: (e) => provider.deleteExpense(project.id, e.id))),
-              _MgmtModule("ROI", Icons.account_balance_wallet_rounded, const Color(0xFF0EA5E9), FutureBuilder<ProjectROIData>(
-                future: provider.calculateProjectROIData(project.id),
-                builder: (context, snapshot) {
-                  if (!snapshot.hasData) return const Center(child: CircularProgressIndicator());
-                  return ProjectROIScreen(projectName: project.name, roiData: snapshot.data!);
-                },
-              )),
-              _MgmtModule("Timeline", Icons.timeline_rounded, const Color(0xFFFF9F1C), ProjectTimelineScreen(projectId: project.id)),
-            ]),
-            isDesktop: isDesktop,
-            badge: "${roi.toInt()}%",
-          );
-        }
+      return _ManagementCategoryCard(
+        title: "ΟΙΚΟΝΟΜΙΚΗ ΔΙΑΧΕΙΡΙΣΗ",
+        subtitle: "Έξοδα, Γραφήματα & Timeline",
+        icon: Icons.account_balance_rounded,
+        color: const Color(0xFF0EA5E9),
+        onClick: () => _openCategory(context, "ΟΙΚΟΝΟΜΙΚΗ ΔΙΑΧΕΙΡΙΣΗ", [
+          _MgmtModule("Οικονομικά", Icons.account_balance_rounded, const Color(0xFF0EA5E9), ProjectEconomicsScreen(project: project)),
+          _MgmtModule("Γραφήματα", Icons.pie_chart_rounded, const Color(0xFF0284C7), FutureBuilder<Map<String, dynamic>>(
+            future: _prepareChartData(provider, project.id),
+            builder: (context, snapshot) {
+              if (!snapshot.hasData) return const Center(child: CircularProgressIndicator());
+              return FinancialChartsScreen(
+                projectName: project.name,
+                roiData: snapshot.data!['roi'],
+                detailedBreakdown: snapshot.data!['breakdown'],
+              );
+            },
+          )),
+          _MgmtModule("Τιμολόγια", Icons.receipt_rounded, const Color(0xFF0369A1), InvoicesMaterialsScreen(expenses: provider.currentProjectExpenses, onDelete: (e) => provider.deleteExpense(project.id, e.id))),
+          _MgmtModule("Timeline", Icons.timeline_rounded, const Color(0xFFFF9F1C), ProjectTimelineScreen(projectId: project.id)),
+        ]),
+        isDesktop: isDesktop,
       );
     } else if (index == 1) {
       return FutureBuilder<List<Partner>>(
