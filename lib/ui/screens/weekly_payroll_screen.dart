@@ -94,16 +94,20 @@ class _WeeklyPayrollScreenState extends State<WeeklyPayrollScreen> {
                     }
                     
                     final payments = rawPayments.where((p) => provider.partners.any((partner) => partner.name == p.workerName)).toList();
-                    final workers = (attendance.map((e) => e.workerName).toList() + (widget.projectId == null ? payments.map((e) => e.workerName).toList() : [])).toSet().toList()..sort();
+                    final activeWorkerNames = provider.partners.where((p) => p.trade == "Εργάτης").map((p) => p.name).toList();
+                    final workers = (attendance.map((e) => e.workerName).toList() + payments.map((e) => e.workerName).toList() + activeWorkerNames).toSet().toList()..sort();
 
                     return Column(
                       children: [
                         _buildPayrollGridPremium(attendance, payments, workers, startOfPeriod, endOfPeriod, provider),
                         _buildWeeklySummaryBarPremium(attendance, payments),
-                        if (attendance.isNotEmpty) ...[
-                          const SizedBox(height: 32),
-                          _ProjectCategoryTotalsSectionPremium(attendance: attendance, projects: provider.projects),
-                        ],
+                        const SizedBox(height: 32),
+                        _ProjectCategoryTotalsSectionPremium(
+                          provider: provider,
+                          projectId: widget.projectId,
+                          endOfPeriod: endOfPeriod,
+                          currentPeriodAttendance: attendance,
+                        ),
                         const SizedBox(height: 60),
                       ],
                     );
@@ -677,72 +681,105 @@ class _WorkerRowPremium extends StatelessWidget {
 }
 
 class _ProjectCategoryTotalsSectionPremium extends StatelessWidget {
-  final List<AttendanceEntity> attendance;
-  final List<Project> projects;
-  const _ProjectCategoryTotalsSectionPremium({required this.attendance, required this.projects});
+  final ProjectProvider provider;
+  final int? projectId;
+  final DateTime endOfPeriod;
+  final List<AttendanceEntity> currentPeriodAttendance;
+
+  const _ProjectCategoryTotalsSectionPremium({
+    required this.provider,
+    this.projectId,
+    required this.endOfPeriod,
+    required this.currentPeriodAttendance,
+  });
 
   @override
   Widget build(BuildContext context) {
-    final projectGroups = <int?, Map<String, double>>{};
-    for (var a in attendance) {
-      final projId = a.projectId;
-      final cat = a.workCategory.isEmpty ? "ΓΕΝΙΚΑ" : a.workCategory;
-      projectGroups.putIfAbsent(projId, () => {});
-      projectGroups[projId]![cat] = (projectGroups[projId]![cat] ?? 0) + a.dailyRate + a.overtimeAmount;
-    }
+    return FutureBuilder<List<AttendanceEntity>>(
+      future: currentPeriodAttendance.isNotEmpty
+          ? Future.value(currentPeriodAttendance)
+          : provider.getAttendanceInRange(0, endOfPeriod.millisecondsSinceEpoch),
+      builder: (context, snapshot) {
+        final attList = snapshot.data ?? [];
+        final filteredAtt = projectId != null
+            ? attList.where((a) => a.projectId == projectId).toList()
+            : attList;
 
-    return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 20),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          const Padding(
-            padding: EdgeInsets.only(left: 8, bottom: 16),
-            child: PremiumHeader(title: "ΑΝΑΛΥΣΗ ΑΝΑ ΕΡΓΟ & ΦΑΣΗ", color: Colors.blueGrey),
-          ),
-          ...projectGroups.entries.map((entry) {
-            final pName = projects.firstWhere((p) => p.id == entry.key, orElse: () => Project(name: "ΓΕΝΙΚΟ", clientName: "", address: "")).name;
-            return Padding(
-              padding: const EdgeInsets.only(bottom: 16.0),
-              child: PremiumCard(
-                accentColor: Colors.blue,
-                padding: const EdgeInsets.all(20),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(pName.toUpperCase(), style: const TextStyle(fontWeight: FontWeight.w900, color: Color(0xFF1E293B), fontSize: 13, letterSpacing: 0.5)),
-                    const Padding(
-                      padding: EdgeInsets.symmetric(vertical: 16.0),
-                      child: Divider(),
-                    ),
-                    ...entry.value.entries.map((catEntry) => Padding(
-                      padding: const EdgeInsets.symmetric(vertical: 6),
-                      child: Row(
-                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                        children: [
-                          Text(catEntry.key, style: const TextStyle(fontSize: 11, color: Colors.blueGrey, fontWeight: FontWeight.bold)),
-                          Text("${catEntry.value.toStringAsFixed(2)} €", style: const TextStyle(fontSize: 11, fontWeight: FontWeight.w900, color: Color(0xFF1E293B))),
-                        ],
-                      ),
-                    )),
-                    const Padding(
-                      padding: EdgeInsets.symmetric(vertical: 16.0),
-                      child: Divider(),
-                    ),
-                    Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                      children: [
-                        const Text("ΣΥΝΟΛΟ ΕΡΓΟΥ:", style: TextStyle(fontSize: 11, fontWeight: FontWeight.w900, color: Colors.blueGrey)),
-                        Text("${entry.value.values.fold(0.0, (sum, val) => sum + val).toStringAsFixed(2)} €", style: const TextStyle(fontSize: 14, fontWeight: FontWeight.w900, color: Colors.blue)),
-                      ],
-                    ),
-                  ],
+        if (filteredAtt.isEmpty) return const SizedBox.shrink();
+
+        final projectGroups = <int?, Map<String, double>>{};
+        for (var a in filteredAtt) {
+          final projId = a.projectId;
+          final cat = a.workCategory.isEmpty ? "ΓΕΝΙΚΑ" : a.workCategory;
+          projectGroups.putIfAbsent(projId, () => {});
+          projectGroups[projId]![cat] = (projectGroups[projId]![cat] ?? 0) + a.dailyRate + a.overtimeAmount;
+        }
+
+        return Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 20),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Padding(
+                padding: const EdgeInsets.only(left: 8, bottom: 16),
+                child: PremiumHeader(
+                  title: currentPeriodAttendance.isNotEmpty
+                      ? "ΑΝΑΛΥΣΗ ΠΕΡΙΟΔΟΥ ΑΝΑ ΕΡΓΟ & ΦΑΣΗ"
+                      : "ΣΥΝΟΛΙΚΗ ΑΝΑΛΥΣΗ ΕΩΣ ΣΗΜΕΡΑ (ΑΝΑ ΕΡΓΟ & ΦΑΣΗ)",
+                  color: Colors.blueGrey,
                 ),
               ),
-            );
-          }),
-        ],
-      ),
+              ...projectGroups.entries.map((entry) {
+                final pName = provider.projects.firstWhere(
+                  (p) => p.id == entry.key,
+                  orElse: () => Project(name: "ΓΕΝΙΚΟ", clientName: "", address: ""),
+                ).name;
+                return Padding(
+                  padding: const EdgeInsets.only(bottom: 16.0),
+                  child: PremiumCard(
+                    accentColor: Colors.blue,
+                    padding: const EdgeInsets.all(20),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          pName.toUpperCase(),
+                          style: const TextStyle(fontWeight: FontWeight.w900, color: Color(0xFF1E293B), fontSize: 13, letterSpacing: 0.5),
+                        ),
+                        const Padding(
+                          padding: EdgeInsets.symmetric(vertical: 16.0),
+                          child: Divider(),
+                        ),
+                        ...entry.value.entries.map((catEntry) => Padding(
+                          padding: const EdgeInsets.symmetric(vertical: 6),
+                          child: Row(
+                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                            children: [
+                              Text(catEntry.key, style: const TextStyle(fontSize: 11, color: Colors.blueGrey, fontWeight: FontWeight.bold)),
+                              Text("${catEntry.value.toStringAsFixed(2)} €", style: const TextStyle(fontSize: 11, fontWeight: FontWeight.w900, color: Color(0xFF1E293B))),
+                            ],
+                          ),
+                        )),
+                        const Padding(
+                          padding: EdgeInsets.symmetric(vertical: 16.0),
+                          child: Divider(),
+                        ),
+                        Row(
+                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                          children: [
+                            const Text("ΣΥΝΟΛΟ ΕΡΓΟΥ:", style: TextStyle(fontSize: 11, fontWeight: FontWeight.w900, color: Colors.blueGrey)),
+                            Text("${entry.value.values.fold(0.0, (sum, val) => sum + val).toStringAsFixed(2)} €", style: const TextStyle(fontSize: 14, fontWeight: FontWeight.w900, color: Colors.blue)),
+                          ],
+                        ),
+                      ],
+                    ),
+                  ),
+                );
+              }),
+            ],
+          ),
+        );
+      },
     );
   }
 }
