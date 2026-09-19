@@ -5,9 +5,10 @@ import 'package:mtc2026/models/project_models.dart';
 class TaskDialog extends StatefulWidget {
   final List<Project> projects;
   final Task? initialTask;
+  final DateTime? initialDate;
   final Function(Task) onConfirm;
 
-  const TaskDialog({super.key, required this.projects, this.initialTask, required this.onConfirm});
+  const TaskDialog({super.key, required this.projects, this.initialTask, this.initialDate, required this.onConfirm});
 
   @override
   State<TaskDialog> createState() => _TaskDialogState();
@@ -29,7 +30,7 @@ class _TaskDialogState extends State<TaskDialog> {
       _selectedProjectId = widget.initialTask!.projectId == 0 ? null : widget.initialTask!.projectId;
       _descController.text = widget.initialTask!.description;
     } else {
-      _selectedDate = DateTime.now();
+      _selectedDate = widget.initialDate ?? DateTime.now();
       _selectedTime = TimeOfDay.now();
     }
   }

@@ -4,6 +4,7 @@ import 'package:intl/intl.dart';
 import 'package:mtc2026/models/project_models.dart';
 import 'package:mtc2026/providers/project_provider.dart';
 import 'package:mtc2026/ui/components/task_dialog.dart';
+import 'package:mtc2026/ui/components/premium_ui.dart';
 
 class GlobalCalendarScreen extends StatefulWidget {
   const GlobalCalendarScreen({super.key});
@@ -42,7 +43,7 @@ class _GlobalCalendarScreenState extends State<GlobalCalendarScreen> with Single
         actions: [
           IconButton(
             icon: const Icon(Icons.add_task_rounded, color: Colors.blue),
-            onPressed: () => _showTaskDialog(context),
+            onPressed: () => showTaskEntryDialog(context),
           ),
           const SizedBox(width: 16),
         ],
@@ -53,30 +54,33 @@ class _GlobalCalendarScreenState extends State<GlobalCalendarScreen> with Single
           child: TabBarView(
             controller: _tabController,
             children: [
-              _MonthView(
+              MonthView(
                 currentMonth: _currentMonth,
                 selectedDate: _selectedDate,
                 tasks: provider.tasks,
                 projects: provider.projects,
-                onDateSelected: (date) => setState(() => _selectedDate = date),
+                onDateSelected: (date) {
+                  setState(() => _selectedDate = date);
+                  showCalendarSheet(context, date, provider);
+                },
                 onMonthChanged: (month) => setState(() => _currentMonth = month),
                 onTaskUpdate: (task) => provider.updateTask(task),
                 onTaskDelete: (id) => provider.deleteTask(id),
-                onTaskClick: (task) => _showTaskDialog(context, task: task),
+                onTaskClick: (task) => showTaskEntryDialog(context, task: task),
               ),
               _WeeklyTasksView(
                 tasks: provider.tasks,
                 projects: provider.projects,
                 onTaskUpdate: (task) => provider.updateTask(task),
                 onTaskDelete: (id) => provider.deleteTask(id),
-                onTaskClick: (task) => _showTaskDialog(context, task: task),
+                onTaskClick: (task) => showTaskEntryDialog(context, task: task),
               ),
               _AllTasksView(
                 tasks: provider.tasks,
                 projects: provider.projects,
                 onTaskUpdate: (task) => provider.updateTask(task),
                 onTaskDelete: (id) => provider.deleteTask(id),
-                onTaskClick: (task) => _showTaskDialog(context, task: task),
+                onTaskClick: (task) => showTaskEntryDialog(context, task: task),
               ),
             ],
           ),
@@ -84,27 +88,180 @@ class _GlobalCalendarScreenState extends State<GlobalCalendarScreen> with Single
       ),
     );
   }
+}
 
-  void _showTaskDialog(BuildContext context, {Task? task}) {
-    final provider = Provider.of<ProjectProvider>(context, listen: false);
-    showDialog(
-      context: context,
-      builder: (context) => TaskDialog(
-        projects: provider.projects,
-        initialTask: task,
-        onConfirm: (newTask) {
-          if (task == null) {
-            provider.addTask(newTask);
-          } else {
-            provider.updateTask(newTask);
-          }
-        },
+void showCalendarSheet(BuildContext context, DateTime date, ProjectProvider provider) {
+  showDialog(
+    context: context,
+    builder: (context) => CalendarSheetDialog(
+      date: date,
+      tasks: provider.tasks.where((t) {
+        final dt = DateTime.fromMillisecondsSinceEpoch(t.date);
+        return dt.year == date.year && dt.month == date.month && dt.day == date.day;
+      }).toList(),
+      projects: provider.projects,
+      onTaskUpdate: (task) => provider.updateTask(task),
+      onTaskDelete: (id) => provider.deleteTask(id),
+      onAddTask: () => showTaskEntryDialog(context, initialDate: date),
+    ),
+  );
+}
+
+void showTaskEntryDialog(BuildContext context, {Task? task, DateTime? initialDate}) {
+  final provider = Provider.of<ProjectProvider>(context, listen: false);
+  showDialog(
+    context: context,
+    builder: (context) => TaskDialog(
+      projects: provider.projects,
+      initialTask: task,
+      initialDate: initialDate,
+      onConfirm: (newTask) {
+        if (task == null) {
+          provider.addTask(newTask);
+        } else {
+          provider.updateTask(newTask);
+        }
+      },
+    ),
+  );
+}
+
+class CalendarSheetDialog extends StatelessWidget {
+  final DateTime date;
+  final List<Task> tasks;
+  final List<Project> projects;
+  final Function(Task) onTaskUpdate;
+  final Function(int) onTaskDelete;
+  final VoidCallback onAddTask;
+
+  const CalendarSheetDialog({
+    super.key,
+    required this.date,
+    required this.tasks,
+    required this.projects,
+    required this.onTaskUpdate,
+    required this.onTaskDelete,
+    required this.onAddTask,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return Dialog(
+      backgroundColor: Colors.transparent,
+      insetPadding: const EdgeInsets.symmetric(horizontal: 20, vertical: 24),
+      child: Container(
+        constraints: const BoxConstraints(maxWidth: 400),
+        decoration: BoxDecoration(
+          color: const Color(0xFFF8FAFC),
+          borderRadius: BorderRadius.circular(32),
+          border: Border.all(color: Colors.white, width: 8),
+          boxShadow: [
+            BoxShadow(color: Colors.black.withValues(alpha: 0.2), blurRadius: 40, offset: const Offset(0, 20)),
+          ],
+        ),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Container(
+              width: double.infinity,
+              padding: const EdgeInsets.all(24),
+              decoration: const BoxDecoration(
+                color: Color(0xFFEF4444),
+                borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
+              ),
+              child: Column(
+                children: [
+                  Text(
+                    DateFormat('MMMM yyyy', 'el').format(date).toUpperCase(),
+                    style: const TextStyle(color: Colors.white70, fontWeight: FontWeight.bold, fontSize: 14, letterSpacing: 2),
+                  ),
+                  const SizedBox(height: 8),
+                  Text(
+                    DateFormat('d').format(date),
+                    style: const TextStyle(color: Colors.white, fontWeight: FontWeight.w900, fontSize: 80, height: 1),
+                  ),
+                  const SizedBox(height: 8),
+                  Text(
+                    DateFormat('EEEE', 'el').format(date).toUpperCase(),
+                    style: const TextStyle(color: Colors.white, fontWeight: FontWeight.w900, fontSize: 18, letterSpacing: 1),
+                  ),
+                ],
+              ),
+            ),
+            Flexible(
+              child: Container(
+                padding: const EdgeInsets.all(24),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        const Text("ΕΡΓΑΣΙΕΣ ΗΜΕΡΑΣ", style: TextStyle(fontWeight: FontWeight.w900, fontSize: 11, color: Colors.blueGrey, letterSpacing: 1)),
+                        IconButton(
+                          icon: const Icon(Icons.add_circle_outline_rounded, color: Colors.blue),
+                          onPressed: () {
+                            Navigator.pop(context);
+                            onAddTask();
+                          },
+                        ),
+                      ],
+                    ),
+                    const SizedBox(height: 16),
+                    if (tasks.isEmpty)
+                      const Padding(
+                        padding: EdgeInsets.symmetric(vertical: 32),
+                        child: Center(
+                          child: Text(
+                            "Καμία προγραμματισμένη εργασία",
+                            style: TextStyle(color: Colors.grey, fontStyle: FontStyle.italic, fontSize: 12),
+                          ),
+                        ),
+                      )
+                    else
+                      Flexible(
+                        child: ListView.builder(
+                          shrinkWrap: true,
+                          itemCount: tasks.length,
+                          itemBuilder: (context, index) {
+                            final task = tasks[index];
+                            final projectName = projects.firstWhere((p) => p.id == task.projectId, orElse: () => Project(name: "ΓΕΝΙΚΗ", clientName: "", address: "")).name;
+                            return CalendarTaskItem(
+                              task: task,
+                              projectName: projectName,
+                              onUpdate: onTaskUpdate,
+                              onTaskDelete: onTaskDelete,
+                              onClick: () {},
+                            );
+                          },
+                        ),
+                      ),
+                    const SizedBox(height: 24),
+                    SizedBox(
+                      width: double.infinity,
+                      child: ElevatedButton(
+                        onPressed: () => Navigator.pop(context),
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: Colors.blueGrey.shade100,
+                          foregroundColor: Colors.blueGrey.shade700,
+                          elevation: 0,
+                        ),
+                        child: const Text("ΚΛΕΙΣΙΜΟ"),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ),
+          ],
+        ),
       ),
     );
   }
 }
 
-class _MonthView extends StatelessWidget {
+class MonthView extends StatefulWidget {
   final DateTime currentMonth;
   final DateTime selectedDate;
   final List<Task> tasks;
@@ -114,8 +271,10 @@ class _MonthView extends StatelessWidget {
   final Function(Task) onTaskUpdate;
   final Function(int) onTaskDelete;
   final Function(Task) onTaskClick;
+  final bool showHeader;
 
-  const _MonthView({
+  const MonthView({
+    super.key,
     required this.currentMonth,
     required this.selectedDate,
     required this.tasks,
@@ -125,65 +284,47 @@ class _MonthView extends StatelessWidget {
     required this.onTaskUpdate,
     required this.onTaskDelete,
     required this.onTaskClick,
+    this.showHeader = true,
   });
 
   @override
-  Widget build(BuildContext context) {
-    final selectedDateTasks = tasks.where((t) {
-      final dt = DateTime.fromMillisecondsSinceEpoch(t.date);
-      return dt.year == selectedDate.year && dt.month == selectedDate.month && dt.day == selectedDate.day;
-    }).toList()..sort((a, b) => a.date.compareTo(b.date));
+  State<MonthView> createState() => _MonthViewState();
+}
 
+class _MonthViewState extends State<MonthView> {
+  @override
+  Widget build(BuildContext context) {
     return Column(
       children: [
-        Padding(
-          padding: const EdgeInsets.all(24.0),
-          child: Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: [
-              IconButton(icon: const Icon(Icons.chevron_left_rounded), onPressed: () => onMonthChanged(DateTime(currentMonth.year, currentMonth.month - 1))),
-              Text(DateFormat('MMMM yyyy', 'el').format(currentMonth).toUpperCase(), style: const TextStyle(fontWeight: FontWeight.w900, fontSize: 18, color: Colors.blueGrey)),
-              IconButton(icon: const Icon(Icons.chevron_right_rounded), onPressed: () => onMonthChanged(DateTime(currentMonth.year, currentMonth.month + 1))),
-            ],
+        if (widget.showHeader)
+          Padding(
+            padding: const EdgeInsets.symmetric(vertical: 16),
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                IconButton(
+                  icon: const Icon(Icons.chevron_left_rounded), 
+                  onPressed: () => widget.onMonthChanged(DateTime(widget.currentMonth.year, widget.currentMonth.month - 1))
+                ),
+                Text(
+                  DateFormat('MMMM yyyy', 'el').format(widget.currentMonth).toUpperCase(), 
+                  style: const TextStyle(fontWeight: FontWeight.w900, fontSize: 16, color: Color(0xFF1E293B))
+                ),
+                IconButton(
+                  icon: const Icon(Icons.chevron_right_rounded), 
+                  onPressed: () => widget.onMonthChanged(DateTime(widget.currentMonth.year, widget.currentMonth.month + 1))
+                ),
+              ],
+            ),
           ),
-        ),
         _buildMonthGrid(),
-        const Divider(height: 48),
-        Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 24.0, vertical: 8.0),
-          child: Row(
-            children: [
-              const Icon(Icons.event_available_rounded, color: Colors.blue, size: 18),
-              const SizedBox(width: 12),
-              Text(DateFormat('EEEE, d MMMM', 'el').format(selectedDate).toUpperCase(), style: TextStyle(fontWeight: FontWeight.w900, color: Theme.of(context).primaryColor, fontSize: 13, letterSpacing: 1)),
-            ],
-          ),
-        ),
-        Expanded(
-          child: selectedDateTasks.isEmpty 
-            ? const Center(child: Text("Καμία προγραμματισμένη εργασία", style: TextStyle(color: Colors.grey, fontStyle: FontStyle.italic)))
-            : ListView.builder(
-                padding: const EdgeInsets.all(16),
-                itemCount: selectedDateTasks.length,
-                itemBuilder: (context, index) {
-                  final task = selectedDateTasks[index];
-                  return _TaskItem(
-                    task: task,
-                    projectName: projects.firstWhere((p) => p.id == task.projectId, orElse: () => Project(name: "ΓΕΝΙΚΗ", clientName: "", address: "")).name,
-                    onUpdate: onTaskUpdate,
-                    onTaskDelete: onTaskDelete,
-                    onClick: () => onTaskClick(task),
-                  );
-                },
-              ),
-        ),
       ],
     );
   }
 
   Widget _buildMonthGrid() {
-    final firstDay = DateTime(currentMonth.year, currentMonth.month, 1);
-    final lastDay = DateTime(currentMonth.year, currentMonth.month + 1, 0);
+    final firstDay = DateTime(widget.currentMonth.year, widget.currentMonth.month, 1);
+    final lastDay = DateTime(widget.currentMonth.year, widget.currentMonth.month + 1, 0);
     final daysInMonth = lastDay.day;
     final firstWeekday = (firstDay.weekday + 6) % 7; 
     
@@ -191,24 +332,25 @@ class _MonthView extends StatelessWidget {
       shrinkWrap: true,
       physics: const NeverScrollableScrollPhysics(),
       padding: const EdgeInsets.symmetric(horizontal: 24),
-      gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(crossAxisCount: 7, childAspectRatio: 1.2),
+      gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(crossAxisCount: 7, childAspectRatio: 1.1),
       itemCount: 42, 
       itemBuilder: (context, index) {
         final day = index - firstWeekday + 1;
         if (day < 1 || day > daysInMonth) return const SizedBox.shrink();
         
-        final date = DateTime(currentMonth.year, currentMonth.month, day);
-        final isSelected = date.year == selectedDate.year && date.month == selectedDate.month && date.day == selectedDate.day;
-        final hasTasks = tasks.any((t) {
+        final date = DateTime(widget.currentMonth.year, widget.currentMonth.month, day);
+        final isSelected = date.year == widget.selectedDate.year && date.month == widget.selectedDate.month && date.day == widget.selectedDate.day;
+        final hasTasks = widget.tasks.any((t) {
           final dt = DateTime.fromMillisecondsSinceEpoch(t.date);
           return dt.year == date.year && dt.month == date.month && dt.day == date.day;
         });
 
         return InkWell(
-          onTap: () => onDateSelected(date),
+          onTap: () => widget.onDateSelected(date),
           borderRadius: BorderRadius.circular(12),
           child: Container(
             alignment: Alignment.center,
+            margin: const EdgeInsets.all(2),
             decoration: BoxDecoration(
               color: isSelected ? Colors.blue : Colors.transparent,
               borderRadius: BorderRadius.circular(12),
@@ -218,7 +360,7 @@ class _MonthView extends StatelessWidget {
             child: Column(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
-                Text(day.toString(), style: TextStyle(color: isSelected ? Colors.white : Colors.black87, fontWeight: isSelected ? FontWeight.w900 : FontWeight.normal, fontSize: 13)),
+                Text(day.toString(), style: TextStyle(color: isSelected ? Colors.white : const Color(0xFF1E293B), fontWeight: isSelected ? FontWeight.w900 : FontWeight.w600, fontSize: 13)),
                 if (hasTasks) Container(margin: const EdgeInsets.only(top: 4), width: 5, height: 5, decoration: BoxDecoration(color: isSelected ? Colors.white : Colors.orange, shape: BoxShape.circle)),
               ],
             ),
@@ -256,7 +398,7 @@ class _WeeklyTasksView extends StatelessWidget {
       itemCount: weeklyTasks.length,
       itemBuilder: (context, index) {
         final task = weeklyTasks[index];
-        return _TaskItem(
+        return CalendarTaskItem(
           task: task,
           projectName: projects.firstWhere((p) => p.id == task.projectId, orElse: () => Project(name: "ΓΕΝΙΚΗ", clientName: "", address: "")).name,
           onUpdate: onTaskUpdate,
@@ -287,7 +429,7 @@ class _AllTasksView extends StatelessWidget {
       itemCount: sortedTasks.length,
       itemBuilder: (context, index) {
         final task = sortedTasks[index];
-        return _TaskItem(
+        return CalendarTaskItem(
           task: task,
           projectName: projects.firstWhere((p) => p.id == task.projectId, orElse: () => Project(name: "ΓΕΝΙΚΗ", clientName: "", address: "")).name,
           onUpdate: onTaskUpdate,
@@ -299,14 +441,14 @@ class _AllTasksView extends StatelessWidget {
   }
 }
 
-class _TaskItem extends StatelessWidget {
+class CalendarTaskItem extends StatelessWidget {
   final Task task;
   final String projectName;
   final Function(Task) onUpdate;
   final Function(int) onTaskDelete;
   final VoidCallback onClick;
 
-  const _TaskItem({required this.task, required this.projectName, required this.onUpdate, required this.onTaskDelete, required this.onClick});
+  const CalendarTaskItem({required this.task, required this.projectName, required this.onUpdate, required this.onTaskDelete, required this.onClick});
 
   @override
   Widget build(BuildContext context) {

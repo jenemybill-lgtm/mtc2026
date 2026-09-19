@@ -26,6 +26,9 @@ class HomeScreen extends StatefulWidget {
 }
 
 class _HomeScreenState extends State<HomeScreen> {
+  DateTime _selectedCalendarDate = DateTime.now();
+  DateTime _currentCalendarMonth = DateTime.now();
+
   @override
   void initState() {
     super.initState();
@@ -199,8 +202,36 @@ class _HomeScreenState extends State<HomeScreen> {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
+                    Padding(
+                      padding: const EdgeInsets.fromLTRB(32, 40, 32, 0),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          const PremiumHeader(title: "ΗΜΕΡΟΛΟΓΙΟ", icon: Icons.calendar_month_rounded, color: Colors.blue),
+                          const SizedBox(height: 16),
+                          PremiumCard(
+                            padding: const EdgeInsets.all(12),
+                            child: MonthView(
+                              currentMonth: _currentCalendarMonth,
+                              selectedDate: _selectedCalendarDate,
+                              tasks: provider.tasks,
+                              projects: provider.projects,
+                              showHeader: true,
+                              onDateSelected: (date) {
+                                setState(() => _selectedCalendarDate = date);
+                                showCalendarSheet(context, date, provider);
+                              },
+                              onMonthChanged: (month) => setState(() => _currentCalendarMonth = month),
+                              onTaskUpdate: (task) => provider.updateTask(task),
+                              onTaskDelete: (id) => provider.deleteTask(id),
+                              onTaskClick: (task) => showTaskEntryDialog(context, task: task),
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
                     const Padding(
-                      padding: EdgeInsets.fromLTRB(32, 48, 32, 24),
+                      padding: EdgeInsets.fromLTRB(32, 32, 32, 16),
                       child: PremiumHeader(title: "ΕΙΔΟΠΟΙΗΣΕΙΣ", icon: Icons.notifications_active_rounded, color: Colors.orange),
                     ),
                     Expanded(
