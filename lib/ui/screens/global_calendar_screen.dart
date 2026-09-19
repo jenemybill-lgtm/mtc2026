@@ -148,49 +148,56 @@ class CalendarSheetDialog extends StatelessWidget {
   Widget build(BuildContext context) {
     return Dialog(
       backgroundColor: Colors.transparent,
+      elevation: 0,
       insetPadding: const EdgeInsets.symmetric(horizontal: 20, vertical: 24),
       child: Container(
         constraints: const BoxConstraints(maxWidth: 400),
         decoration: BoxDecoration(
-          color: const Color(0xFFF8FAFC),
-          borderRadius: BorderRadius.circular(32),
+          color: Colors.white,
+          borderRadius: BorderRadius.circular(40),
           border: Border.all(color: Colors.white, width: 8),
           boxShadow: [
-            BoxShadow(color: Colors.black.withValues(alpha: 0.2), blurRadius: 40, offset: const Offset(0, 20)),
+            BoxShadow(color: Colors.black.withValues(alpha: 0.15), blurRadius: 40, offset: const Offset(0, 20)),
           ],
         ),
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
+            // Top part of the "sheet" - Traditional Calendar Look
             Container(
               width: double.infinity,
-              padding: const EdgeInsets.all(24),
-              decoration: const BoxDecoration(
-                color: Color(0xFFEF4444),
-                borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
+              padding: const EdgeInsets.symmetric(vertical: 32, horizontal: 24),
+              decoration: BoxDecoration(
+                gradient: const LinearGradient(
+                  colors: [Color(0xFFEF4444), Color(0xFFB91C1C)],
+                  begin: Alignment.topLeft,
+                  end: Alignment.bottomRight,
+                ),
+                borderRadius: BorderRadius.circular(32),
               ),
               child: Column(
                 children: [
                   Text(
                     DateFormat('MMMM yyyy', 'el').format(date).toUpperCase(),
-                    style: const TextStyle(color: Colors.white70, fontWeight: FontWeight.bold, fontSize: 14, letterSpacing: 2),
+                    style: const TextStyle(color: Colors.white70, fontWeight: FontWeight.bold, fontSize: 13, letterSpacing: 2),
                   ),
                   const SizedBox(height: 8),
                   Text(
                     DateFormat('d').format(date),
-                    style: const TextStyle(color: Colors.white, fontWeight: FontWeight.w900, fontSize: 80, height: 1),
+                    style: const TextStyle(color: Colors.white, fontWeight: FontWeight.w900, fontSize: 90, height: 1, letterSpacing: -2),
                   ),
                   const SizedBox(height: 8),
                   Text(
                     DateFormat('EEEE', 'el').format(date).toUpperCase(),
-                    style: const TextStyle(color: Colors.white, fontWeight: FontWeight.w900, fontSize: 18, letterSpacing: 1),
+                    style: const TextStyle(color: Colors.white, fontWeight: FontWeight.w800, fontSize: 16, letterSpacing: 1.5),
                   ),
                 ],
               ),
             ),
+            // Bottom part with tasks
             Flexible(
               child: Container(
-                padding: const EdgeInsets.all(24),
+                padding: const EdgeInsets.fromLTRB(24, 28, 24, 24),
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   mainAxisSize: MainAxisSize.min,
@@ -198,24 +205,34 @@ class CalendarSheetDialog extends StatelessWidget {
                     Row(
                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       children: [
-                        const Text("ΕΡΓΑΣΙΕΣ ΗΜΕΡΑΣ", style: TextStyle(fontWeight: FontWeight.w900, fontSize: 11, color: Colors.blueGrey, letterSpacing: 1)),
-                        IconButton(
-                          icon: const Icon(Icons.add_circle_outline_rounded, color: Colors.blue),
+                        const Text("ΠΡΌΓΡΑΜΜΑ ΗΜΈΡΑΣ", style: TextStyle(fontWeight: FontWeight.w900, fontSize: 10, color: Colors.blueGrey, letterSpacing: 1.5)),
+                        IconButton.filledTonal(
+                          icon: const Icon(Icons.add_rounded, size: 20),
                           onPressed: () {
                             Navigator.pop(context);
                             onAddTask();
                           },
+                          style: IconButton.styleFrom(
+                            backgroundColor: Colors.blue.withValues(alpha: 0.1),
+                            foregroundColor: Colors.blue,
+                          ),
                         ),
                       ],
                     ),
-                    const SizedBox(height: 16),
+                    const SizedBox(height: 20),
                     if (tasks.isEmpty)
-                      const Padding(
-                        padding: EdgeInsets.symmetric(vertical: 32),
+                      Padding(
+                        padding: const EdgeInsets.symmetric(vertical: 40),
                         child: Center(
-                          child: Text(
-                            "Καμία προγραμματισμένη εργασία",
-                            style: TextStyle(color: Colors.grey, fontStyle: FontStyle.italic, fontSize: 12),
+                          child: Column(
+                            children: [
+                              Icon(Icons.event_note_rounded, size: 40, color: Colors.blueGrey.withValues(alpha: 0.2)),
+                              const SizedBox(height: 12),
+                              const Text(
+                                "Καμία προγραμματισμένη εργασία",
+                                style: TextStyle(color: Colors.blueGrey, fontStyle: FontStyle.italic, fontSize: 11, fontWeight: FontWeight.w600),
+                              ),
+                            ],
                           ),
                         ),
                       )
@@ -223,6 +240,7 @@ class CalendarSheetDialog extends StatelessWidget {
                       Flexible(
                         child: ListView.builder(
                           shrinkWrap: true,
+                          padding: EdgeInsets.zero,
                           itemCount: tasks.length,
                           itemBuilder: (context, index) {
                             final task = tasks[index];
@@ -232,7 +250,10 @@ class CalendarSheetDialog extends StatelessWidget {
                               projectName: projectName,
                               onUpdate: onTaskUpdate,
                               onTaskDelete: onTaskDelete,
-                              onClick: () {},
+                              onClick: () {
+                                Navigator.pop(context);
+                                showTaskEntryDialog(context, task: task);
+                              },
                             );
                           },
                         ),
@@ -240,14 +261,13 @@ class CalendarSheetDialog extends StatelessWidget {
                     const SizedBox(height: 24),
                     SizedBox(
                       width: double.infinity,
-                      child: ElevatedButton(
+                      child: TextButton(
                         onPressed: () => Navigator.pop(context),
-                        style: ElevatedButton.styleFrom(
-                          backgroundColor: Colors.blueGrey.shade100,
-                          foregroundColor: Colors.blueGrey.shade700,
-                          elevation: 0,
+                        style: TextButton.styleFrom(
+                          padding: const EdgeInsets.symmetric(vertical: 16),
+                          foregroundColor: Colors.blueGrey,
                         ),
-                        child: const Text("ΚΛΕΙΣΙΜΟ"),
+                        child: const Text("ΕΠΙΣΤΡΟΦΗ", style: TextStyle(fontWeight: FontWeight.w900, fontSize: 11, letterSpacing: 1)),
                       ),
                     ),
                   ],
@@ -347,21 +367,44 @@ class _MonthViewState extends State<MonthView> {
 
         return InkWell(
           onTap: () => widget.onDateSelected(date),
-          borderRadius: BorderRadius.circular(12),
-          child: Container(
+          borderRadius: BorderRadius.circular(16),
+          child: AnimatedContainer(
+            duration: const Duration(milliseconds: 200),
             alignment: Alignment.center,
-            margin: const EdgeInsets.all(2),
+            margin: const EdgeInsets.all(3),
             decoration: BoxDecoration(
               color: isSelected ? Colors.blue : Colors.transparent,
-              borderRadius: BorderRadius.circular(12),
+              borderRadius: BorderRadius.circular(16),
               border: date.year == DateTime.now().year && date.month == DateTime.now().month && date.day == DateTime.now().day
-                ? Border.all(color: Colors.blue.withValues(alpha: 0.3)) : null,
+                ? Border.all(color: Colors.blue.withValues(alpha: 0.4), width: 1.5) : null,
+              boxShadow: isSelected ? [
+                BoxShadow(color: Colors.blue.withValues(alpha: 0.3), blurRadius: 10, offset: const Offset(0, 4)),
+              ] : null,
             ),
             child: Column(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
-                Text(day.toString(), style: TextStyle(color: isSelected ? Colors.white : const Color(0xFF1E293B), fontWeight: isSelected ? FontWeight.w900 : FontWeight.w600, fontSize: 13)),
-                if (hasTasks) Container(margin: const EdgeInsets.only(top: 4), width: 5, height: 5, decoration: BoxDecoration(color: isSelected ? Colors.white : Colors.orange, shape: BoxShape.circle)),
+                Text(
+                  day.toString(), 
+                  style: TextStyle(
+                    color: isSelected ? Colors.white : const Color(0xFF1E293B), 
+                    fontWeight: isSelected ? FontWeight.w900 : FontWeight.w700, 
+                    fontSize: 14
+                  )
+                ),
+                if (hasTasks) 
+                  Container(
+                    margin: const EdgeInsets.only(top: 4), 
+                    width: 6, 
+                    height: 6, 
+                    decoration: BoxDecoration(
+                      color: isSelected ? Colors.white : Colors.orange, 
+                      shape: BoxShape.circle,
+                      boxShadow: [
+                        BoxShadow(color: (isSelected ? Colors.white : Colors.orange).withValues(alpha: 0.4), blurRadius: 4)
+                      ]
+                    )
+                  ),
               ],
             ),
           ),
@@ -452,44 +495,75 @@ class CalendarTaskItem extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final color = task.isCompleted ? Colors.green : Colors.blue;
+    final color = task.isCompleted ? const Color(0xFF38B000) : const Color(0xFF4361EE);
     
     return Container(
       margin: const EdgeInsets.only(bottom: 12),
       decoration: BoxDecoration(
-        gradient: LinearGradient(
-          colors: [color.withValues(alpha: 0.08), color.withValues(alpha: 0.01)],
-          begin: Alignment.topLeft,
-          end: Alignment.bottomRight,
-        ),
-        borderRadius: BorderRadius.circular(24),
+        color: color.withValues(alpha: 0.06),
+        borderRadius: BorderRadius.circular(20),
         border: Border.all(color: color.withValues(alpha: 0.12), width: 1.5),
       ),
       child: Material(
         color: Colors.transparent,
-        child: ListTile(
+        child: InkWell(
           onTap: onClick,
-          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(24)),
-          contentPadding: const EdgeInsets.symmetric(horizontal: 20, vertical: 8),
-          leading: Checkbox(
-            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(6)),
-            value: task.isCompleted,
-            activeColor: Colors.green,
-            onChanged: (val) => onUpdate(task.copyWith(isCompleted: val!)),
+          borderRadius: BorderRadius.circular(20),
+          child: Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+            child: Row(
+              children: [
+                SizedBox(
+                  width: 24,
+                  height: 24,
+                  child: Checkbox(
+                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(6)),
+                    value: task.isCompleted,
+                    activeColor: const Color(0xFF38B000),
+                    onChanged: (val) => onUpdate(task.copyWith(isCompleted: val!)),
+                  ),
+                ),
+                const SizedBox(width: 16),
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        task.description, 
+                        style: TextStyle(
+                          decoration: task.isCompleted ? TextDecoration.lineThrough : null, 
+                          fontWeight: FontWeight.w800, 
+                          fontSize: 13, 
+                          color: task.isCompleted ? Colors.grey : const Color(0xFF1E293B)
+                        )
+                      ),
+                      const SizedBox(height: 4),
+                      Row(
+                        children: [
+                          Icon(Icons.access_time_filled_rounded, size: 10, color: Colors.blueGrey.withValues(alpha: 0.4)),
+                          const SizedBox(width: 4),
+                          Text(DateFormat('dd/MM HH:mm').format(DateTime.fromMillisecondsSinceEpoch(task.date)), style: const TextStyle(fontSize: 9, fontWeight: FontWeight.bold, color: Colors.blueGrey)),
+                          const SizedBox(width: 12),
+                          Container(
+                            padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                            decoration: BoxDecoration(color: color.withValues(alpha: 0.1), borderRadius: BorderRadius.circular(4)),
+                            child: Text(projectName.toUpperCase(), style: TextStyle(fontSize: 7, color: color, fontWeight: FontWeight.w900, letterSpacing: 0.5)),
+                          ),
+                        ],
+                      ),
+                    ],
+                  ),
+                ),
+                IconButton(
+                  icon: const Icon(Icons.delete_outline_rounded, size: 18, color: Colors.redAccent), 
+                  onPressed: () => onTaskDelete(task.id),
+                  padding: EdgeInsets.zero,
+                  constraints: const BoxConstraints(),
+                  splashRadius: 20,
+                ),
+              ],
+            ),
           ),
-          title: Text(task.description, style: TextStyle(decoration: task.isCompleted ? TextDecoration.lineThrough : null, fontWeight: FontWeight.w900, fontSize: 13, color: const Color(0xFF1E293B))),
-          subtitle: Row(
-            children: [
-              Text(DateFormat('dd/MM HH:mm').format(DateTime.fromMillisecondsSinceEpoch(task.date)), style: const TextStyle(fontSize: 10, fontWeight: FontWeight.bold, color: Colors.blueGrey)),
-              const SizedBox(width: 12),
-              Container(
-                padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
-                decoration: BoxDecoration(color: color.withValues(alpha: 0.08), borderRadius: BorderRadius.circular(6)),
-                child: Text(projectName.toUpperCase(), style: TextStyle(fontSize: 8, color: color, fontWeight: FontWeight.w900, letterSpacing: 0.5)),
-              ),
-            ],
-          ),
-          trailing: IconButton(icon: const Icon(Icons.delete_sweep_rounded, size: 20, color: Colors.black12), onPressed: () => onTaskDelete(task.id)),
         ),
       ),
     );
