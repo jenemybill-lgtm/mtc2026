@@ -151,53 +151,52 @@ class CalendarSheetDialog extends StatelessWidget {
       elevation: 0,
       insetPadding: const EdgeInsets.symmetric(horizontal: 20, vertical: 24),
       child: Container(
-        constraints: const BoxConstraints(maxWidth: 400),
+        constraints: const BoxConstraints(maxWidth: 550, minHeight: 400),
         decoration: BoxDecoration(
           color: Colors.white,
           borderRadius: BorderRadius.circular(40),
-          border: Border.all(color: Colors.white, width: 8),
           boxShadow: [
-            BoxShadow(color: Colors.black.withValues(alpha: 0.15), blurRadius: 40, offset: const Offset(0, 20)),
+            BoxShadow(color: Colors.black.withValues(alpha: 0.15), blurRadius: 60, offset: const Offset(0, 20)),
           ],
         ),
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
-            // Top part of the "sheet" - Traditional Calendar Look
+            // Top part of the "sheet" - Enlarged Traditional Calendar Look
             Container(
               width: double.infinity,
-              padding: const EdgeInsets.symmetric(vertical: 32, horizontal: 24),
+              padding: const EdgeInsets.symmetric(vertical: 40, horizontal: 24),
               decoration: BoxDecoration(
                 gradient: const LinearGradient(
                   colors: [Color(0xFFEF4444), Color(0xFFB91C1C)],
                   begin: Alignment.topLeft,
                   end: Alignment.bottomRight,
                 ),
-                borderRadius: BorderRadius.circular(32),
+                borderRadius: const BorderRadius.vertical(top: Radius.circular(40)),
               ),
               child: Column(
                 children: [
                   Text(
                     DateFormat('MMMM yyyy', 'el').format(date).toUpperCase(),
-                    style: const TextStyle(color: Colors.white70, fontWeight: FontWeight.bold, fontSize: 13, letterSpacing: 2),
+                    style: const TextStyle(color: Colors.white70, fontWeight: FontWeight.bold, fontSize: 16, letterSpacing: 3),
                   ),
-                  const SizedBox(height: 8),
+                  const SizedBox(height: 12),
                   Text(
                     DateFormat('d').format(date),
-                    style: const TextStyle(color: Colors.white, fontWeight: FontWeight.w900, fontSize: 90, height: 1, letterSpacing: -2),
+                    style: const TextStyle(color: Colors.white, fontWeight: FontWeight.w900, fontSize: 120, height: 1, letterSpacing: -4),
                   ),
-                  const SizedBox(height: 8),
+                  const SizedBox(height: 12),
                   Text(
                     DateFormat('EEEE', 'el').format(date).toUpperCase(),
-                    style: const TextStyle(color: Colors.white, fontWeight: FontWeight.w800, fontSize: 16, letterSpacing: 1.5),
+                    style: const TextStyle(color: Colors.white, fontWeight: FontWeight.w800, fontSize: 22, letterSpacing: 2),
                   ),
                 ],
               ),
             ),
-            // Bottom part with tasks
+            // Bottom part with a cleaner, wider list
             Flexible(
               child: Container(
-                padding: const EdgeInsets.fromLTRB(24, 28, 24, 24),
+                padding: const EdgeInsets.fromLTRB(32, 32, 32, 32),
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   mainAxisSize: MainAxisSize.min,
@@ -205,9 +204,9 @@ class CalendarSheetDialog extends StatelessWidget {
                     Row(
                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       children: [
-                        const Text("ΠΡΌΓΡΑΜΜΑ ΗΜΈΡΑΣ", style: TextStyle(fontWeight: FontWeight.w900, fontSize: 10, color: Colors.blueGrey, letterSpacing: 1.5)),
+                        const Text("ΠΡΌΓΡΑΜΜΑ ΗΜΈΡΑΣ", style: TextStyle(fontWeight: FontWeight.w900, fontSize: 12, color: Colors.blueGrey, letterSpacing: 2)),
                         IconButton.filledTonal(
-                          icon: const Icon(Icons.add_rounded, size: 20),
+                          icon: const Icon(Icons.add_rounded, size: 24),
                           onPressed: () {
                             Navigator.pop(context);
                             onAddTask();
@@ -215,22 +214,23 @@ class CalendarSheetDialog extends StatelessWidget {
                           style: IconButton.styleFrom(
                             backgroundColor: Colors.blue.withValues(alpha: 0.1),
                             foregroundColor: Colors.blue,
+                            padding: const EdgeInsets.all(12),
                           ),
                         ),
                       ],
                     ),
-                    const SizedBox(height: 20),
+                    const SizedBox(height: 24),
                     if (tasks.isEmpty)
                       Padding(
-                        padding: const EdgeInsets.symmetric(vertical: 40),
+                        padding: const EdgeInsets.symmetric(vertical: 60),
                         child: Center(
                           child: Column(
                             children: [
-                              Icon(Icons.event_note_rounded, size: 40, color: Colors.blueGrey.withValues(alpha: 0.2)),
-                              const SizedBox(height: 12),
+                              Icon(Icons.event_note_rounded, size: 48, color: Colors.blueGrey.withValues(alpha: 0.1)),
+                              const SizedBox(height: 16),
                               const Text(
-                                "Καμία προγραμματισμένη εργασία",
-                                style: TextStyle(color: Colors.blueGrey, fontStyle: FontStyle.italic, fontSize: 11, fontWeight: FontWeight.w600),
+                                "Δεν υπάρχουν εργασίες για σήμερα",
+                                style: TextStyle(color: Colors.blueGrey, fontStyle: FontStyle.italic, fontSize: 13, fontWeight: FontWeight.w600),
                               ),
                             ],
                           ),
@@ -238,19 +238,20 @@ class CalendarSheetDialog extends StatelessWidget {
                       )
                     else
                       Flexible(
-                        child: ListView.builder(
+                        child: ListView.separated(
                           shrinkWrap: true,
                           padding: EdgeInsets.zero,
                           itemCount: tasks.length,
+                          separatorBuilder: (context, index) => const Divider(height: 24, thickness: 0.5),
                           itemBuilder: (context, index) {
                             final task = tasks[index];
                             final projectName = projects.firstWhere((p) => p.id == task.projectId, orElse: () => Project(name: "ΓΕΝΙΚΗ", clientName: "", address: "")).name;
-                            return CalendarTaskItem(
+                            return _SimpleDailyTaskItem(
                               task: task,
                               projectName: projectName,
                               onUpdate: onTaskUpdate,
-                              onTaskDelete: onTaskDelete,
-                              onClick: () {
+                              onDelete: onTaskDelete,
+                              onEdit: () {
                                 Navigator.pop(context);
                                 showTaskEntryDialog(context, task: task);
                               },
@@ -258,16 +259,19 @@ class CalendarSheetDialog extends StatelessWidget {
                           },
                         ),
                       ),
-                    const SizedBox(height: 24),
+                    const SizedBox(height: 32),
                     SizedBox(
                       width: double.infinity,
-                      child: TextButton(
+                      child: ElevatedButton(
                         onPressed: () => Navigator.pop(context),
-                        style: TextButton.styleFrom(
-                          padding: const EdgeInsets.symmetric(vertical: 16),
-                          foregroundColor: Colors.blueGrey,
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: const Color(0xFFF1F5F9),
+                          foregroundColor: const Color(0xFF475569),
+                          elevation: 0,
+                          padding: const EdgeInsets.symmetric(vertical: 18),
+                          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
                         ),
-                        child: const Text("ΕΠΙΣΤΡΟΦΗ", style: TextStyle(fontWeight: FontWeight.w900, fontSize: 11, letterSpacing: 1)),
+                        child: const Text("ΚΛΕΙΣΙΜΟ", style: TextStyle(fontWeight: FontWeight.w900, letterSpacing: 1.5)),
                       ),
                     ),
                   ],
@@ -279,6 +283,74 @@ class CalendarSheetDialog extends StatelessWidget {
       ),
     );
   }
+}
+
+class _SimpleDailyTaskItem extends StatelessWidget {
+  final Task task;
+  final String projectName;
+  final Function(Task) onUpdate;
+  final Function(int) onDelete;
+  final VoidCallback onEdit;
+
+  const _SimpleDailyTaskItem({required this.task, required this.projectName, required this.onUpdate, required this.onDelete, required this.onEdit});
+
+  @override
+  Widget build(BuildContext context) {
+    return Row(
+      children: [
+        SizedBox(
+          width: 28,
+          height: 28,
+          child: Checkbox(
+            value: task.isCompleted,
+            activeColor: const Color(0xFF38B000),
+            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(6)),
+            onChanged: (val) => onUpdate(task.copyWith(isCompleted: val!)),
+          ),
+        ),
+        const SizedBox(width: 16),
+        Expanded(
+          child: InkWell(
+            onTap: onEdit,
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  task.description,
+                  style: TextStyle(
+                    fontSize: 15,
+                    fontWeight: FontWeight.w700,
+                    color: task.isCompleted ? Colors.grey : const Color(0xFF1E293B),
+                    decoration: task.isCompleted ? TextDecoration.lineThrough : null,
+                  ),
+                ),
+                const SizedBox(height: 4),
+                Row(
+                  children: [
+                    Text(
+                      DateFormat('HH:mm').format(DateTime.fromMillisecondsSinceEpoch(task.date)),
+                      style: const TextStyle(fontSize: 11, fontWeight: FontWeight.w800, color: Colors.blue),
+                    ),
+                    const SizedBox(width: 12),
+                    Text(
+                      projectName.toUpperCase(),
+                      style: TextStyle(fontSize: 10, fontWeight: FontWeight.w900, color: Colors.blueGrey.withValues(alpha: 0.6), letterSpacing: 0.5),
+                    ),
+                  ],
+                ),
+              ],
+            ),
+          ),
+        ),
+        IconButton(
+          icon: const Icon(Icons.delete_outline_rounded, color: Colors.redAccent, size: 20),
+          onPressed: () => onDelete(task.id),
+          visualDensity: VisualDensity.compact,
+        ),
+      ],
+    );
+  }
+}
 }
 
 class MonthView extends StatefulWidget {
