@@ -41,20 +41,18 @@ class NotificationService {
     if (kIsWeb) return false;
     
     if (Platform.isIOS) {
-      final bool? result = await flutterLocalNotificationsPlugin
+      return await flutterLocalNotificationsPlugin
           .resolvePlatformSpecificImplementation<IOSFlutterLocalNotificationsPlugin>()
           ?.requestPermissions(
             alert: true,
             badge: true,
             sound: true,
-          );
-      return result ?? false;
+          ) ?? false;
     } else if (Platform.isAndroid) {
       final AndroidFlutterLocalNotificationsPlugin? androidImplementation =
           flutterLocalNotificationsPlugin.resolvePlatformSpecificImplementation<AndroidFlutterLocalNotificationsPlugin>();
       
-      final bool? granted = await androidImplementation?.requestNotificationsPermission();
-      return granted ?? false;
+      return await androidImplementation?.requestNotificationsPermission() ?? false;
     }
     return false;
   }
