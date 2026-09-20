@@ -7,6 +7,7 @@ import 'package:mtc2026/providers/project_provider.dart';
 import 'package:mtc2026/ui/theme/app_theme.dart';
 import 'package:mtc2026/ui/screens/home_screen.dart';
 import 'package:mtc2026/ui/screens/company_login_screen.dart';
+import 'package:mtc2026/utils/notification_service.dart';
 
 // Conditional import to handle Desktop vs Web safely
 import 'package:mtc2026/platform_init_desktop.dart' 
@@ -18,6 +19,7 @@ void main() async {
   // This call will execute Desktop initialization on Windows/Linux
   // and do nothing on Web, ensuring no crashes.
   initializePlatform();
+  await NotificationService().init();
 
   await initializeDateFormatting('el', null);
   Intl.defaultLocale = 'el';

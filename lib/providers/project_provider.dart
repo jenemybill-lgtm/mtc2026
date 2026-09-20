@@ -9,6 +9,7 @@ import 'package:mtc2026/models/breakdown_models.dart';
 import 'package:mtc2026/models/enums.dart';
 import 'package:mtc2026/models/alert_model.dart';
 import 'package:mtc2026/utils/api_client.dart';
+import 'package:mtc2026/utils/notification_service.dart';
 import 'package:flutter/foundation.dart' show kIsWeb;
 
 class ProjectProvider with ChangeNotifier {
@@ -603,21 +604,56 @@ class ProjectProvider with ChangeNotifier {
   }
 
   Future<void> addTask(Task t) async {
-    await DatabaseHelper().insertTask(t);
+    final id = await DatabaseHelper().insertTask(t);
+    final newTask = Task(
+      id: id,
+      projectId: t.projectId,
+      date: t.date,
+      description: t.description,
+      isCompleted: t.isCompleted,
+      reminderTime: t.reminderTime,
+      reminderType: t.reminderType,
+    );
+    await _scheduleTaskNotification(newTask);
     await fetchProjects();
-    await _autoSync();
+    await _autoSync('tasks');
   }
 
   Future<void> updateTask(Task t) async {
     await DatabaseHelper().updateTask(t);
+    await _scheduleTaskNotification(t);
     await fetchProjects();
-    await _autoSync();
+    await _autoSync('tasks');
   }
 
   Future<void> deleteTask(int id) async {
     await DatabaseHelper().deleteTask(id);
+    await NotificationService().cancelNotification(id);
     await fetchProjects();
-    await _autoSync();
+    await _autoSync('tasks');
+  }
+
+  Future<void> _scheduleTaskNotification(Task t) async {
+    if (kIsWeb) return;
+    
+    // Always cancel existing one first
+    await NotificationService().cancelNotification(t.id);
+
+    if (t.isCompleted || t.reminderTime == null) return;
+
+    final taskDate = DateTime.fromMillisecondsSinceEpoch(t.date);
+    final scheduledDate = taskDate.subtract(Duration(minutes: t.reminderTime!));
+
+    if (scheduledDate.isAfter(DateTime.now())) {
+      final projectName = _projects.firstWhere((p) => p.id == t.projectId, orElse: () => Project(name: "MTC", clientName: "", address: "")).name;
+      
+      await NotificationService().scheduleNotification(
+        id: t.id,
+        title: "Υπενθύμιση Εργασίας: $projectName",
+        body: t.description,
+        scheduledDate: scheduledDate,
+      );
+    }
   }
 
   Future<void> addQuoteItem(int pid, QuoteItem item) async {

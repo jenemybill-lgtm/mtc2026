@@ -19,6 +19,7 @@ class _TaskDialogState extends State<TaskDialog> {
   late DateTime _selectedDate;
   late TimeOfDay _selectedTime;
   int? _selectedProjectId;
+  int? _selectedReminderMinutes;
   final _descController = TextEditingController();
 
   @override
@@ -30,9 +31,11 @@ class _TaskDialogState extends State<TaskDialog> {
       _selectedTime = TimeOfDay(hour: dt.hour, minute: dt.minute);
       _selectedProjectId = widget.initialTask!.projectId == 0 ? null : widget.initialTask!.projectId;
       _descController.text = widget.initialTask!.description;
+      _selectedReminderMinutes = widget.initialTask!.reminderTime;
     } else {
       _selectedDate = widget.initialDate ?? DateTime.now();
       _selectedTime = TimeOfDay.now();
+      _selectedReminderMinutes = null; // Default to no reminder
     }
   }
 
@@ -170,6 +173,41 @@ class _TaskDialogState extends State<TaskDialog> {
                       ],
                       onChanged: (v) => setState(() => _selectedProjectId = v),
                     ),
+                    const SizedBox(height: 16),
+                    DropdownButtonFormField<int?>(
+                      value: _selectedReminderMinutes,
+                      isExpanded: true,
+                      style: const TextStyle(fontWeight: FontWeight.w800, fontSize: 13, color: Color(0xFF1E293B)),
+                      decoration: InputDecoration(
+                        labelText: "ΥΠΕΝΘΥΜΙΣΗ",
+                        labelStyle: const TextStyle(fontWeight: FontWeight.w900, fontSize: 9, letterSpacing: 1.5, color: Colors.blueGrey),
+                        prefixIcon: const Icon(Icons.notifications_active_rounded, color: primaryColor),
+                        filled: true,
+                        fillColor: Colors.white,
+                        border: OutlineInputBorder(borderRadius: BorderRadius.circular(20), borderSide: BorderSide.none),
+                        enabledBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(20), borderSide: BorderSide(color: Colors.black.withValues(alpha: 0.05))),
+                      ),
+                      items: const [
+                        DropdownMenuItem<int?>(value: null, child: Text("ΧΩΡΙΣ ΥΠΕΝΘΥΜΙΣΗ")),
+                        DropdownMenuItem<int?>(value: 0, child: Text("ΤΗΝ ΩΡΑ ΤΟΥ ΓΕΓΟΝΟΤΟΣ")),
+                        DropdownMenuItem<int?>(value: 10, child: Text("10 ΛΕΠΤΑ ΠΡΙΝ")),
+                        DropdownMenuItem<int?>(value: 30, child: Text("30 ΛΕΠΤΑ ΠΡΙΝ")),
+                        DropdownMenuItem<int?>(value: 60, child: Text("1 ΩΡΑ ΠΡΙΝ")),
+                        DropdownMenuItem<int?>(value: 120, child: Text("2 ΩΡΕΣ ΠΡΙΝ")),
+                        DropdownMenuItem<int?>(value: 1440, child: Text("1 ΗΜΕΡΑ ΠΡΙΝ")),
+                      ],
+                      onChanged: (v) async {
+                        if (v != null) {
+                          final granted = await NotificationService().requestPermissions();
+                          if (!granted && mounted) {
+                            ScaffoldMessenger.of(context).showSnackBar(
+                              const SnackBar(content: Text("Απαιτείται άδεια για τις ειδοποιήσεις")),
+                            );
+                          }
+                        }
+                        setState(() => _selectedReminderMinutes = v);
+                      },
+                    ),
                   ],
                 ),
               ),
@@ -201,6 +239,7 @@ class _TaskDialogState extends State<TaskDialog> {
                               date: finalDate.millisecondsSinceEpoch,
                               description: _descController.text,
                               isCompleted: widget.initialTask?.isCompleted ?? false,
+                              reminderTime: _selectedReminderMinutes,
                             ));
                             Navigator.pop(context);
                           }
