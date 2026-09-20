@@ -155,7 +155,7 @@ class _TaskDialogState extends State<TaskDialog> {
                         prefixIcon: const Icon(Icons.business_center_rounded, color: primaryColor),
                         filled: true,
                         fillColor: Colors.white,
-                        border: OutlineInputBorder(borderRadius: BorderRadius.circular(20), borderSide: BorderSide(none),),
+                        border: OutlineInputBorder(borderRadius: BorderRadius.circular(20), borderSide: BorderSide.none),
                         enabledBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(20), borderSide: BorderSide(color: Colors.black.withValues(alpha: 0.05))),
                       ),
                       items: [

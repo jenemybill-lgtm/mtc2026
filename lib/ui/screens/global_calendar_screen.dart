@@ -351,7 +351,6 @@ class _SimpleDailyTaskItem extends StatelessWidget {
     );
   }
 }
-}
 
 class MonthView extends StatefulWidget {
   final DateTime currentMonth;
