@@ -162,10 +162,10 @@ class CalendarSheetDialog extends StatelessWidget {
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
-            // Top part of the "sheet" - Enlarged Traditional Calendar Look
+            // Top part of the "sheet" - More compact
             Container(
               width: double.infinity,
-              padding: const EdgeInsets.symmetric(vertical: 40, horizontal: 24),
+              padding: const EdgeInsets.symmetric(vertical: 24, horizontal: 24),
               decoration: BoxDecoration(
                 gradient: const LinearGradient(
                   colors: [Color(0xFFEF4444), Color(0xFFB91C1C)],
@@ -178,17 +178,17 @@ class CalendarSheetDialog extends StatelessWidget {
                 children: [
                   Text(
                     DateFormat('MMMM yyyy', 'el').format(date).toUpperCase(),
-                    style: const TextStyle(color: Colors.white70, fontWeight: FontWeight.bold, fontSize: 16, letterSpacing: 3),
+                    style: const TextStyle(color: Colors.white70, fontWeight: FontWeight.bold, fontSize: 11, letterSpacing: 2),
                   ),
-                  const SizedBox(height: 12),
+                  const SizedBox(height: 4),
                   Text(
                     DateFormat('d').format(date),
-                    style: const TextStyle(color: Colors.white, fontWeight: FontWeight.w900, fontSize: 120, height: 1, letterSpacing: -4),
+                    style: const TextStyle(color: Colors.white, fontWeight: FontWeight.w900, fontSize: 72, height: 1, letterSpacing: -2),
                   ),
-                  const SizedBox(height: 12),
+                  const SizedBox(height: 4),
                   Text(
                     DateFormat('EEEE', 'el').format(date).toUpperCase(),
-                    style: const TextStyle(color: Colors.white, fontWeight: FontWeight.w800, fontSize: 22, letterSpacing: 2),
+                    style: const TextStyle(color: Colors.white, fontWeight: FontWeight.w800, fontSize: 16, letterSpacing: 1.5),
                   ),
                 ],
               ),
@@ -196,7 +196,7 @@ class CalendarSheetDialog extends StatelessWidget {
             // Bottom part with a cleaner, wider list
             Flexible(
               child: Container(
-                padding: const EdgeInsets.fromLTRB(32, 32, 32, 32),
+                padding: const EdgeInsets.fromLTRB(28, 24, 28, 28),
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   mainAxisSize: MainAxisSize.min,
