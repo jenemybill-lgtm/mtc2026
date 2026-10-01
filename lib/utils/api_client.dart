@@ -1,12 +1,20 @@
 import 'dart:convert';
 import 'package:http/http.dart' as http;
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:mtc2026/database/database_helper.dart';
 
 class ApiClient {
-  static const String _defaultBaseUrl = "https://mtc-erp-backend.onrender.com"; // User will update this
+  static const String _defaultBaseUrl = "https://mtc-m9in.onrender.com";
   
   Future<String> get baseUrl async {
-    return "https://mtc-m9in.onrender.com";
+    try {
+      final settings = await DatabaseHelper().getGlobalSettings();
+      if (settings != null && settings['dbApiUrl'] != null) {
+        final url = settings['dbApiUrl'] as String;
+        if (url.isNotEmpty) return url;
+      }
+    } catch (_) {}
+    return _defaultBaseUrl;
   }
 
   Future<Map<String, String>> _headers() async {
@@ -24,7 +32,7 @@ class ApiClient {
       Uri.parse("$url$endpoint"),
       headers: await _headers(),
       body: jsonEncode(body),
-    ).timeout(const Duration(seconds: 60)); // Long timeout for photo uploads
+    ).timeout(const Duration(seconds: 120)); // Long timeout for wake up
   }
 
   Future<http.Response> get(String endpoint) async {
@@ -32,6 +40,6 @@ class ApiClient {
     return await http.get(
       Uri.parse("$url$endpoint"),
       headers: await _headers(),
-    );
+    ).timeout(const Duration(seconds: 120)); // Long timeout for wake up
   }
 }

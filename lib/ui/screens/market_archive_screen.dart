@@ -26,7 +26,7 @@ class _MarketArchiveScreenState extends State<MarketArchiveScreen> {
     final categoryTabs = ['ALL', ...AppDestinations.values.map((d) => d.name)];
 
     return Scaffold(
-      backgroundColor: const Color(0xFFF1F5F9),
+      backgroundColor: const Color(0xFFE2E8F0),
       appBar: AppBar(
         title: const Text(
           "ΑΡΧΕΙΟ ΑΓΟΡΩΝ & ΤΙΜΩΝ",
@@ -256,7 +256,7 @@ class _MarketArchiveScreenState extends State<MarketArchiveScreen> {
           hintText: "Αναζήτηση υλικού ή προμηθευτή...",
           prefixIcon: const Icon(Icons.search_rounded, color: Colors.blueGrey),
           filled: true,
-          fillColor: const Color(0xFFF1F5F9),
+          fillColor: const Color(0xFFE2E8F0),
           border: OutlineInputBorder(
             borderRadius: BorderRadius.circular(20),
             borderSide: BorderSide.none,

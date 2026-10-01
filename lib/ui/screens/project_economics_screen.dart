@@ -8,7 +8,10 @@ import 'package:mtc2026/utils/excel_exporter.dart';
 import 'package:mtc2026/utils/pdf_generator.dart';
 import 'package:mtc2026/ui/components/task_dialog.dart';
 import 'package:mtc2026/ui/components/premium_ui.dart';
+import 'package:mtc2026/ui/components/attendance_dialogs.dart';
 import 'package:mtc2026/ui/screens/project_roi_screen.dart';
+import 'package:mtc2026/ui/screens/category_screen.dart';
+import 'package:mtc2026/ui/screens/project_economics_tabs.dart';
 
 class ProjectEconomicsScreen extends StatefulWidget {
   final Project project;
@@ -25,7 +28,7 @@ class _ProjectEconomicsScreenState extends State<ProjectEconomicsScreen> with Si
   @override
   void initState() {
     super.initState();
-    _tabController = TabController(length: 3, vsync: this);
+    _tabController = TabController(length: 5, vsync: this);
     _tabController.addListener(() => setState(() {}));
     WidgetsBinding.instance.addPostFrameCallback((_) {
       Provider.of<ProjectProvider>(context, listen: false).fetchProjectData(widget.project.id);
@@ -42,7 +45,7 @@ class _ProjectEconomicsScreenState extends State<ProjectEconomicsScreen> with Si
   Widget build(BuildContext context) {
     final provider = Provider.of<ProjectProvider>(context);
     return Scaffold(
-      backgroundColor: const Color(0xFFF1F5F9),
+      backgroundColor: const Color(0xFFE2E8F0),
       appBar: AppBar(
         title: Column(
           children: [
@@ -91,32 +94,78 @@ class _ProjectEconomicsScreenState extends State<ProjectEconomicsScreen> with Si
           labelStyle: const TextStyle(fontWeight: FontWeight.w900, fontSize: 11, letterSpacing: 0.5),
           unselectedLabelStyle: const TextStyle(fontWeight: FontWeight.bold, fontSize: 11),
           dividerColor: Colors.transparent,
+          isScrollable: true,
+          tabAlignment: TabAlignment.start,
           tabs: const [
-            Tab(text: "ΕΞΟΔΑ"),
-            Tab(text: "ΕΙΣΠΡΑΞΕΙΣ"),
-            Tab(text: "ΕΡΓΑΣΙΕΣ"),
+            Tab(text: "ΕΞΟΔΑ & ΠΛΗΡΩΜΕΣ"),
+            Tab(text: "ΕΙΣΠΡΑΞΕΙΣ ΑΠΟ ΠΕΛΑΤΗ"),
+            Tab(text: "ΠΡΟΣΦΟΡΑ / ΚΟΣΤΟΛΟΓΗΣΗ"),
+            Tab(text: "ΠΡΟΓΡΑΜΜΑ ΕΡΓΑΣΙΩΝ"),
+            Tab(text: "ΣΥΝΕΡΓΑΤΕΣ & ΠΑΡΟΥΣΙΟΛΟΓΙΟ"),
           ],
         ),
       ),
-      floatingActionButton: FloatingActionButton.extended(
-        onPressed: () {
-          if (_tabController.index == 0) _showExpenseDialog(context);
-          else if (_tabController.index == 1) _showIncomeDialog(context);
-          else if (_tabController.index == 2) _showTaskDialog(context);
-        },
-        label: Text(
-          _tabController.index == 0 ? "ΝΕΟ ΕΞΟΔΟ" : _tabController.index == 1 ? "ΝΕΑ ΕΙΣΠΡΑΞΗ" : "ΝΕΑ ΕΡΓΑΣΙΑ",
-          style: const TextStyle(fontWeight: FontWeight.w900, letterSpacing: 1),
-        ),
-        icon: const Icon(Icons.add_rounded),
-      ),
+      floatingActionButton: _buildFAB(),
       body: TabBarView(
         controller: _tabController,
         children: [
           _ExpenseTab(project: widget.project, expenses: provider.currentProjectExpenses),
           _IncomeTab(project: widget.project, incomes: provider.currentProjectIncomes),
+          QuoteTab(project: widget.project, quoteItems: provider.currentProjectQuoteItems),
           _TaskTab(project: widget.project, tasks: provider.tasks.where((t) => t.projectId == widget.project.id).toList()),
+          PartnersTab(project: widget.project),
         ],
+      ),
+    );
+  }
+
+  Widget? _buildFAB() {
+    if (_tabController.index == 0) {
+      return FloatingActionButton.extended(
+        onPressed: () => _showExpenseDialog(context),
+        label: const Text("ΝΕΟ ΕΞΟΔΟ", style: TextStyle(fontWeight: FontWeight.w900, letterSpacing: 1)),
+        icon: const Icon(Icons.add_rounded),
+        backgroundColor: Colors.redAccent,
+        foregroundColor: Colors.white,
+      );
+    } else if (_tabController.index == 1) {
+      return FloatingActionButton.extended(
+        onPressed: () => _showIncomeDialog(context),
+        label: const Text("ΝΕΑ ΕΙΣΠΡΑΞΗ", style: TextStyle(fontWeight: FontWeight.w900, letterSpacing: 1)),
+        icon: const Icon(Icons.add_chart_rounded),
+        backgroundColor: Colors.blue,
+        foregroundColor: Colors.white,
+      );
+    } else if (_tabController.index == 3) {
+      return FloatingActionButton.extended(
+        onPressed: () => _showTaskDialog(context),
+        label: const Text("ΝΕΑ ΕΡΓΑΣΙΑ", style: TextStyle(fontWeight: FontWeight.w900, letterSpacing: 1)),
+        icon: const Icon(Icons.add_task_rounded),
+      );
+    } else if (_tabController.index == 4) {
+      return FloatingActionButton.extended(
+        onPressed: () => _showAddAttendance(context),
+        label: const Text("ΝΕΑ ΠΑΡΟΥΣΙΑ", style: TextStyle(fontWeight: FontWeight.w900, letterSpacing: 1)),
+        icon: const Icon(Icons.person_add_rounded),
+        backgroundColor: const Color(0xFF38B000),
+        foregroundColor: Colors.white,
+      );
+    }
+    return null;
+  }
+
+  void _showAddAttendance(BuildContext context) {
+    final provider = Provider.of<ProjectProvider>(context, listen: false);
+    showDialog(
+      context: context,
+      builder: (context) => AddAttendanceDialog(
+        partners: provider.partners,
+        projects: [widget.project],
+        initialProjectId: widget.project.id,
+        onConfirm: (record) async {
+          await provider.addAttendance(record);
+          setState(() {});
+        }
       ),
     );
   }
@@ -396,7 +445,6 @@ class _ExpenseItemCardPremium extends StatelessWidget {
                   ],
                 ),
               ),
-              Text("${expense.amount.toStringAsFixed(2)} €", style: const TextStyle(fontWeight: FontWeight.w900, color: Colors.red, fontSize: 16, letterSpacing: -0.5)),
               const SizedBox(width: 4),
               IconButton(icon: const Icon(Icons.delete_outline_rounded, size: 20, color: Colors.black12), onPressed: onDelete),
             ],
@@ -409,9 +457,16 @@ class _ExpenseItemCardPremium extends StatelessWidget {
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
-                if (expense.hasVat) Row(children: [_smallDetailItem("ΚΑΘΑΡΟ", "${net.toStringAsFixed(2)}€"), const SizedBox(width: 20), _smallDetailItem("ΦΠΑ", "${vat.toStringAsFixed(2)}€")])
-                else const Text("ΑΠΑΛΛΑΓΗ ΦΠΑ", style: TextStyle(fontSize: 8, fontWeight: FontWeight.w900, color: Colors.grey, letterSpacing: 1)),
-                if (expense.invoiceNumber != null && expense.invoiceNumber!.isNotEmpty) _smallDetailItem("ΑΡ. ΤΙΜΟΛΟΓΙΟΥ", expense.invoiceNumber!, color: Colors.blue),
+                if (expense.hasVat) 
+                  Row(children: [
+                    _smallDetailItem("ΚΑΘΑΡΟ", "${net.toStringAsFixed(2)}€"), 
+                    const SizedBox(width: 20), 
+                    _smallDetailItem("ΦΠΑ", "${vat.toStringAsFixed(2)}€")
+                  ])
+                else 
+                  const Text("ΑΠΑΛΛΑΓΗ ΦΠΑ", style: TextStyle(fontSize: 8, fontWeight: FontWeight.w900, color: Colors.grey, letterSpacing: 1)),
+                if (expense.invoiceNumber != null && expense.invoiceNumber!.isNotEmpty) 
+                  _smallDetailItem("ΑΡ. ΤΙΜΟΛΟΓΙΟΥ", expense.invoiceNumber!, color: Colors.blue),
               ],
             ),
           ],
@@ -420,7 +475,7 @@ class _ExpenseItemCardPremium extends StatelessWidget {
     );
   }
 
-  Widget _smallDetailItem(String l, String v, {Color? color}) => Column(crossAxisAlignment: CrossAxisAlignment.start, children: [Text(l, style: TextStyle(fontSize: 7, fontWeight: FontWeight.w900, color: Colors.grey.withValues(alpha: 0.8))), const SizedBox(height: 2), Text(v, style: TextStyle(fontSize: 11, fontWeight: FontWeight.w900, color: color ?? const Color(0xFF1E293B)))]);
+  Widget _smallDetailItem(String l, String v, {Color? color}) => Column(crossAxisAlignment: CrossAxisAlignment.start, children: [Text(l, style: TextStyle(fontSize: 9, fontWeight: FontWeight.w900, color: Colors.grey.withValues(alpha: 0.8))), const SizedBox(height: 2), Text(v, style: TextStyle(fontSize: 12, fontWeight: FontWeight.w900, color: color ?? const Color(0xFF1E293B)))]);
 }
 
 class _IncomeItemCardPremium extends StatelessWidget {

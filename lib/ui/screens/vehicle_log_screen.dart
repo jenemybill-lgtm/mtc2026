@@ -18,7 +18,7 @@ class _VehicleLogScreenState extends State<VehicleLogScreen> {
     final provider = Provider.of<ProjectProvider>(context);
 
     return Scaffold(
-      backgroundColor: const Color(0xFFF1F5F9),
+      backgroundColor: const Color(0xFFE2E8F0),
       appBar: AppBar(
         title: const Text("ΔΙΑΧΕΙΡΙΣΗ ΒΑΝ", style: TextStyle(fontWeight: FontWeight.w900, fontSize: 14)),
         actions: [
@@ -37,7 +37,7 @@ class _VehicleLogScreenState extends State<VehicleLogScreen> {
           final v = await provider.getVehicle();
           if (mounted) _showAddMaintenanceDialog(context, v.id);
         },
-        label: const Text("ΝΕΑ ΣΥΝΤΗΡΗΣΗ", style: TextStyle(fontWeight: FontWeight.w900, letterSpacing: 1)),
+        label: const Text("ΝΕΟ ΕΞΟΔΟ / ΣΥΝΤΗΡΗΣΗ", style: TextStyle(fontWeight: FontWeight.w900, letterSpacing: 1)),
         icon: const Icon(Icons.add_rounded),
       ),
       body: FutureBuilder<VehicleEntity>(
@@ -94,7 +94,9 @@ class _VehicleLogScreenState extends State<VehicleLogScreen> {
       context: context,
       builder: (context) => _AddMaintenanceDialog(
         vehicleId: vehicleId,
-        onConfirm: (m, add) => Provider.of<ProjectProvider>(context, listen: false).addMaintenance(m, add).then((_) => setState(() {})),
+        onConfirm: (m, add, hasVat, inv) => Provider.of<ProjectProvider>(context, listen: false)
+            .addMaintenance(m, add, hasVat: hasVat, invoiceNumber: inv)
+            .then((_) => setState(() {})),
       ),
     );
   }
@@ -210,30 +212,37 @@ class _MaintenanceCard extends StatelessWidget {
   Widget build(BuildContext context) {
     return Container(
       decoration: BoxDecoration(
-        gradient: LinearGradient(
-          colors: [Colors.blue.withValues(alpha: 0.08), Colors.blue.withValues(alpha: 0.01)],
-          begin: Alignment.topLeft,
-          end: Alignment.bottomRight,
-        ),
-        borderRadius: BorderRadius.circular(24),
-        border: Border.all(color: Colors.blue.withValues(alpha: 0.12)),
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(20),
+        border: Border.all(color: Colors.blue.withValues(alpha: 0.2)),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withValues(alpha: 0.03),
+            blurRadius: 10,
+            offset: const Offset(0, 4),
+          ),
+        ],
       ),
-      child: ListTile(
-        contentPadding: const EdgeInsets.symmetric(horizontal: 20, vertical: 8),
-        leading: Container(
-          padding: const EdgeInsets.all(10),
-          decoration: BoxDecoration(color: Colors.blue.withValues(alpha: 0.1), borderRadius: BorderRadius.circular(12)),
-          child: const Icon(Icons.build_rounded, color: Colors.blue, size: 20),
-        ),
-        title: Text(maintenance.description.toUpperCase(), style: const TextStyle(fontWeight: FontWeight.w900, fontSize: 12, color: Color(0xFF1E293B))),
-        subtitle: Text("${DateFormat('dd/MM/yyyy').format(DateTime.fromMillisecondsSinceEpoch(maintenance.date))} • ${maintenance.mileage} km", style: const TextStyle(fontSize: 10, fontWeight: FontWeight.bold, color: Colors.grey)),
-        trailing: Row(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            Text("${maintenance.cost.toStringAsFixed(2)} €", style: const TextStyle(fontWeight: FontWeight.w900, color: Colors.blue, fontSize: 14)),
-            const SizedBox(width: 8),
-            IconButton(onPressed: onDelete, icon: const Icon(Icons.delete_outline_rounded, size: 18, color: Colors.black12)),
-          ],
+      child: Material(
+        color: Colors.transparent,
+        borderRadius: BorderRadius.circular(20),
+        child: ListTile(
+          contentPadding: const EdgeInsets.symmetric(horizontal: 20, vertical: 8),
+          leading: Container(
+            padding: const EdgeInsets.all(10),
+            decoration: BoxDecoration(color: Colors.blue.withValues(alpha: 0.1), borderRadius: BorderRadius.circular(12)),
+            child: const Icon(Icons.build_rounded, color: Colors.blue, size: 20),
+          ),
+          title: Text(maintenance.description.toUpperCase(), style: const TextStyle(fontWeight: FontWeight.w900, fontSize: 12, color: Color(0xFF1E293B))),
+          subtitle: Text("${DateFormat('dd/MM/yyyy').format(DateTime.fromMillisecondsSinceEpoch(maintenance.date))} • ${maintenance.mileage} km", style: const TextStyle(fontSize: 10, fontWeight: FontWeight.bold, color: Colors.grey)),
+          trailing: Row(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Text("${maintenance.cost.toStringAsFixed(2)} €", style: const TextStyle(fontWeight: FontWeight.w900, color: Colors.blue, fontSize: 14)),
+              const SizedBox(width: 8),
+              IconButton(onPressed: onDelete, icon: const Icon(Icons.delete_outline_rounded, size: 18, color: Colors.redAccent)),
+            ],
+          ),
         ),
       ),
     );
@@ -368,7 +377,7 @@ class _VehicleEditDialogState extends State<_VehicleEditDialog> {
 
 class _AddMaintenanceDialog extends StatefulWidget {
   final int vehicleId;
-  final Function(VehicleMaintenanceEntity, bool) onConfirm;
+  final Function(VehicleMaintenanceEntity, bool, bool, String?) onConfirm;
 
   const _AddMaintenanceDialog({required this.vehicleId, required this.onConfirm});
 
@@ -380,7 +389,9 @@ class _AddMaintenanceDialogState extends State<_AddMaintenanceDialog> {
   final _descController = TextEditingController();
   final _costController = TextEditingController();
   final _mileageController = TextEditingController();
+  final _invoiceController = TextEditingController();
   bool _addExpense = true;
+  bool _hasVat = false;
 
   @override
   Widget build(BuildContext context) {
@@ -397,69 +408,102 @@ class _AddMaintenanceDialogState extends State<_AddMaintenanceDialog> {
           border: Border.all(color: color.withValues(alpha: 0.2), width: 2),
           boxShadow: [BoxShadow(color: Colors.black.withValues(alpha: 0.1), blurRadius: 30)],
         ),
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            Container(
-              padding: const EdgeInsets.all(24),
-              decoration: BoxDecoration(color: color.withValues(alpha: 0.05), borderRadius: const BorderRadius.vertical(top: Radius.circular(32))),
-              child: PremiumHeader(title: "ΝΕΑ ΣΥΝΤΗΡΗΣΗ", icon: Icons.build_circle_rounded, color: color),
-            ),
-            Padding(
-              padding: const EdgeInsets.all(24),
-              child: Column(
-                children: [
-                  TextField(controller: _descController, decoration: const InputDecoration(labelText: "Περιγραφή Εργασιών", prefixIcon: Icon(Icons.description_outlined))),
-                  const SizedBox(height: 12),
-                  Row(
-                    children: [
-                      Expanded(child: TextField(controller: _costController, decoration: const InputDecoration(labelText: "Κόστος (€)", prefixIcon: Icon(Icons.euro_rounded)), keyboardType: TextInputType.number)),
-                      const SizedBox(width: 12),
-                      Expanded(child: TextField(controller: _mileageController, decoration: const InputDecoration(labelText: "Χιλιόμετρα", prefixIcon: Icon(Icons.speed_rounded)), keyboardType: TextInputType.number)),
-                    ],
-                  ),
-                  const SizedBox(height: 12),
-                  Container(
-                    decoration: BoxDecoration(color: Colors.blue.withValues(alpha: 0.05), borderRadius: BorderRadius.circular(16)),
-                    child: CheckboxListTile(
-                      title: const Text("Προσθήκη στα Έξοδα Εταιρείας", style: TextStyle(fontSize: 12, fontWeight: FontWeight.bold)),
-                      value: _addExpense,
-                      onChanged: (v) => setState(() => _addExpense = v!),
-                      contentPadding: const EdgeInsets.symmetric(horizontal: 16),
-                      activeColor: color,
-                    ),
-                  ),
-                ],
+        child: SingleChildScrollView(
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Container(
+                padding: const EdgeInsets.all(24),
+                decoration: BoxDecoration(color: color.withValues(alpha: 0.05), borderRadius: const BorderRadius.vertical(top: Radius.circular(32))),
+                child: PremiumHeader(title: "ΝΕΟ ΕΞΟΔΟ / ΣΥΝΤΗΡΗΣΗ ΟΧΗΜΑΤΟΣ", icon: Icons.local_shipping_rounded, color: color),
               ),
-            ),
-            Padding(
-              padding: const EdgeInsets.all(24),
-              child: Row(
-                children: [
-                  Expanded(child: TextButton(onPressed: () => Navigator.pop(context), child: const Text("ΑΚΥΡΟ", style: TextStyle(fontWeight: FontWeight.w900, color: Colors.grey)))),
-                  const SizedBox(width: 12),
-                  Expanded(
-                    child: ElevatedButton(
-                      onPressed: () {
-                        if (_descController.text.isNotEmpty) {
-                          widget.onConfirm(VehicleMaintenanceEntity(
-                            vehicleId: widget.vehicleId,
-                            description: _descController.text,
-                            cost: double.tryParse(_costController.text) ?? 0.0,
-                            mileage: int.tryParse(_mileageController.text) ?? 0,
-                            date: DateTime.now().millisecondsSinceEpoch,
-                          ), _addExpense);
-                          Navigator.pop(context);
-                        }
-                      },
-                      style: ElevatedButton.styleFrom(backgroundColor: color),
-                      child: const Text("ΚΑΤΑΧΩΡΗΣΗ", style: TextStyle(fontWeight: FontWeight.w900)),
+              Padding(
+                padding: const EdgeInsets.all(24),
+                child: Column(
+                  children: [
+                    TextField(
+                      controller: _descController,
+                      decoration: const InputDecoration(
+                        labelText: "Περιγραφή Εξόδου / Εργασιών",
+                        hintText: "π.χ. Βενζίνη, Service, Ασφάλεια, ΚΤΕΟ, Διόδια",
+                        prefixIcon: Icon(Icons.description_outlined),
+                      ),
                     ),
-                  ),
-                ],
+                    const SizedBox(height: 12),
+                    Row(
+                      children: [
+                        Expanded(child: TextField(controller: _costController, decoration: const InputDecoration(labelText: "Κόστος (€)", prefixIcon: Icon(Icons.euro_rounded)), keyboardType: const TextInputType.numberWithOptions(decimal: true))),
+                        const SizedBox(width: 12),
+                        Expanded(child: TextField(controller: _mileageController, decoration: const InputDecoration(labelText: "Χιλιόμετρα", prefixIcon: Icon(Icons.speed_rounded)), keyboardType: TextInputType.number)),
+                      ],
+                    ),
+                    const SizedBox(height: 12),
+                    TextField(
+                      controller: _invoiceController,
+                      decoration: const InputDecoration(
+                        labelText: "Αριθμός Παραστατικού / Τιμολογίου (Προαιρετικό)",
+                        prefixIcon: Icon(Icons.receipt_long_rounded),
+                      ),
+                    ),
+                    const SizedBox(height: 16),
+                    Container(
+                      decoration: BoxDecoration(color: Colors.blue.withValues(alpha: 0.05), borderRadius: BorderRadius.circular(16)),
+                      child: CheckboxListTile(
+                        title: const Text("Αυτόματη Καταχώρηση στα Έξοδα Εταιρείας", style: TextStyle(fontSize: 12, fontWeight: FontWeight.bold)),
+                        value: _addExpense,
+                        onChanged: (v) => setState(() => _addExpense = v!),
+                        contentPadding: const EdgeInsets.symmetric(horizontal: 16),
+                        activeColor: color,
+                      ),
+                    ),
+                    const SizedBox(height: 8),
+                    Container(
+                      decoration: BoxDecoration(color: Colors.orange.withValues(alpha: 0.05), borderRadius: BorderRadius.circular(16)),
+                      child: CheckboxListTile(
+                        title: const Text("Περιλαμβάνει ΦΠΑ (24%)", style: TextStyle(fontSize: 12, fontWeight: FontWeight.bold)),
+                        value: _hasVat,
+                        onChanged: (v) => setState(() => _hasVat = v!),
+                        contentPadding: const EdgeInsets.symmetric(horizontal: 16),
+                        activeColor: Colors.orange,
+                      ),
+                    ),
+                  ],
+                ),
               ),
-            ),
-          ],
+              Padding(
+                padding: const EdgeInsets.all(24),
+                child: Row(
+                  children: [
+                    Expanded(child: TextButton(onPressed: () => Navigator.pop(context), child: const Text("ΑΚΥΡΟ", style: TextStyle(fontWeight: FontWeight.w900, color: Colors.grey)))),
+                    const SizedBox(width: 12),
+                    Expanded(
+                      child: ElevatedButton(
+                        onPressed: () {
+                          if (_descController.text.trim().isNotEmpty) {
+                            widget.onConfirm(
+                              VehicleMaintenanceEntity(
+                                vehicleId: widget.vehicleId,
+                                description: _descController.text.trim(),
+                                cost: double.tryParse(_costController.text.replaceAll(',', '.')) ?? 0.0,
+                                mileage: int.tryParse(_mileageController.text) ?? 0,
+                                date: DateTime.now().millisecondsSinceEpoch,
+                              ),
+                              _addExpense,
+                              _hasVat,
+                              _invoiceController.text.trim().isEmpty ? null : _invoiceController.text.trim(),
+                            );
+                            Navigator.pop(context);
+                          }
+                        },
+                        style: ElevatedButton.styleFrom(backgroundColor: color),
+                        child: const Text("ΚΑΤΑΧΩΡΗΣΗ", style: TextStyle(fontWeight: FontWeight.w900)),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ],
+          ),
         ),
       ),
     );

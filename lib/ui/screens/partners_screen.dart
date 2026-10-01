@@ -6,6 +6,7 @@ import 'package:mtc2026/providers/project_provider.dart';
 import 'package:mtc2026/ui/components/premium_ui.dart';
 import 'package:mtc2026/utils/excel_exporter.dart';
 import 'package:mtc2026/utils/pdf_generator.dart';
+import 'package:mtc2026/ui/screens/aluminum_ai_training_screen.dart';
 
 class PartnersScreen extends StatefulWidget {
   const PartnersScreen({super.key});
@@ -23,7 +24,7 @@ class _PartnersScreenState extends State<PartnersScreen> {
     final isDesktop = MediaQuery.of(context).size.width > 900;
 
     return Scaffold(
-      backgroundColor: const Color(0xFFF1F5F9),
+      backgroundColor: const Color(0xFFE2E8F0),
       appBar: AppBar(
         title: const Text("ΔΙΑΧΕΙΡΙΣΗ ΕΡΓΑΤΩΝ", style: TextStyle(fontWeight: FontWeight.w900, fontSize: 14)),
         actions: [
@@ -169,46 +170,78 @@ class _WorkerCardPremium extends StatelessWidget {
   Widget build(BuildContext context) {
     const color = Color(0xFF4361EE);
     
-    return PremiumCard(
-      onTap: onTap,
-      accentColor: color,
-      padding: const EdgeInsets.all(16),
-      child: Row(
-        children: [
-          Container(
-            width: 52, height: 52,
-            decoration: BoxDecoration(
-              gradient: LinearGradient(colors: [color, color.withValues(alpha: 0.7)]),
-              borderRadius: BorderRadius.circular(16),
-              boxShadow: [BoxShadow(color: color.withValues(alpha: 0.3), blurRadius: 10, offset: const Offset(0, 4))],
-            ),
-            child: const Icon(Icons.person_rounded, color: Colors.white, size: 26),
+    return Container(
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(20),
+        border: Border.all(color: color.withValues(alpha: 0.15), width: 1.5),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withValues(alpha: 0.03),
+            blurRadius: 15,
+            offset: const Offset(0, 4),
           ),
-          const SizedBox(width: 16),
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              mainAxisAlignment: MainAxisAlignment.center,
+        ],
+      ),
+      child: Material(
+        color: Colors.transparent,
+        borderRadius: BorderRadius.circular(20),
+        child: InkWell(
+          onTap: onTap,
+          borderRadius: BorderRadius.circular(20),
+          child: Padding(
+            padding: const EdgeInsets.all(20),
+            child: Row(
               children: [
-                Text(partner.name.toUpperCase(), style: const TextStyle(fontWeight: FontWeight.w900, fontSize: 13, color: Color(0xFF1E293B)), maxLines: 1, overflow: TextOverflow.ellipsis),
-                const SizedBox(height: 4),
-                Row(
-                  children: [
-                    const Icon(Icons.euro_rounded, size: 12, color: Color(0xFF38B000)),
-                    const SizedBox(width: 4),
-                    Text("${partner.baseRate.toStringAsFixed(0)} €", style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 11, color: Color(0xFF38B000))),
-                    const SizedBox(width: 12),
-                    const Icon(Icons.phone_android_rounded, size: 12, color: Colors.blueGrey),
-                    const SizedBox(width: 4),
-                    Text(partner.phone, style: const TextStyle(fontSize: 11, color: Colors.blueGrey)),
-                  ],
+                Container(
+                  width: 52, height: 52,
+                  decoration: BoxDecoration(
+                    gradient: LinearGradient(colors: [color, color.withValues(alpha: 0.7)]),
+                    borderRadius: BorderRadius.circular(16),
+                    boxShadow: [BoxShadow(color: color.withValues(alpha: 0.3), blurRadius: 10, offset: const Offset(0, 4))],
+                  ),
+                  child: const Icon(Icons.person_rounded, color: Colors.white, size: 26),
                 ),
+                const SizedBox(width: 20),
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      Text(partner.name.toUpperCase(), style: const TextStyle(fontWeight: FontWeight.w900, fontSize: 12, color: Color(0xFF1E293B)), maxLines: 1, overflow: TextOverflow.ellipsis),
+                      const SizedBox(height: 4),
+                      Row(
+                        children: [
+                          const Icon(Icons.euro_rounded, size: 10, color: Color(0xFF38B000)),
+                          const SizedBox(width: 2),
+                          Text("${partner.baseRate.toStringAsFixed(0)} €", style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 10, color: Color(0xFF38B000))),
+                          const SizedBox(width: 8),
+                          const Icon(Icons.phone_android_rounded, size: 10, color: Colors.blueGrey),
+                          const SizedBox(width: 2),
+                          Expanded(child: Text(partner.phone, style: const TextStyle(fontSize: 10, color: Colors.blueGrey), maxLines: 1, overflow: TextOverflow.ellipsis)),
+                        ],
+                      ),
+                    ],
+                  ),
+                ),
+                if (partner.trade == "Αλουμινάς")
+                  IconButton(
+                    tooltip: "AI Εκπαίδευση",
+                    padding: const EdgeInsets.all(4),
+                    constraints: const BoxConstraints(),
+                    onPressed: () {
+                      Navigator.push(context, MaterialPageRoute(builder: (context) => AluminumAiTrainingScreen(partner: partner)));
+                    },
+                    icon: const Icon(Icons.psychology_rounded, color: Color(0xFF7209B7), size: 20),
+                  ),
+                const SizedBox(width: 8),
+                IconButton(padding: const EdgeInsets.all(4), constraints: const BoxConstraints(), onPressed: onCall, icon: const Icon(Icons.call_rounded, color: Colors.blue, size: 18)),
+                const SizedBox(width: 8),
+                IconButton(padding: const EdgeInsets.all(4), constraints: const BoxConstraints(), onPressed: onDelete, icon: const Icon(Icons.delete_outline_rounded, color: Colors.redAccent, size: 18)),
               ],
             ),
           ),
-          IconButton(onPressed: onCall, icon: const Icon(Icons.call_rounded, color: Colors.blue, size: 20)),
-          IconButton(onPressed: onDelete, icon: const Icon(Icons.delete_outline_rounded, color: Colors.redAccent, size: 20)),
-        ],
+        ),
       ),
     );
   }
@@ -230,7 +263,7 @@ class _PartnerEntryDialogState extends State<_PartnerEntryDialog> {
   late String _selectedTrade;
   late TextEditingController _rateController;
 
-  final List<String> _defaultTrades = ["Εργάτης", "Προμηθευτής Μαρμάρων", "Εκσκαφές", "Μπετά", "Χτίστης", "Ηλεκτρολόγος", "Υδραυλικός", "Σοβατζής", "Μαρμαράς", "Πλακάς", "Γυψοσανιδάς", "Μονωτής", "Αλουμινάς", "Ξυλουργός", "Ελαιοχρωματιστής", "Σιδεράς", "Γεμίσματα", "Θερμοπρόσοψη", "Πατωματζής"];
+  final List<String> _defaultTrades = ["Εργάτης", "Ανακύκλωση Μπάζων", "Προμηθευτής Μαρμάρων", "Εκσκαφές", "Μπετά", "Χτίστης", "Ηλεκτρολόγος", "Υδραυλικός", "Σοβατζής", "Μαρμαράς", "Πλακάς", "Γυψοσανιδάς", "Μονωτής", "Αλουμινάς", "Ξυλουργός", "Ελαιοχρωματιστής", "Σιδεράς", "Γεμίσματα", "Θερμοπρόσοψη", "Πατωματζής"];
 
   @override
   void initState() {
@@ -253,51 +286,79 @@ class _PartnerEntryDialogState extends State<_PartnerEntryDialog> {
         decoration: BoxDecoration(
           color: Colors.white,
           borderRadius: BorderRadius.circular(32),
-          border: Border.all(color: color.withValues(alpha: 0.2), width: 2),
           boxShadow: [BoxShadow(color: Colors.black.withValues(alpha: 0.1), blurRadius: 30)],
         ),
         child: SingleChildScrollView(
           child: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
-              Container(
-                padding: const EdgeInsets.all(24),
-                decoration: BoxDecoration(
-                  color: color.withValues(alpha: 0.05),
-                  borderRadius: const BorderRadius.vertical(top: Radius.circular(32)),
-                ),
-                child: PremiumHeader(
-                  title: widget.initialPartner == null ? "ΝΕΟΣ ΣΥΝΕΡΓΑΤΗΣ" : "ΕΠΕΞΕΡΓΑΣΙΑ ΣΤΟΙΧΕΙΩΝ",
-                  icon: Icons.person_add_rounded,
-                  color: color,
+              Padding(
+                padding: const EdgeInsets.only(top: 32, bottom: 16),
+                child: Container(
+                  padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
+                  decoration: BoxDecoration(
+                    color: color.withValues(alpha: 0.08),
+                    borderRadius: BorderRadius.circular(20),
+                  ),
+                  child: Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Icon(widget.initialPartner == null ? Icons.person_add_rounded : Icons.edit_rounded, color: color, size: 24),
+                      const SizedBox(width: 12),
+                      Text(
+                        widget.initialPartner == null ? "ΝΕΟΣ ΣΥΝΕΡΓΑΤΗΣ" : "ΕΠΕΞΕΡΓΑΣΙΑ",
+                        style: const TextStyle(fontWeight: FontWeight.w900, color: Color(0xFF1E293B), fontSize: 16, letterSpacing: 0.5),
+                      ),
+                    ],
+                  ),
                 ),
               ),
               Padding(
-                padding: const EdgeInsets.all(24),
+                padding: const EdgeInsets.symmetric(horizontal: 32, vertical: 16),
                 child: Column(
                   children: [
-                    TextField(controller: _nameController, decoration: const InputDecoration(labelText: "Ονοματεπώνυμο", prefixIcon: Icon(Icons.person_outline))),
-                    const SizedBox(height: 12),
-                    TextField(controller: _phoneController, decoration: const InputDecoration(labelText: "Τηλέφωνο", prefixIcon: Icon(Icons.phone_outlined)), keyboardType: TextInputType.phone),
-                    const SizedBox(height: 12),
-                    TextField(controller: _rateController, decoration: const InputDecoration(labelText: "Βασικό Μεροκάματο (€)", prefixIcon: Icon(Icons.euro_rounded)), keyboardType: TextInputType.number),
+                    _buildMinimalTextField(_nameController, "Ονοματεπώνυμο", Icons.person_outline),
+                    const SizedBox(height: 16),
+                    _buildMinimalTextField(_phoneController, "Τηλέφωνο", Icons.phone_outlined, type: TextInputType.phone),
                     const SizedBox(height: 16),
                     DropdownButtonFormField<String>(
                       value: _selectedTrade,
                       isExpanded: true,
-                      decoration: const InputDecoration(labelText: "Ειδικότητα", prefixIcon: Icon(Icons.engineering_outlined)),
-                      items: _defaultTrades.map((t) => DropdownMenuItem(value: t, child: Text(t, style: const TextStyle(fontSize: 13)))).toList(),
-                      onChanged: (v) => setState(() => _selectedTrade = v!),
+                      decoration: InputDecoration(
+                        labelText: "Ειδικότητα", 
+                        prefixIcon: const Icon(Icons.engineering_outlined),
+                        filled: true,
+                        fillColor: const Color(0xFFF1F5F9),
+                        border: OutlineInputBorder(borderRadius: BorderRadius.circular(16), borderSide: BorderSide.none),
+                      ),
+                      items: _defaultTrades.map((t) => DropdownMenuItem(value: t, child: Text(t, style: const TextStyle(fontSize: 14, fontWeight: FontWeight.bold)))).toList(),
+                      onChanged: (v) {
+                        setState(() {
+                           _selectedTrade = v!;
+                           if (_selectedTrade != "Εργάτης") {
+                             _rateController.text = "0";
+                           }
+                        });
+                      },
                     ),
+                    if (_selectedTrade == "Εργάτης") ...[
+                      const SizedBox(height: 16),
+                      _buildMinimalTextField(_rateController, "Βασικό Μεροκάματο (€)", Icons.euro_rounded, type: TextInputType.number),
+                    ],
                   ],
                 ),
               ),
               Padding(
-                padding: const EdgeInsets.all(24),
+                padding: const EdgeInsets.fromLTRB(32, 16, 32, 32),
                 child: Row(
                   children: [
-                    Expanded(child: TextButton(onPressed: () => Navigator.pop(context), child: Text("ΑΚΥΡΟ", style: TextStyle(fontWeight: FontWeight.w900, color: Colors.blueGrey.withValues(alpha: 0.6))))),
-                    const SizedBox(width: 12),
+                    Expanded(
+                      child: TextButton(
+                        onPressed: () => Navigator.pop(context), 
+                        child: const Text("ΑΚΥΡΟ", style: TextStyle(fontWeight: FontWeight.w900, fontSize: 14, color: Colors.blueGrey)),
+                      ),
+                    ),
+                    const SizedBox(width: 16),
                     Expanded(
                       child: ElevatedButton(
                         onPressed: () {
@@ -306,8 +367,13 @@ class _PartnerEntryDialogState extends State<_PartnerEntryDialog> {
                             Navigator.pop(context);
                           }
                         },
-                        style: ElevatedButton.styleFrom(backgroundColor: color),
-                        child: const Text("ΑΠΟΘΗΚΕΥΣΗ", style: TextStyle(fontWeight: FontWeight.w900)),
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: color,
+                          padding: const EdgeInsets.symmetric(vertical: 16),
+                          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+                          elevation: 0,
+                        ),
+                        child: const Text("ΑΠΟΘΗΚΕΥΣΗ", style: TextStyle(fontWeight: FontWeight.w900, fontSize: 14)),
                       ),
                     ),
                   ],
@@ -316,6 +382,23 @@ class _PartnerEntryDialogState extends State<_PartnerEntryDialog> {
             ],
           ),
         ),
+      ),
+    );
+  }
+
+  Widget _buildMinimalTextField(TextEditingController controller, String label, IconData icon, {TextInputType type = TextInputType.text}) {
+    return TextField(
+      controller: controller,
+      keyboardType: type,
+      style: const TextStyle(fontWeight: FontWeight.bold, color: Color(0xFF1E293B)),
+      decoration: InputDecoration(
+        labelText: label,
+        labelStyle: const TextStyle(fontWeight: FontWeight.w600, color: Colors.blueGrey),
+        prefixIcon: Icon(icon, color: Colors.blueGrey),
+        filled: true,
+        fillColor: const Color(0xFFE2E8F0).withValues(alpha: 0.6), // Απαλό γκρι όπως στη φώτο
+        border: OutlineInputBorder(borderRadius: BorderRadius.circular(16), borderSide: BorderSide.none),
+        focusedBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(16), borderSide: const BorderSide(color: Color(0xFF4361EE), width: 2)),
       ),
     );
   }

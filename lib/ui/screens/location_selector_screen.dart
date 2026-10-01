@@ -74,38 +74,53 @@ class _SelectorCard extends StatelessWidget {
   Widget build(BuildContext context) {
     final isDesktop = MediaQuery.of(context).size.width > 900;
     
-    return InkWell(
-      onTap: onClick,
-      borderRadius: BorderRadius.circular(32),
-      child: Card(
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(32)),
-        elevation: 4,
-        child: Container(
-          height: isDesktop ? 180 : 140,
-          padding: const EdgeInsets.symmetric(horizontal: 32),
-          child: Row(
-            children: [
-              Container(
-                width: 70,
-                height: 70,
-                decoration: BoxDecoration(
-                  color: color.withValues(alpha: 0.1),
-                  borderRadius: BorderRadius.circular(20),
+    return Container(
+      decoration: BoxDecoration(
+        color: color,
+        borderRadius: BorderRadius.circular(32),
+        boxShadow: [
+          BoxShadow(
+            color: color.withValues(alpha: 0.35),
+            blurRadius: 15,
+            offset: const Offset(0, 6),
+          ),
+        ],
+      ),
+      child: Material(
+        color: Colors.transparent,
+        borderRadius: BorderRadius.circular(32),
+        child: InkWell(
+          onTap: onClick,
+          borderRadius: BorderRadius.circular(32),
+          child: Container(
+            height: isDesktop ? 180 : 140,
+            padding: const EdgeInsets.symmetric(horizontal: 32),
+            child: Row(
+              children: [
+                Container(
+                  width: 70,
+                  height: 70,
+                  decoration: BoxDecoration(
+                    color: Colors.white.withValues(alpha: 0.2),
+                    borderRadius: BorderRadius.circular(20),
+                  ),
+                  child: Icon(icon, color: Colors.white, size: 36),
                 ),
-                child: Icon(icon, color: color, size: 36),
-              ),
-              const SizedBox(width: 32),
-              Text(
-                label,
-                style: TextStyle(
-                  fontWeight: FontWeight.w900,
-                  fontSize: isDesktop ? 24 : 18,
-                  letterSpacing: 1.5,
+                const SizedBox(width: 32),
+                Expanded(
+                  child: Text(
+                    label,
+                    style: TextStyle(
+                      fontWeight: FontWeight.w900,
+                      color: Colors.white,
+                      fontSize: isDesktop ? 24 : 18,
+                      letterSpacing: 1.5,
+                    ),
+                  ),
                 ),
-              ),
-              const Spacer(),
-              Icon(Icons.arrow_forward_ios_rounded, color: color.withValues(alpha: 0.3)),
-            ],
+                Icon(Icons.arrow_forward_ios_rounded, color: Colors.white.withValues(alpha: 0.5)),
+              ],
+            ),
           ),
         ),
       ),

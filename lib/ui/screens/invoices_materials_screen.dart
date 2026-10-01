@@ -25,7 +25,7 @@ class InvoicesMaterialsScreen extends StatelessWidget {
     }
 
     return Scaffold(
-      backgroundColor: const Color(0xFFF1F5F9),
+      backgroundColor: const Color(0xFFE2E8F0),
       appBar: AppBar(
         title: const Text("ΤΙΜΟΛΟΓΙΑ & ΥΛΙΚΑ", style: TextStyle(fontWeight: FontWeight.w900, fontSize: 14)),
         actions: [

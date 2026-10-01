@@ -73,36 +73,204 @@ class _ProjectCalendarScreenState extends State<ProjectCalendarScreen> with Sing
       return dt.year == _selectedDate.year && dt.month == _selectedDate.month && dt.day == _selectedDate.day;
     }).toList();
 
+    final isDesktop = MediaQuery.of(context).size.width > 900;
+
+    if (isDesktop) {
+      return Padding(
+        padding: const EdgeInsets.all(24.0),
+        child: Row(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Expanded(
+              flex: 6,
+              child: Card(
+                elevation: 0,
+                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(24), side: BorderSide(color: Colors.blue.withValues(alpha: 0.12))),
+                child: Padding(
+                  padding: const EdgeInsets.all(16.0),
+                  child: Column(
+                    children: [
+                      _buildMonthHeader(),
+                      _buildWeekdayHeader(),
+                      const SizedBox(height: 8),
+                      _buildMonthGrid(projectTasks),
+                    ],
+                  ),
+                ),
+              ),
+            ),
+            const SizedBox(width: 24),
+            Expanded(
+              flex: 5,
+              child: Card(
+                elevation: 0,
+                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(24), side: BorderSide(color: Colors.blue.withValues(alpha: 0.12))),
+                child: Padding(
+                  padding: const EdgeInsets.all(20.0),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        children: [
+                          Text(
+                            DateFormat('EEEE, dd MMMM', 'el').format(_selectedDate).toUpperCase(),
+                            style: TextStyle(fontWeight: FontWeight.w900, color: Theme.of(context).primaryColor, fontSize: 13),
+                          ),
+                          ElevatedButton.icon(
+                            onPressed: () => _showTaskDialog(context),
+                            icon: const Icon(Icons.add_rounded, size: 16),
+                            label: const Text("ΝΕΑ ΕΡΓΑΣΙΑ", style: TextStyle(fontWeight: FontWeight.w900, fontSize: 11)),
+                            style: ElevatedButton.styleFrom(
+                              backgroundColor: const Color(0xFF2563EB),
+                              foregroundColor: Colors.white,
+                              padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
+                              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                            ),
+                          ),
+                        ],
+                      ),
+                      const Divider(height: 24),
+                      if (selectedDateTasks.isEmpty)
+                        const Expanded(
+                          child: Center(
+                            child: Text(
+                              "Καμία εργασία για την επιλεγμένη ημέρα",
+                              style: TextStyle(color: Colors.grey, fontStyle: FontStyle.italic, fontSize: 13),
+                            ),
+                          ),
+                        )
+                      else
+                        Expanded(
+                          child: ListView.builder(
+                            itemCount: selectedDateTasks.length,
+                            itemBuilder: (context, index) {
+                              final task = selectedDateTasks[index];
+                              return Card(
+                                elevation: 0,
+                                margin: const EdgeInsets.only(bottom: 10),
+                                shape: RoundedRectangleBorder(
+                                  borderRadius: BorderRadius.circular(16),
+                                  side: BorderSide(color: Colors.blue.withValues(alpha: 0.15)),
+                                ),
+                                child: ListTile(
+                                  leading: Checkbox(
+                                    value: task.isCompleted,
+                                    activeColor: const Color(0xFF10B981),
+                                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(6)),
+                                    onChanged: (v) => provider.updateTask(task.copyWith(isCompleted: v!)),
+                                  ),
+                                  title: Text(
+                                    task.description,
+                                    style: TextStyle(
+                                      decoration: task.isCompleted ? TextDecoration.lineThrough : null,
+                                      fontWeight: FontWeight.bold,
+                                      fontSize: 13,
+                                      color: task.isCompleted ? Colors.grey : const Color(0xFF1E293B),
+                                    ),
+                                  ),
+                                  subtitle: Text(
+                                    DateFormat('HH:mm').format(DateTime.fromMillisecondsSinceEpoch(task.date)),
+                                    style: const TextStyle(fontSize: 11, fontWeight: FontWeight.bold, color: Colors.blue),
+                                  ),
+                                  trailing: IconButton(
+                                    icon: const Icon(Icons.delete_outline_rounded, size: 18, color: Colors.redAccent),
+                                    onPressed: () => provider.deleteTask(task.id),
+                                  ),
+                                  onTap: () => _showTaskDialog(context, task: task),
+                                ),
+                              );
+                            },
+                          ),
+                        ),
+                    ],
+                  ),
+                ),
+              ),
+            ),
+          ],
+        ),
+      );
+    }
+
     return SingleChildScrollView(
       child: Column(
         children: [
           _buildMonthHeader(),
+          _buildWeekdayHeader(),
           _buildMonthGrid(projectTasks),
           const Divider(),
           Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 8),
-            child: Text(DateFormat('EEEE, dd MMMM', 'el').format(_selectedDate).toUpperCase(), style: TextStyle(fontWeight: FontWeight.w900, color: Theme.of(context).primaryColor, fontSize: 12)),
+            padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 8),
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                Text(
+                  DateFormat('EEEE, dd MMMM', 'el').format(_selectedDate).toUpperCase(),
+                  style: TextStyle(fontWeight: FontWeight.w900, color: Theme.of(context).primaryColor, fontSize: 12),
+                ),
+                ElevatedButton.icon(
+                  onPressed: () => _showTaskDialog(context),
+                  icon: const Icon(Icons.add_rounded, size: 16),
+                  label: const Text("ΝΕΑ ΕΡΓΑΣΙΑ", style: TextStyle(fontWeight: FontWeight.w900, fontSize: 10)),
+                  style: ElevatedButton.styleFrom(
+                    padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                    elevation: 0,
+                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                  ),
+                ),
+              ],
+            ),
           ),
           if (selectedDateTasks.isEmpty)
             const Padding(
               padding: EdgeInsets.all(32.0),
-              child: Center(child: Text("Καμία εργασία")),
+              child: Center(
+                child: Text(
+                  "Καμία εργασία για την επιλεγμένη ημέρα",
+                  style: TextStyle(color: Colors.grey, fontStyle: FontStyle.italic, fontSize: 12),
+                ),
+              ),
             )
           else
             ListView.builder(
               shrinkWrap: true,
               physics: const NeverScrollableScrollPhysics(),
-              padding: const EdgeInsets.all(16),
+              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
               itemCount: selectedDateTasks.length,
               itemBuilder: (context, index) {
                 final task = selectedDateTasks[index];
                 return Card(
+                  elevation: 0,
                   margin: const EdgeInsets.only(bottom: 8),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(16),
+                    side: BorderSide(color: Colors.blue.withValues(alpha: 0.15)),
+                  ),
                   child: ListTile(
-                    leading: Checkbox(value: task.isCompleted, onChanged: (v) => provider.updateTask(task.copyWith(isCompleted: v!))),
-                    title: Text(task.description, style: TextStyle(decoration: task.isCompleted ? TextDecoration.lineThrough : null, fontWeight: FontWeight.bold)),
-                    subtitle: Text(DateFormat('HH:mm').format(DateTime.fromMillisecondsSinceEpoch(task.date))),
-                    trailing: IconButton(icon: const Icon(Icons.delete, size: 20), onPressed: () => provider.deleteTask(task.id)),
+                    leading: Checkbox(
+                      value: task.isCompleted,
+                      activeColor: const Color(0xFF10B981),
+                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(6)),
+                      onChanged: (v) => provider.updateTask(task.copyWith(isCompleted: v!)),
+                    ),
+                    title: Text(
+                      task.description,
+                      style: TextStyle(
+                        decoration: task.isCompleted ? TextDecoration.lineThrough : null,
+                        fontWeight: FontWeight.bold,
+                        fontSize: 13,
+                        color: task.isCompleted ? Colors.grey : const Color(0xFF1E293B),
+                      ),
+                    ),
+                    subtitle: Text(
+                      DateFormat('HH:mm').format(DateTime.fromMillisecondsSinceEpoch(task.date)),
+                      style: const TextStyle(fontSize: 11, fontWeight: FontWeight.bold, color: Colors.blue),
+                    ),
+                    trailing: IconButton(
+                      icon: const Icon(Icons.delete_outline_rounded, size: 18, color: Colors.redAccent),
+                      onPressed: () => provider.deleteTask(task.id),
+                    ),
                     onTap: () => _showTaskDialog(context, task: task),
                   ),
                 );
@@ -115,6 +283,8 @@ class _ProjectCalendarScreenState extends State<ProjectCalendarScreen> with Sing
   }
 
   Widget _buildAttendanceTab(ProjectProvider provider) {
+    final isDesktop = MediaQuery.of(context).size.width > 900;
+
     return FutureBuilder<List<AttendanceEntity>>(
       future: provider.getAttendanceInRange(
         DateTime(_selectedDate.year, _selectedDate.month, _selectedDate.day).millisecondsSinceEpoch,
@@ -123,20 +293,129 @@ class _ProjectCalendarScreenState extends State<ProjectCalendarScreen> with Sing
       builder: (context, snapshot) {
         final attendance = snapshot.data?.where((a) => a.projectId == widget.project.id).toList() ?? [];
 
+        if (isDesktop) {
+          return Padding(
+            padding: const EdgeInsets.all(24.0),
+            child: Row(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Expanded(
+                  flex: 6,
+                  child: Card(
+                    elevation: 0,
+                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(24), side: BorderSide(color: Colors.blue.withValues(alpha: 0.12))),
+                    child: Padding(
+                      padding: const EdgeInsets.all(16.0),
+                      child: Column(
+                        children: [
+                          _buildMonthHeader(),
+                          _buildWeekdayHeader(),
+                          const SizedBox(height: 8),
+                          _buildMonthGrid([]),
+                        ],
+                      ),
+                    ),
+                  ),
+                ),
+                const SizedBox(width: 24),
+                Expanded(
+                  flex: 5,
+                  child: Card(
+                    elevation: 0,
+                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(24), side: BorderSide(color: Colors.blue.withValues(alpha: 0.12))),
+                    child: Padding(
+                      padding: const EdgeInsets.all(20.0),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Row(
+                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                            children: [
+                              Text(
+                                DateFormat('EEEE, dd MMMM', 'el').format(_selectedDate).toUpperCase(),
+                                style: TextStyle(fontWeight: FontWeight.w900, color: Theme.of(context).primaryColor, fontSize: 13),
+                              ),
+                              ElevatedButton.icon(
+                                onPressed: () => _showAddAttendance(context),
+                                icon: const Icon(Icons.person_add_rounded, size: 16),
+                                label: const Text("ΠΡΟΣΘΗΚΗ ΠΑΡΟΥΣΙΑΣ", style: TextStyle(fontWeight: FontWeight.w900, fontSize: 11)),
+                                style: ElevatedButton.styleFrom(
+                                  backgroundColor: const Color(0xFF2563EB),
+                                  foregroundColor: Colors.white,
+                                  padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
+                                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                                ),
+                              ),
+                            ],
+                          ),
+                          const Divider(height: 24),
+                          if (attendance.isEmpty)
+                            const Expanded(
+                              child: Center(
+                                child: Text(
+                                  "Καμία παρουσία για την επιλεγμένη ημέρα",
+                                  style: TextStyle(color: Colors.grey, fontStyle: FontStyle.italic, fontSize: 13),
+                                ),
+                              ),
+                            )
+                          else
+                            Expanded(
+                              child: ListView.builder(
+                                itemCount: attendance.length,
+                                itemBuilder: (context, index) {
+                                  final record = attendance[index];
+                                  return _AttendanceCard(record: record, onDelete: () => provider.deleteAttendance(record.id).then((_) => setState(() {})));
+                                },
+                              ),
+                            ),
+                        ],
+                      ),
+                    ),
+                  ),
+                ),
+              ],
+            ),
+          );
+        }
+
         return SingleChildScrollView(
           child: Column(
             children: [
               _buildMonthHeader(),
+              _buildWeekdayHeader(),
               _buildMonthGrid([]),
               const Divider(),
               Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 8),
-                child: Text(DateFormat('EEEE, dd MMMM', 'el').format(_selectedDate).toUpperCase(), style: TextStyle(fontWeight: FontWeight.w900, color: Theme.of(context).primaryColor, fontSize: 12)),
+                padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 8),
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    Text(
+                      DateFormat('EEEE, dd MMMM', 'el').format(_selectedDate).toUpperCase(),
+                      style: TextStyle(fontWeight: FontWeight.w900, color: Theme.of(context).primaryColor, fontSize: 12),
+                    ),
+                    ElevatedButton.icon(
+                      onPressed: () => _showAddAttendance(context),
+                      icon: const Icon(Icons.person_add_rounded, size: 16),
+                      label: const Text("ΠΡΟΣΘΗΚΗ ΠΑΡΟΥΣΙΑΣ", style: TextStyle(fontWeight: FontWeight.w900, fontSize: 10)),
+                      style: ElevatedButton.styleFrom(
+                        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                        elevation: 0,
+                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                      ),
+                    ),
+                  ],
+                ),
               ),
               if (attendance.isEmpty)
                 const Padding(
                   padding: EdgeInsets.all(32.0),
-                  child: Center(child: Text("Καμία παρουσία")),
+                  child: Center(
+                    child: Text(
+                      "Καμία παρουσία για την επιλεγμένη ημέρα",
+                      style: TextStyle(color: Colors.grey, fontStyle: FontStyle.italic, fontSize: 12),
+                    ),
+                  ),
                 )
               else
                 ListView.builder(
@@ -167,6 +446,30 @@ class _ProjectCalendarScreenState extends State<ProjectCalendarScreen> with Sing
           Text(DateFormat('MMMM yyyy', 'el').format(_currentMonth).toUpperCase(), style: const TextStyle(fontWeight: FontWeight.w900, fontSize: 16)),
           IconButton(icon: const Icon(Icons.chevron_right), onPressed: () => setState(() => _currentMonth = DateTime(_currentMonth.year, _currentMonth.month + 1))),
         ],
+      ),
+    );
+  }
+
+  Widget _buildWeekdayHeader() {
+    const days = ['ΔΕΥ', 'ΤΡΙ', 'ΤΕΤ', 'ΠΕΜ', 'ΠΑΡ', 'ΣΑΒ', 'ΚΥΡ'];
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.spaceAround,
+        children: days
+            .map((day) => Expanded(
+                  child: Center(
+                    child: Text(
+                      day,
+                      style: const TextStyle(
+                        fontSize: 10,
+                        fontWeight: FontWeight.w800,
+                        color: Colors.blueGrey,
+                      ),
+                    ),
+                  ),
+                ))
+            .toList(),
       ),
     );
   }

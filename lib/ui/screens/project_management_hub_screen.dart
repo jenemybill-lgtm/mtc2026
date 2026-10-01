@@ -11,7 +11,6 @@ import 'package:mtc2026/ui/screens/project_documents_screen.dart';
 import 'package:mtc2026/ui/screens/project_sketches_screen.dart';
 import 'package:mtc2026/ui/screens/project_timeline_screen.dart';
 import 'package:mtc2026/ui/screens/shopping_list_screen.dart';
-import 'package:mtc2026/ui/screens/partners_screen.dart';
 import 'package:mtc2026/ui/screens/tool_category_picker_screen.dart';
 import 'package:mtc2026/ui/screens/material_category_picker_screen.dart';
 import 'package:mtc2026/ui/screens/invoices_materials_screen.dart';
@@ -20,8 +19,8 @@ import 'package:mtc2026/ui/screens/weekly_payroll_screen.dart';
 import 'package:mtc2026/ui/screens/project_partners_screen.dart';
 import 'package:mtc2026/ui/screens/project_checklist_screen.dart';
 import 'package:mtc2026/ui/screens/project_material_needs_screen.dart';
-import 'package:mtc2026/ui/screens/project_roi_screen.dart';
 import 'package:mtc2026/ui/screens/project_notes_screen.dart';
+import 'package:mtc2026/ui/screens/project_specifications_screen.dart';
 
 class ProjectManagementHubScreen extends StatefulWidget {
   final Project project;
@@ -117,6 +116,8 @@ class _ProjectManagementHubScreenState extends State<ProjectManagementHubScreen>
             },
           )),
           _MgmtModule("Τιμολόγια", Icons.receipt_rounded, const Color(0xFF0369A1), InvoicesMaterialsScreen(expenses: provider.currentProjectExpenses, onDelete: (e) => provider.deleteExpense(project.id, e.id))),
+          _MgmtModule("Προδιαγραφές Υλικών", Icons.verified_rounded, Colors.teal, ProjectSpecificationsScreen(project: project)),
+          _MgmtModule("Checklist", Icons.fact_check_rounded, Colors.orange, ProjectChecklistScreen(project: project)),
           _MgmtModule("Timeline", Icons.timeline_rounded, const Color(0xFFFF9F1C), ProjectTimelineScreen(projectId: project.id)),
         ]),
         isDesktop: isDesktop,
@@ -174,8 +175,8 @@ class _ProjectManagementHubScreenState extends State<ProjectManagementHubScreen>
             onClick: () => _openCategory(context, "ΓΕΝΙΚΑ ΕΡΓΟΥ", [
               _MgmtModule("Φωτογραφίες", Icons.camera_roll_rounded, const Color(0xFF64748B), ProjectPhotosScreen(projectId: project.id)),
               _MgmtModule("Έγγραφα", Icons.folder_copy_rounded, const Color(0xFF475569), ProjectDocumentsScreen(projectId: project.id)),
-              _MgmtModule("Σχέδια", Icons.edit_rounded, const Color(0xFF334155), ProjectSketchesScreen(projectId: project.id)),
-              _MgmtModule("Checklist", Icons.fact_check_rounded, Colors.orange, ProjectChecklistScreen(projectId: project.id)),
+                  _MgmtModule("Σχέδια", Icons.edit_rounded, const Color(0xFF334155), ProjectSketchesScreen(projectId: project.id)),
+              _MgmtModule("Checklist", Icons.fact_check_rounded, Colors.orange, ProjectChecklistScreen(project: project)),
               _MgmtModule("Σημειωματάριο", Icons.notes_rounded, Colors.blue, ProjectNotesScreen(project: project)),
             ]),
             isDesktop: isDesktop,
@@ -243,31 +244,49 @@ class _ProjectManagementHubScreenState extends State<ProjectManagementHubScreen>
                     final dateStr = DateFormat('dd/MM/yyyy HH:mm').format(DateTime.fromMillisecondsSinceEpoch(note.dateAdded));
                     return Container(
                       width: double.infinity,
-                      margin: const EdgeInsets.only(bottom: 8),
-                      padding: const EdgeInsets.all(12),
+                      margin: const EdgeInsets.only(bottom: 12),
                       decoration: BoxDecoration(
                         color: Colors.white,
-                        borderRadius: BorderRadius.circular(16),
-                        border: Border.all(color: const Color(0xFFFF9800).withValues(alpha: 0.2)),
-                      ),
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Row(
-                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                            children: [
-                              Text(dateStr, style: const TextStyle(fontSize: 10, fontWeight: FontWeight.bold, color: Colors.blueGrey)),
-                              IconButton(
-                                icon: const Icon(Icons.delete_outline_rounded, size: 16, color: Colors.redAccent),
-                                onPressed: () async {
-                                  await provider.deleteProjectNote(widget.project.id, note.id);
-                                  setState(() {});
-                                },
-                              ),
-                            ],
+                        borderRadius: BorderRadius.circular(20),
+                        border: Border.all(color: const Color(0xFFFF9800).withValues(alpha: 0.3), width: 1.2),
+                        boxShadow: [
+                          BoxShadow(
+                            color: const Color(0xFFFF9800).withValues(alpha: 0.06),
+                            blurRadius: 10,
+                            offset: const Offset(0, 4),
                           ),
-                          Text(note.content, style: const TextStyle(fontSize: 12, color: Color(0xFF1E293B), fontWeight: FontWeight.w600)),
                         ],
+                      ),
+                      child: Material(
+                        color: Colors.transparent,
+                        borderRadius: BorderRadius.circular(20),
+                        child: InkWell(
+                          onTap: () => _showNoteOptions(context, provider, note),
+                          onLongPress: () => _showNoteOptions(context, provider, note),
+                          borderRadius: BorderRadius.circular(20),
+                          child: Padding(
+                            padding: const EdgeInsets.all(16),
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Row(
+                                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                                  children: [
+                                    Row(
+                                      children: [
+                                        const Icon(Icons.access_time_rounded, size: 12, color: Colors.blueGrey),
+                                        const SizedBox(width: 4),
+                                        Text(dateStr, style: const TextStyle(fontSize: 10, fontWeight: FontWeight.bold, color: Colors.blueGrey)),
+                                      ],
+                                    ),
+                                  ],
+                                ),
+                                const SizedBox(height: 10),
+                                Text(note.content, style: const TextStyle(fontSize: 13, color: Color(0xFF1E293B), fontWeight: FontWeight.w600, height: 1.4)),
+                              ],
+                            ),
+                          ),
+                        ),
                       ),
                     );
                   }).toList(),
@@ -276,6 +295,129 @@ class _ProjectManagementHubScreenState extends State<ProjectManagementHubScreen>
           ),
         );
       },
+    );
+  }
+
+  void _showEditNoteDialog(BuildContext context, ProjectProvider provider, ProjectNote note) {
+    final noteController = TextEditingController(text: note.content);
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(28)),
+        title: const PremiumHeader(
+          title: "ΕΠΕΞΕΡΓΑΣΙΑ ΣΗΜΕΙΩΣΗΣ",
+          icon: Icons.edit_note_rounded,
+          color: Color(0xFFFF9800),
+        ),
+        content: TextField(
+          controller: noteController,
+          maxLines: 4,
+          autofocus: true,
+          decoration: const InputDecoration(
+            labelText: "Περιεχόμενο Σημείωσης",
+            hintText: "Γράψτε εδώ τη σημείωσή σας...",
+            prefixIcon: Icon(Icons.description_outlined),
+            border: OutlineInputBorder(),
+          ),
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context),
+            child: const Text("ΑΚΥΡΟ", style: TextStyle(fontWeight: FontWeight.bold)),
+          ),
+          ElevatedButton(
+            onPressed: () async {
+              final content = noteController.text.trim();
+              if (content.isNotEmpty) {
+                await provider.updateProjectNote(note.copyWith(content: content));
+                if (context.mounted) Navigator.pop(context);
+                setState(() {});
+              }
+            },
+            style: ElevatedButton.styleFrom(
+              backgroundColor: const Color(0xFFFF9800),
+              foregroundColor: Colors.white,
+            ),
+            child: const Text("ΑΠΟΘΗΚΕΥΣΗ", style: TextStyle(fontWeight: FontWeight.bold)),
+          ),
+        ],
+      ),
+    );
+  }
+
+  void _showNoteOptions(BuildContext context, ProjectProvider provider, ProjectNote note) {
+    showModalBottomSheet(
+      context: context,
+      backgroundColor: Colors.transparent,
+      builder: (context) => Container(
+        padding: const EdgeInsets.all(24),
+        decoration: const BoxDecoration(
+          color: Colors.white,
+          borderRadius: BorderRadius.vertical(top: Radius.circular(28)),
+        ),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Center(
+              child: Container(
+                width: 36,
+                height: 4,
+                decoration: BoxDecoration(color: Colors.grey[300], borderRadius: BorderRadius.circular(10)),
+              ),
+            ),
+            const SizedBox(height: 16),
+            Row(
+              children: [
+                Container(
+                  padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                  decoration: BoxDecoration(
+                    color: const Color(0xFFFF9800).withValues(alpha: 0.1),
+                    borderRadius: BorderRadius.circular(8),
+                  ),
+                  child: Text(widget.project.name.toUpperCase(), style: const TextStyle(fontSize: 11, fontWeight: FontWeight.w900, color: Color(0xFFE65100))),
+                ),
+                const SizedBox(width: 8),
+                const Text("ΕΠΙΛΟΓΕΣ ΣΗΜΕΙΩΣΗΣ", style: TextStyle(fontWeight: FontWeight.w900, fontSize: 13, color: Colors.blueGrey)),
+              ],
+            ),
+            const SizedBox(height: 12),
+            Container(
+              width: double.infinity,
+              padding: const EdgeInsets.all(12),
+              decoration: BoxDecoration(color: const Color(0xFFF8FAFC), borderRadius: BorderRadius.circular(12)),
+              child: Text(note.content, maxLines: 3, overflow: TextOverflow.ellipsis, style: const TextStyle(fontSize: 12, color: Color(0xFF334155), fontWeight: FontWeight.w600)),
+            ),
+            const SizedBox(height: 16),
+            ListTile(
+              leading: Container(
+                padding: const EdgeInsets.all(8),
+                decoration: BoxDecoration(color: Colors.blue.withValues(alpha: 0.1), shape: BoxShape.circle),
+                child: const Icon(Icons.edit_note_rounded, color: Colors.blue),
+              ),
+              title: const Text("Επεξεργασία Σημείωσης", style: TextStyle(fontWeight: FontWeight.bold, fontSize: 14)),
+              onTap: () {
+                Navigator.pop(context);
+                _showEditNoteDialog(context, provider, note);
+              },
+            ),
+            ListTile(
+              leading: Container(
+                padding: const EdgeInsets.all(8),
+                decoration: BoxDecoration(color: Colors.red.withValues(alpha: 0.1), shape: BoxShape.circle),
+                child: const Icon(Icons.delete_outline_rounded, color: Colors.red),
+              ),
+              title: const Text("Διαγραφή Σημείωσης", style: TextStyle(fontWeight: FontWeight.bold, fontSize: 14, color: Colors.red)),
+              onTap: () async {
+                Navigator.pop(context);
+                await provider.deleteProjectNote(widget.project.id, note.id);
+                setState(() {});
+              },
+            ),
+            const SizedBox(height: 12),
+          ],
+        ),
+      ),
     );
   }
 
@@ -309,7 +451,7 @@ class ProjectManagementCategoryScreen extends StatelessWidget {
     final isDesktop = MediaQuery.of(context).size.width > 900;
 
     return Scaffold(
-      backgroundColor: const Color(0xFFF1F5F9),
+      backgroundColor: const Color(0xFFE2E8F0),
       appBar: AppBar(
         title: Text(title, style: const TextStyle(fontWeight: FontWeight.w900, fontSize: 14)),
       ),
@@ -396,11 +538,14 @@ class _ManagementCategoryCard extends StatelessWidget {
   Widget build(BuildContext context) {
     return Container(
       decoration: BoxDecoration(
-        color: Colors.white,
+        color: color,
         borderRadius: BorderRadius.circular(24),
-        border: Border.all(color: color.withValues(alpha: 0.25), width: 1.5),
         boxShadow: [
-          BoxShadow(color: color.withValues(alpha: 0.08), blurRadius: 16, offset: const Offset(0, 8)),
+          BoxShadow(
+            color: color.withValues(alpha: 0.35),
+            blurRadius: 15,
+            offset: const Offset(0, 6),
+          ),
         ],
       ),
       child: Material(
@@ -409,7 +554,7 @@ class _ManagementCategoryCard extends StatelessWidget {
           onTap: onClick,
           borderRadius: BorderRadius.circular(24),
           child: Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
+            padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 20),
             child: Row(
               children: [
                 Stack(
@@ -419,10 +564,10 @@ class _ManagementCategoryCard extends StatelessWidget {
                       width: isDesktop ? 60 : 52,
                       height: isDesktop ? 60 : 52,
                       decoration: BoxDecoration(
-                        color: color.withValues(alpha: 0.1),
+                        color: Colors.white.withValues(alpha: 0.2),
                         borderRadius: BorderRadius.circular(16),
                       ),
-                      child: Icon(icon, color: color, size: isDesktop ? 28 : 24),
+                      child: Icon(icon, color: Colors.white, size: isDesktop ? 28 : 24),
                     ),
                     if (badge != null)
                       Positioned(
@@ -431,36 +576,48 @@ class _ManagementCategoryCard extends StatelessWidget {
                         child: Container(
                           padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 3),
                           decoration: BoxDecoration(
-                            color: color,
+                            color: Colors.white,
                             borderRadius: BorderRadius.circular(8),
-                            border: Border.all(color: Colors.white, width: 1.5),
                           ),
                           child: Text(
                             badge!,
-                            style: const TextStyle(color: Colors.white, fontWeight: FontWeight.w900, fontSize: 8),
+                            style: TextStyle(color: color, fontWeight: FontWeight.w900, fontSize: 8),
                           ),
                         ),
                       ),
                   ],
                 ),
-                const SizedBox(width: 24),
+                const SizedBox(width: 20),
                 Expanded(
                   child: Column(
                     mainAxisAlignment: MainAxisAlignment.center,
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      Text(title, style: const TextStyle(fontWeight: FontWeight.w900, color: Color(0xFF1E293B), fontSize: 13, letterSpacing: 0.2)),
-                      const SizedBox(height: 2),
+                      Text(
+                        title, 
+                        style: const TextStyle(
+                          fontWeight: FontWeight.w900, 
+                          color: Colors.white, 
+                          fontSize: 15, 
+                          letterSpacing: 0.5
+                        )
+                      ),
+                      const SizedBox(height: 4),
                       Text(
                         subtitle.toUpperCase(), 
-                        style: TextStyle(color: Colors.blueGrey.withValues(alpha: 0.5), fontSize: 7, fontWeight: FontWeight.w900, letterSpacing: 0.5), 
-                        maxLines: 1, 
+                        style: TextStyle(
+                          color: Colors.white.withValues(alpha: 0.8), 
+                          fontSize: 10, 
+                          fontWeight: FontWeight.w800, 
+                          letterSpacing: 0.5
+                        ), 
+                        maxLines: 2, 
                         overflow: TextOverflow.ellipsis
                       ),
                     ],
                   ),
                 ),
-                Icon(Icons.arrow_forward_ios_rounded, color: color.withValues(alpha: 0.3), size: 16),
+                Icon(Icons.chevron_right_rounded, color: Colors.white.withValues(alpha: 0.5), size: 24),
               ],
             ),
           ),

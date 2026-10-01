@@ -272,17 +272,19 @@ class PdfGenerator {
           pw.Center(child: pw.Text("ΚΑΤΑΣΤΑΣΗ ΠΛΗΡΩΜΩΝ: $title", style: pw.TextStyle(fontSize: 16, fontWeight: pw.FontWeight.bold))),
           pw.SizedBox(height: 20),
           pw.Table.fromTextArray(
-            headers: ['ΕΡΓΑΤΗΣ', 'ΔΕΔΟΥΛΕΥΜΕΝΑ (€)', 'ΠΛΗΡΩΜΕΣ (€)', 'ΥΠΟΛΟΙΠΟ (€)'],
+            headers: ['ΕΡΓΑΤΗΣ', 'ΜΕΡΕΣ', 'ΔΕΔΟΥΛΕΥΜΕΝΑ (€)', 'ΠΛΗΡΩΜΕΣ (€)', 'ΥΠΟΛΟΙΠΟ (€)'],
             headerStyle: pw.TextStyle(fontWeight: pw.FontWeight.bold, fontSize: 10),
             cellStyle: const pw.TextStyle(fontSize: 10),
             data: [
               ...workerNames.map((name) {
+                final days = attendance.where((a) => a.workerName == name).length;
                 final earned = attendance.where((a) => a.workerName == name).fold(0.0, (sum, a) => sum + a.dailyRate + a.overtimeAmount);
                 final paid = payments.where((p) => p.workerName == name).fold(0.0, (sum, p) => sum + p.amount);
-                return [name.toUpperCase(), earned.toStringAsFixed(2), paid.toStringAsFixed(2), (earned - paid).toStringAsFixed(2)];
+                return [name.toUpperCase(), days.toString(), earned.toStringAsFixed(2), paid.toStringAsFixed(2), (earned - paid).toStringAsFixed(2)];
               }),
               [
                 'ΣΥΝΟΛΑ',
+                '${workerNames.fold(0, (sum, name) => sum + attendance.where((a) => a.workerName == name).length)}',
                 '${workerNames.fold(0.0, (sum, name) => sum + attendance.where((a) => a.workerName == name).fold(0.0, (s, a) => s + a.dailyRate + a.overtimeAmount)).toStringAsFixed(2)} €',
                 '${workerNames.fold(0.0, (sum, name) => sum + payments.where((p) => p.workerName == name).fold(0.0, (s, p) => s + p.amount)).toStringAsFixed(2)} €',
                 '${workerNames.fold(0.0, (sum, name) => sum + (attendance.where((a) => a.workerName == name).fold(0.0, (s, a) => s + a.dailyRate + a.overtimeAmount) - payments.where((p) => p.workerName == name).fold(0.0, (s, p) => s + p.amount))).toStringAsFixed(2)} €',

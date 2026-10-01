@@ -56,7 +56,7 @@ class _ProjectMainScreenState extends State<ProjectMainScreen> {
     final isDesktop = MediaQuery.of(context).size.width > 900;
 
     return Scaffold(
-      backgroundColor: const Color(0xFFF1F5F9),
+      backgroundColor: const Color(0xFFE2E8F0),
       appBar: AppBar(
         centerTitle: false,
         title: Column(
@@ -77,7 +77,7 @@ class _ProjectMainScreenState extends State<ProjectMainScreen> {
         child: Container(
           constraints: const BoxConstraints(maxWidth: 1200),
           child: Material(
-            color: const Color(0xFFF1F5F9),
+            color: const Color(0xFFE2E8F0),
             child: _getScreen(_selectedIndex),
           ),
         ),

@@ -119,11 +119,10 @@ class DatabaseHelper {
     if (kIsWeb) return null;
     if (_database != null) return _database!;
     _database = await _initDatabase();
-    return _database!;
+    return _database;
   }
 
-  Future<Database?> _initDatabase() async {
-    if (kIsWeb) return null;
+  Future<Database> _initDatabase() async {
     String dbDir;
     if (Platform.isWindows || Platform.isLinux || Platform.isMacOS) {
       dbDir = (await getApplicationSupportDirectory()).path;
@@ -133,12 +132,38 @@ class DatabaseHelper {
     String path = join(dbDir, 'mtc_database.db');
     final db = await openDatabase(
       path,
-      version: 16,
+      version: 17,
       onCreate: _onCreate,
       onUpgrade: _onUpgrade,
     );
     await _ensureMarketArchiveSchema(db);
+    await _ensurePartnerAiColumn(db);
+    await _ensureCompanyExpenseCategory(db);
     return db;
+  }
+
+  Future<void> _ensureCompanyExpenseCategory(Database db) async {
+    final tableInfo = await db.rawQuery("PRAGMA table_info(company_expenses)");
+    final existingColumns = tableInfo.map((row) => row['name'] as String).toSet();
+    if (!existingColumns.contains('category')) {
+      try {
+        await db.execute("ALTER TABLE company_expenses ADD COLUMN category TEXT DEFAULT 'ΓΕΝΙΚΟ / ΑΛΛΟ'");
+      } catch (e) {
+        print("Schema update error category: $e");
+      }
+    }
+  }
+
+  Future<void> _ensurePartnerAiColumn(Database db) async {
+    final tableInfo = await db.rawQuery("PRAGMA table_info(partners)");
+    final existingColumns = tableInfo.map((row) => row['name'] as String).toSet();
+    if (!existingColumns.contains('aiPricingData')) {
+      try {
+        await db.execute("ALTER TABLE partners ADD COLUMN aiPricingData TEXT DEFAULT ''");
+      } catch (e) {
+        print("Schema update error aiPricingData: $e");
+      }
+    }
   }
 
   Future<void> _ensureMarketArchiveSchema(Database db) async {
@@ -204,6 +229,13 @@ class DatabaseHelper {
       } catch (e) {
         print("Migration error v2: $e");
       }
+      try {
+        await db.execute(
+          "ALTER TABLE company_expenses ADD COLUMN category TEXT DEFAULT 'ΓΕΝΙΚΟ / ΑΛΛΟ'",
+        );
+      } catch (e) {
+        print("Migration error category: $e");
+      }
     }
     if (oldVersion < 3) {
       try {
@@ -239,6 +271,22 @@ class DatabaseHelper {
       } catch (e) {
         print("Migration error v4: $e");
       }
+      try {
+        await db.execute('''
+          CREATE TABLE project_specs (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            projectId INTEGER,
+            category TEXT,
+            name TEXT,
+            brandCode TEXT,
+            supplier TEXT,
+            notes TEXT,
+            dateAdded INTEGER
+          )
+        ''');
+      } catch (e) {
+        print("Migration error specs: $e");
+      }
     }
     if (oldVersion < 5) {
       try {
@@ -260,20 +308,16 @@ class DatabaseHelper {
     }
     if (oldVersion < 6) {
       try {
+        await db.execute("ALTER TABLE partners ADD COLUMN aiPricingData TEXT DEFAULT ''");
+      } catch (e) {
+        print("Migration error aiPricingData: $e");
+      }
+      try {
         await db.execute(
           "ALTER TABLE market_archive ADD COLUMN hasVat INTEGER DEFAULT 0",
         );
       } catch (e) {
         print("Migration error v6: $e");
-      }
-    }
-    if (oldVersion < 7) {
-      try {
-        await db.execute(
-          "ALTER TABLE market_archive ADD COLUMN subCategory TEXT DEFAULT 'ΓΕΝΙΚΑ'",
-        );
-      } catch (e) {
-        print("Migration error v7: $e");
       }
     }
     if (oldVersion < 8) {
@@ -534,7 +578,8 @@ class DatabaseHelper {
         name TEXT,
         phone TEXT,
         trade TEXT,
-        baseRate REAL
+        baseRate REAL,
+        aiPricingData TEXT DEFAULT ''
       )
     ''');
 
@@ -602,6 +647,19 @@ class DatabaseHelper {
         lastUpdated INTEGER,
         minStockThreshold REAL,
         FOREIGN KEY (projectId) REFERENCES projects (id) ON DELETE CASCADE
+      )
+    ''');
+
+    await db.execute('''
+      CREATE TABLE project_specs (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        projectId INTEGER,
+        category TEXT,
+        name TEXT,
+        brandCode TEXT,
+        supplier TEXT,
+        notes TEXT,
+        dateAdded INTEGER
       )
     ''');
 
@@ -1283,6 +1341,17 @@ class DatabaseHelper {
     return result.map((e) => ProjectChecklistItem.fromMap(e)).toList();
   }
 
+  Future<List<ProjectChecklistItem>> getAllProjectChecklists() async {
+    if (kIsWeb) {
+      return (_webMemory['project_checklists'] ?? [])
+          .map((e) => ProjectChecklistItem.fromMap(e))
+          .toList();
+    }
+    Database? db = await database;
+    var result = await db!.query('project_checklists');
+    return result.map((e) => ProjectChecklistItem.fromMap(e)).toList();
+  }
+
   Future<int> insertChecklistItem(ProjectChecklistItem item) async {
     if (kIsWeb) {
       return _webInsert('project_checklists', item.toMap());
@@ -1292,15 +1361,46 @@ class DatabaseHelper {
   }
 
   Future<int> updateChecklistItem(ProjectChecklistItem item) async {
-    if (kIsWeb) return 0;
+    if (kIsWeb) return _webUpdate('project_checklists', item.toMap(), item.id);
     Database? db = await database;
     return await db!.update('project_checklists', item.toMap(), where: 'id = ?', whereArgs: [item.id]);
   }
 
   Future<int> deleteChecklistItem(int id) async {
-    if (kIsWeb) return 0;
+    if (kIsWeb) return _webDelete('project_checklists', id);
     Database? db = await database;
     return await db!.delete('project_checklists', where: 'id = ?', whereArgs: [id]);
+  }
+
+  // Project Specs
+  Future<List<ProjectSpecificationEntity>> getProjectSpecs(int projectId) async {
+    if (kIsWeb) {
+      return (_webMemory['project_specs'] ?? [])
+          .map((e) => ProjectSpecificationEntity.fromMap(e))
+          .where((e) => e.projectId == projectId)
+          .toList();
+    }
+    Database? db = await database;
+    var result = await db!.query('project_specs', where: 'projectId = ?', orderBy: 'dateAdded DESC', whereArgs: [projectId]);
+    return result.map((e) => ProjectSpecificationEntity.fromMap(e)).toList();
+  }
+
+  Future<int> insertProjectSpec(ProjectSpecificationEntity item) async {
+    if (kIsWeb) return _webInsert('project_specs', item.toMap());
+    Database? db = await database;
+    return await db!.insert('project_specs', item.toMap());
+  }
+
+  Future<int> updateProjectSpec(ProjectSpecificationEntity item) async {
+    if (kIsWeb) return _webUpdate('project_specs', item.toMap(), item.id);
+    Database? db = await database;
+    return await db!.update('project_specs', item.toMap(), where: 'id = ?', whereArgs: [item.id]);
+  }
+
+  Future<int> deleteProjectSpec(int id) async {
+    if (kIsWeb) return _webDelete('project_specs', id);
+    Database? db = await database;
+    return await db!.delete('project_specs', where: 'id = ?', whereArgs: [id]);
   }
 
   // Project Notes

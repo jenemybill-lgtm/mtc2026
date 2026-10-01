@@ -25,7 +25,7 @@ class FinancialChartsScreen extends StatelessWidget {
     final totalCost = roiData.laborCosts + roiData.materialExpenses + roiData.fixedCostsContribution;
 
     return Scaffold(
-      backgroundColor: const Color(0xFFF1F5F9),
+      backgroundColor: const Color(0xFFE2E8F0),
       appBar: AppBar(
         title: Column(
           children: [

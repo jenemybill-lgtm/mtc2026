@@ -94,7 +94,7 @@ class _SummaryScreenState extends State<SummaryScreen> {
     }
 
     return Scaffold(
-      backgroundColor: const Color(0xFFF1F5F9),
+      backgroundColor: const Color(0xFFE2E8F0),
       appBar: widget.showAppBar ? AppBar(
         title: const Text("ΣΥΝΟΨΗ ΠΡΟΣΦΟΡΑΣ", style: TextStyle(fontWeight: FontWeight.w900, fontSize: 14)),
         leading: IconButton(

@@ -13,7 +13,7 @@ class ManagersScreen extends StatelessWidget {
     final managers = provider.managers;
 
     return Scaffold(
-      backgroundColor: const Color(0xFFF1F5F9),
+      backgroundColor: const Color(0xFFE2E8F0),
       appBar: AppBar(
         title: const Text("ΔΙΑΧΕΙΡΙΣΗ ΥΠΕΥΘΥΝΩΝ ΕΡΓΩΝ", style: TextStyle(fontWeight: FontWeight.w900, fontSize: 16)),
       ),

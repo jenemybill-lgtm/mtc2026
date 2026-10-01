@@ -4,7 +4,6 @@ import 'package:intl/intl.dart';
 import 'package:mtc2026/models/project_models.dart';
 import 'package:mtc2026/providers/project_provider.dart';
 import 'package:mtc2026/ui/components/task_dialog.dart';
-import 'package:mtc2026/ui/components/premium_ui.dart';
 
 class GlobalCalendarScreen extends StatefulWidget {
   const GlobalCalendarScreen({super.key});
@@ -50,24 +49,79 @@ class _GlobalCalendarScreenState extends State<GlobalCalendarScreen> with Single
       ),
       body: Center(
         child: Container(
-          constraints: BoxConstraints(maxWidth: isDesktop ? 1000 : double.infinity),
+          constraints: BoxConstraints(maxWidth: isDesktop ? 1300 : double.infinity),
           child: TabBarView(
             controller: _tabController,
             children: [
-              MonthView(
-                currentMonth: _currentMonth,
-                selectedDate: _selectedDate,
-                tasks: provider.tasks,
-                projects: provider.projects,
-                onDateSelected: (date) {
-                  setState(() => _selectedDate = date);
-                  showCalendarSheet(context, date, provider);
-                },
-                onMonthChanged: (month) => setState(() => _currentMonth = month),
-                onTaskUpdate: (task) => provider.updateTask(task),
-                onTaskDelete: (id) => provider.deleteTask(id),
-                onTaskClick: (task) => showTaskEntryDialog(context, task: task),
-              ),
+              isDesktop
+                  ? Padding(
+                      padding: const EdgeInsets.all(24),
+                      child: Row(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Expanded(
+                            flex: 6,
+                            child: Container(
+                              padding: const EdgeInsets.all(20),
+                              decoration: BoxDecoration(
+                                color: Colors.white,
+                                borderRadius: BorderRadius.circular(24),
+                                border: Border.all(color: Colors.blue.withValues(alpha: 0.12), width: 1.5),
+                                boxShadow: [
+                                  BoxShadow(color: Colors.black.withValues(alpha: 0.03), blurRadius: 20, offset: const Offset(0, 4)),
+                                ],
+                              ),
+                              child: MonthView(
+                                currentMonth: _currentMonth,
+                                selectedDate: _selectedDate,
+                                tasks: provider.tasks,
+                                projects: provider.projects,
+                                onDateSelected: (date) => setState(() => _selectedDate = date),
+                                onMonthChanged: (month) => setState(() => _currentMonth = month),
+                                onTaskUpdate: (task) => provider.updateTask(task),
+                                onTaskDelete: (id) => provider.deleteTask(id),
+                                onTaskClick: (task) => showTaskEntryDialog(context, task: task),
+                              ),
+                            ),
+                          ),
+                          const SizedBox(width: 24),
+                          Expanded(
+                            flex: 5,
+                            child: Container(
+                              height: 520,
+                              padding: const EdgeInsets.all(24),
+                              decoration: BoxDecoration(
+                                color: Colors.white,
+                                borderRadius: BorderRadius.circular(24),
+                                border: Border.all(color: Colors.blue.withValues(alpha: 0.12), width: 1.5),
+                                boxShadow: [
+                                  BoxShadow(color: Colors.black.withValues(alpha: 0.03), blurRadius: 20, offset: const Offset(0, 4)),
+                                ],
+                              ),
+                              child: _DesktopDailySchedulePanel(
+                                selectedDate: _selectedDate,
+                                provider: provider,
+                                onDateChanged: (newDate) => setState(() => _selectedDate = newDate),
+                              ),
+                            ),
+                          ),
+                        ],
+                      ),
+                    )
+                  : MonthView(
+                      currentMonth: _currentMonth,
+                      selectedDate: _selectedDate,
+                      tasks: provider.tasks,
+                      projects: provider.projects,
+                      onDateSelected: (date) {
+                        setState(() => _selectedDate = date);
+                        showCalendarSheet(context, date, provider);
+                      },
+                      onMonthChanged: (month) => setState(() => _currentMonth = month),
+                      onTaskUpdate: (task) => provider.updateTask(task),
+                      onTaskDelete: (id) => provider.deleteTask(id),
+                      onTaskClick: (task) => showTaskEntryDialog(context, task: task),
+                    ),
               _WeeklyTasksView(
                 tasks: provider.tasks,
                 projects: provider.projects,
@@ -91,20 +145,27 @@ class _GlobalCalendarScreenState extends State<GlobalCalendarScreen> with Single
 }
 
 void showCalendarSheet(BuildContext context, DateTime date, ProjectProvider provider) {
-  showDialog(
-    context: context,
-    builder: (context) => CalendarSheetDialog(
-      date: date,
-      tasks: provider.tasks.where((t) {
-        final dt = DateTime.fromMillisecondsSinceEpoch(t.date);
-        return dt.year == date.year && dt.month == date.month && dt.day == date.day;
-      }).toList(),
-      projects: provider.projects,
-      onTaskUpdate: (task) => provider.updateTask(task),
-      onTaskDelete: (id) => provider.deleteTask(id),
-      onAddTask: () => showTaskEntryDialog(context, initialDate: date),
-    ),
-  );
+  final isMobile = MediaQuery.of(context).size.width < 600;
+
+  if (isMobile) {
+    showModalBottomSheet(
+      context: context,
+      isScrollControlled: true,
+      backgroundColor: Colors.transparent,
+      builder: (context) => _MobileCalendarSheet(
+        initialDate: date,
+        provider: provider,
+      ),
+    );
+  } else {
+    showDialog(
+      context: context,
+      builder: (context) => CalendarSheetDialog(
+        initialDate: date,
+        provider: provider,
+      ),
+    );
+  }
 }
 
 void showTaskEntryDialog(BuildContext context, {Task? task, DateTime? initialDate}) {
@@ -126,35 +187,48 @@ void showTaskEntryDialog(BuildContext context, {Task? task, DateTime? initialDat
   );
 }
 
-class CalendarSheetDialog extends StatelessWidget {
-  final DateTime date;
-  final List<Task> tasks;
-  final List<Project> projects;
-  final Function(Task) onTaskUpdate;
-  final Function(int) onTaskDelete;
-  final VoidCallback onAddTask;
+class CalendarSheetDialog extends StatefulWidget {
+  final DateTime initialDate;
+  final ProjectProvider provider;
 
   const CalendarSheetDialog({
     super.key,
-    required this.date,
-    required this.tasks,
-    required this.projects,
-    required this.onTaskUpdate,
-    required this.onTaskDelete,
-    required this.onAddTask,
+    required this.initialDate,
+    required this.provider,
   });
 
   @override
+  State<CalendarSheetDialog> createState() => _CalendarSheetDialogState();
+}
+
+class _CalendarSheetDialogState extends State<CalendarSheetDialog> {
+  late DateTime _selectedDate;
+
+  @override
+  void initState() {
+    super.initState();
+    _selectedDate = widget.initialDate;
+  }
+
+  @override
   Widget build(BuildContext context) {
+    final provider = Provider.of<ProjectProvider>(context);
+    final tasks = provider.tasks.where((t) {
+      final dt = DateTime.fromMillisecondsSinceEpoch(t.date);
+      return dt.year == _selectedDate.year && dt.month == _selectedDate.month && dt.day == _selectedDate.day;
+    }).toList();
+
+    final dateStr = DateFormat('EEEE, d MMMM yyyy', 'el').format(_selectedDate);
+
     return Dialog(
       backgroundColor: Colors.transparent,
       elevation: 0,
       insetPadding: const EdgeInsets.symmetric(horizontal: 20, vertical: 24),
       child: Container(
-        constraints: const BoxConstraints(maxWidth: 550, minHeight: 400),
+        constraints: const BoxConstraints(maxWidth: 580, maxHeight: 680),
         decoration: BoxDecoration(
           color: Colors.white,
-          borderRadius: BorderRadius.circular(40),
+          borderRadius: BorderRadius.circular(32),
           boxShadow: [
             BoxShadow(color: Colors.black.withValues(alpha: 0.15), blurRadius: 60, offset: const Offset(0, 20)),
           ],
@@ -162,41 +236,59 @@ class CalendarSheetDialog extends StatelessWidget {
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
-            // Top part of the "sheet" - More compact
+            // Top part of the "sheet" with Day Nav < and >
             Container(
               width: double.infinity,
-              padding: const EdgeInsets.symmetric(vertical: 24, horizontal: 24),
-              decoration: BoxDecoration(
-                gradient: const LinearGradient(
-                  colors: [Color(0xFFEF4444), Color(0xFFB91C1C)],
+              padding: const EdgeInsets.symmetric(vertical: 20, horizontal: 20),
+              decoration: const BoxDecoration(
+                gradient: LinearGradient(
+                  colors: [Color(0xFF2563EB), Color(0xFF1D4ED8)],
                   begin: Alignment.topLeft,
                   end: Alignment.bottomRight,
                 ),
-                borderRadius: const BorderRadius.vertical(top: Radius.circular(40)),
+                borderRadius: BorderRadius.vertical(top: Radius.circular(32)),
               ),
-              child: Column(
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
-                  Text(
-                    DateFormat('MMMM yyyy', 'el').format(date).toUpperCase(),
-                    style: const TextStyle(color: Colors.white70, fontWeight: FontWeight.bold, fontSize: 11, letterSpacing: 2),
+                  IconButton(
+                    icon: const Icon(Icons.chevron_left_rounded, color: Colors.white, size: 32),
+                    onPressed: () => setState(() => _selectedDate = _selectedDate.subtract(const Duration(days: 1))),
+                    tooltip: "Προηγούμενη Ημέρα",
                   ),
-                  const SizedBox(height: 4),
-                  Text(
-                    DateFormat('d').format(date),
-                    style: const TextStyle(color: Colors.white, fontWeight: FontWeight.w900, fontSize: 72, height: 1, letterSpacing: -2),
+                  Expanded(
+                    child: Column(
+                      children: [
+                        const Text(
+                          "ΠΡΟΓΡΑΜΜΑ ΗΜΕΡΑΣ",
+                          style: TextStyle(color: Colors.white70, fontWeight: FontWeight.w900, fontSize: 11, letterSpacing: 1.5),
+                        ),
+                        const SizedBox(height: 4),
+                        Text(
+                          DateFormat('d').format(_selectedDate),
+                          style: const TextStyle(color: Colors.white, fontWeight: FontWeight.w900, fontSize: 48, height: 1),
+                        ),
+                        const SizedBox(height: 4),
+                        Text(
+                          dateStr.toUpperCase(),
+                          textAlign: TextAlign.center,
+                          style: const TextStyle(color: Colors.white, fontWeight: FontWeight.w800, fontSize: 13, letterSpacing: 0.5),
+                        ),
+                      ],
+                    ),
                   ),
-                  const SizedBox(height: 4),
-                  Text(
-                    DateFormat('EEEE', 'el').format(date).toUpperCase(),
-                    style: const TextStyle(color: Colors.white, fontWeight: FontWeight.w800, fontSize: 16, letterSpacing: 1.5),
+                  IconButton(
+                    icon: const Icon(Icons.chevron_right_rounded, color: Colors.white, size: 32),
+                    onPressed: () => setState(() => _selectedDate = _selectedDate.add(const Duration(days: 1))),
+                    tooltip: "Επόμενη Ημέρα",
                   ),
                 ],
               ),
             ),
-            // Bottom part with a cleaner, wider list
+            // Bottom part with list
             Flexible(
               child: Container(
-                padding: const EdgeInsets.fromLTRB(28, 24, 28, 28),
+                padding: const EdgeInsets.fromLTRB(24, 20, 24, 24),
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   mainAxisSize: MainAxisSize.min,
@@ -204,32 +296,45 @@ class CalendarSheetDialog extends StatelessWidget {
                     Row(
                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       children: [
-                        const Text("ΠΡΌΓΡΑΜΜΑ ΗΜΈΡΑΣ", style: TextStyle(fontWeight: FontWeight.w900, fontSize: 12, color: Colors.blueGrey, letterSpacing: 2)),
-                        IconButton.filledTonal(
-                          icon: const Icon(Icons.add_rounded, size: 24),
+                        Container(
+                          padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
+                          decoration: BoxDecoration(
+                            color: Colors.blue.withValues(alpha: 0.1),
+                            borderRadius: BorderRadius.circular(12),
+                          ),
+                          child: Text(
+                            "${tasks.length} ${tasks.length == 1 ? 'Εργασία' : 'Εργασίες'}",
+                            style: const TextStyle(fontWeight: FontWeight.w900, fontSize: 11, color: Colors.blue),
+                          ),
+                        ),
+                        ElevatedButton.icon(
                           onPressed: () {
                             Navigator.pop(context);
-                            onAddTask();
+                            showTaskEntryDialog(context, initialDate: _selectedDate);
                           },
-                          style: IconButton.styleFrom(
-                            backgroundColor: Colors.blue.withValues(alpha: 0.1),
-                            foregroundColor: Colors.blue,
-                            padding: const EdgeInsets.all(12),
+                          icon: const Icon(Icons.add_rounded, size: 18),
+                          label: const Text("ΝΕΑ ΕΡΓΑΣΙΑ", style: TextStyle(fontWeight: FontWeight.w900, fontSize: 11)),
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor: const Color(0xFF2563EB),
+                            foregroundColor: Colors.white,
+                            elevation: 0,
+                            padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
+                            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
                           ),
                         ),
                       ],
                     ),
-                    const SizedBox(height: 24),
+                    const Divider(height: 24),
                     if (tasks.isEmpty)
                       Padding(
-                        padding: const EdgeInsets.symmetric(vertical: 60),
+                        padding: const EdgeInsets.symmetric(vertical: 40),
                         child: Center(
                           child: Column(
                             children: [
-                              Icon(Icons.event_note_rounded, size: 48, color: Colors.blueGrey.withValues(alpha: 0.1)),
-                              const SizedBox(height: 16),
+                              Icon(Icons.event_available_rounded, size: 48, color: Colors.blue.withValues(alpha: 0.2)),
+                              const SizedBox(height: 12),
                               const Text(
-                                "Δεν υπάρχουν εργασίες για σήμερα",
+                                "Δεν υπάρχουν προγραμματισμένες εργασίες",
                                 style: TextStyle(color: Colors.blueGrey, fontStyle: FontStyle.italic, fontSize: 13, fontWeight: FontWeight.w600),
                               ),
                             ],
@@ -242,15 +347,20 @@ class CalendarSheetDialog extends StatelessWidget {
                           shrinkWrap: true,
                           padding: EdgeInsets.zero,
                           itemCount: tasks.length,
-                          separatorBuilder: (context, index) => const Divider(height: 24, thickness: 0.5),
+                          separatorBuilder: (context, index) => const SizedBox(height: 10),
                           itemBuilder: (context, index) {
                             final task = tasks[index];
-                            final projectName = projects.firstWhere((p) => p.id == task.projectId, orElse: () => Project(name: "ΓΕΝΙΚΗ", clientName: "", address: "")).name;
-                            return _SimpleDailyTaskItem(
+                            final projectName = provider.projects
+                                .firstWhere(
+                                  (p) => p.id == task.projectId,
+                                  orElse: () => Project(name: "ΓΕΝΙΚΗ", clientName: "", address: ""),
+                                )
+                                .name;
+                            return _MobileTaskCard(
                               task: task,
                               projectName: projectName,
-                              onUpdate: onTaskUpdate,
-                              onDelete: onTaskDelete,
+                              onToggle: (val) => provider.updateTask(task.copyWith(isCompleted: val)),
+                              onDelete: () => provider.deleteTask(task.id),
                               onEdit: () {
                                 Navigator.pop(context);
                                 showTaskEntryDialog(context, task: task);
@@ -259,16 +369,16 @@ class CalendarSheetDialog extends StatelessWidget {
                           },
                         ),
                       ),
-                    const SizedBox(height: 32),
+                    const SizedBox(height: 16),
                     SizedBox(
                       width: double.infinity,
                       child: ElevatedButton(
                         onPressed: () => Navigator.pop(context),
                         style: ElevatedButton.styleFrom(
-                          backgroundColor: const Color(0xFFF1F5F9),
+                          backgroundColor: const Color(0xFFE2E8F0),
                           foregroundColor: const Color(0xFF475569),
                           elevation: 0,
-                          padding: const EdgeInsets.symmetric(vertical: 18),
+                          padding: const EdgeInsets.symmetric(vertical: 14),
                           shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
                         ),
                         child: const Text("ΚΛΕΙΣΙΜΟ", style: TextStyle(fontWeight: FontWeight.w900, letterSpacing: 1.5)),
@@ -408,8 +518,33 @@ class _MonthViewState extends State<MonthView> {
               ],
             ),
           ),
+        _buildWeekdayHeader(),
         _buildMonthGrid(),
       ],
+    );
+  }
+
+  Widget _buildWeekdayHeader() {
+    const days = ['ΔΕΥ', 'ΤΡΙ', 'ΤΕΤ', 'ΠΕΜ', 'ΠΑΡ', 'ΣΑΒ', 'ΚΥΡ'];
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 6),
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.spaceAround,
+        children: days
+            .map((day) => Expanded(
+                  child: Center(
+                    child: Text(
+                      day,
+                      style: const TextStyle(
+                        fontSize: 11,
+                        fontWeight: FontWeight.w800,
+                        color: Colors.blueGrey,
+                      ),
+                    ),
+                  ),
+                ))
+            .toList(),
+      ),
     );
   }
 
@@ -649,6 +784,439 @@ extension on Task {
       date: date ?? this.date,
       description: description ?? this.description,
       isCompleted: isCompleted ?? this.isCompleted,
+    );
+  }
+}
+
+class _MobileCalendarSheet extends StatefulWidget {
+  final DateTime initialDate;
+  final ProjectProvider provider;
+
+  const _MobileCalendarSheet({required this.initialDate, required this.provider});
+
+  @override
+  State<_MobileCalendarSheet> createState() => _MobileCalendarSheetState();
+}
+
+class _MobileCalendarSheetState extends State<_MobileCalendarSheet> {
+  late DateTime _selectedDate;
+
+  @override
+  void initState() {
+    super.initState();
+    _selectedDate = widget.initialDate;
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final provider = Provider.of<ProjectProvider>(context);
+    final tasks = provider.tasks.where((t) {
+      final dt = DateTime.fromMillisecondsSinceEpoch(t.date);
+      return dt.year == _selectedDate.year && dt.month == _selectedDate.month && dt.day == _selectedDate.day;
+    }).toList();
+
+    final dateStr = DateFormat('EEEE, d MMMM yyyy', 'el').format(_selectedDate);
+
+    return DraggableScrollableSheet(
+      initialChildSize: 0.75,
+      minChildSize: 0.4,
+      maxChildSize: 0.92,
+      builder: (context, scrollController) {
+        return Container(
+          decoration: const BoxDecoration(
+            color: Colors.white,
+            borderRadius: BorderRadius.vertical(top: Radius.circular(32)),
+            boxShadow: [
+              BoxShadow(color: Colors.black26, blurRadius: 25, offset: Offset(0, -5)),
+            ],
+          ),
+          child: Column(
+            children: [
+              const SizedBox(height: 12),
+              Center(
+                child: Container(
+                  width: 40,
+                  height: 5,
+                  decoration: BoxDecoration(
+                    color: Colors.grey[300],
+                    borderRadius: BorderRadius.circular(10),
+                  ),
+                ),
+              ),
+              const SizedBox(height: 12),
+              Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 16),
+                child: Container(
+                  padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 12),
+                  decoration: BoxDecoration(
+                    gradient: const LinearGradient(
+                      colors: [Color(0xFF2563EB), Color(0xFF1D4ED8)],
+                      begin: Alignment.topLeft,
+                      end: Alignment.bottomRight,
+                    ),
+                    borderRadius: BorderRadius.circular(20),
+                  ),
+                  child: Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      IconButton(
+                        icon: const Icon(Icons.chevron_left_rounded, color: Colors.white, size: 28),
+                        onPressed: () => setState(() => _selectedDate = _selectedDate.subtract(const Duration(days: 1))),
+                        tooltip: "Προηγούμενη Ημέρα",
+                      ),
+                      Expanded(
+                        child: Column(
+                          children: [
+                            const Text(
+                              "ΠΡΟΓΡΑΜΜΑ ΗΜΕΡΑΣ",
+                              style: TextStyle(color: Colors.white70, fontWeight: FontWeight.w900, fontSize: 10, letterSpacing: 1.5),
+                            ),
+                            const SizedBox(height: 2),
+                            Text(
+                              dateStr.toUpperCase(),
+                              textAlign: TextAlign.center,
+                              style: const TextStyle(color: Colors.white, fontWeight: FontWeight.w900, fontSize: 13),
+                            ),
+                          ],
+                        ),
+                      ),
+                      IconButton(
+                        icon: const Icon(Icons.chevron_right_rounded, color: Colors.white, size: 28),
+                        onPressed: () => setState(() => _selectedDate = _selectedDate.add(const Duration(days: 1))),
+                        tooltip: "Επόμενη Ημέρα",
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+              const SizedBox(height: 16),
+              Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 20),
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    Container(
+                      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
+                      decoration: BoxDecoration(
+                        color: Colors.blue.withValues(alpha: 0.1),
+                        borderRadius: BorderRadius.circular(12),
+                      ),
+                      child: Text(
+                        "${tasks.length} ${tasks.length == 1 ? 'Εργασία' : 'Εργασίες'}",
+                        style: const TextStyle(fontWeight: FontWeight.w900, fontSize: 11, color: Colors.blue),
+                      ),
+                    ),
+                    ElevatedButton.icon(
+                      onPressed: () {
+                        Navigator.pop(context);
+                        showTaskEntryDialog(context, initialDate: _selectedDate);
+                      },
+                      icon: const Icon(Icons.add_rounded, size: 18),
+                      label: const Text("ΝΕΑ ΕΡΓΑΣΙΑ", style: TextStyle(fontWeight: FontWeight.w900, fontSize: 11)),
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: const Color(0xFF2563EB),
+                        foregroundColor: Colors.white,
+                        elevation: 0,
+                        padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
+                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+              const Divider(height: 24),
+              Expanded(
+                child: tasks.isEmpty
+                    ? Center(
+                        child: Column(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: [
+                            Icon(Icons.event_available_rounded, size: 56, color: Colors.blue.withValues(alpha: 0.2)),
+                            const SizedBox(height: 12),
+                            const Text(
+                              "Δεν υπάρχουν προγραμματισμένες εργασίες",
+                              style: TextStyle(fontWeight: FontWeight.bold, fontSize: 13, color: Colors.blueGrey),
+                            ),
+                            const SizedBox(height: 4),
+                            const Text(
+                              "Πατήστε '+ ΝΕΑ ΕΡΓΑΣΙΑ' για προσθήκη",
+                              style: TextStyle(fontSize: 11, color: Colors.grey),
+                            ),
+                          ],
+                        ),
+                      )
+                    : ListView.separated(
+                        controller: scrollController,
+                        padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 8),
+                        itemCount: tasks.length,
+                        separatorBuilder: (context, index) => const SizedBox(height: 10),
+                        itemBuilder: (context, index) {
+                          final task = tasks[index];
+                          final projectName = provider.projects
+                              .firstWhere(
+                                (p) => p.id == task.projectId,
+                                orElse: () => Project(name: "ΓΕΝΙΚΗ", clientName: "", address: ""),
+                              )
+                              .name;
+                          return _MobileTaskCard(
+                            task: task,
+                            projectName: projectName,
+                            onToggle: (val) => provider.updateTask(task.copyWith(isCompleted: val)),
+                            onDelete: () => provider.deleteTask(task.id),
+                            onEdit: () {
+                              Navigator.pop(context);
+                              showTaskEntryDialog(context, task: task);
+                            },
+                          );
+                        },
+                      ),
+              ),
+            ],
+          ),
+        );
+      },
+    );
+  }
+}
+
+class _MobileTaskCard extends StatelessWidget {
+  final Task task;
+  final String projectName;
+  final ValueChanged<bool> onToggle;
+  final VoidCallback onDelete;
+  final VoidCallback onEdit;
+
+  const _MobileTaskCard({
+    required this.task,
+    required this.projectName,
+    required this.onToggle,
+    required this.onDelete,
+    required this.onEdit,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    final color = task.isCompleted ? const Color(0xFF10B981) : const Color(0xFF2563EB);
+    final timeStr = DateFormat('HH:mm').format(DateTime.fromMillisecondsSinceEpoch(task.date));
+
+    return Container(
+      decoration: BoxDecoration(
+        color: color.withValues(alpha: 0.05),
+        borderRadius: BorderRadius.circular(16),
+        border: Border.all(color: color.withValues(alpha: 0.2), width: 1.2),
+      ),
+      child: Material(
+        color: Colors.transparent,
+        child: InkWell(
+          onTap: onEdit,
+          borderRadius: BorderRadius.circular(16),
+          child: Padding(
+            padding: const EdgeInsets.all(14),
+            child: Row(
+              children: [
+                Transform.scale(
+                  scale: 1.1,
+                  child: Checkbox(
+                    value: task.isCompleted,
+                    activeColor: const Color(0xFF10B981),
+                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(6)),
+                    onChanged: (val) => onToggle(val ?? false),
+                  ),
+                ),
+                const SizedBox(width: 8),
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        task.description,
+                        style: TextStyle(
+                          fontSize: 14,
+                          fontWeight: FontWeight.bold,
+                          color: task.isCompleted ? Colors.grey : const Color(0xFF1E293B),
+                          decoration: task.isCompleted ? TextDecoration.lineThrough : null,
+                        ),
+                      ),
+                      const SizedBox(height: 6),
+                      Row(
+                        children: [
+                          Icon(Icons.access_time_filled_rounded, size: 12, color: color),
+                          const SizedBox(width: 4),
+                          Text(
+                            timeStr,
+                            style: TextStyle(fontSize: 11, fontWeight: FontWeight.bold, color: color),
+                          ),
+                          const SizedBox(width: 10),
+                          Container(
+                            padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
+                            decoration: BoxDecoration(
+                              color: color.withValues(alpha: 0.1),
+                              borderRadius: BorderRadius.circular(6),
+                            ),
+                            child: Text(
+                              projectName.toUpperCase(),
+                              style: TextStyle(fontSize: 8, fontWeight: FontWeight.w900, color: color, letterSpacing: 0.5),
+                            ),
+                          ),
+                        ],
+                      ),
+                    ],
+                  ),
+                ),
+                IconButton(
+                  icon: const Icon(Icons.delete_outline_rounded, color: Colors.redAccent, size: 20),
+                  onPressed: onDelete,
+                ),
+              ],
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+class _DesktopDailySchedulePanel extends StatelessWidget {
+  final DateTime selectedDate;
+  final ProjectProvider provider;
+  final ValueChanged<DateTime> onDateChanged;
+
+  const _DesktopDailySchedulePanel({
+    required this.selectedDate,
+    required this.provider,
+    required this.onDateChanged,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    final provider = Provider.of<ProjectProvider>(context);
+    final tasks = provider.tasks.where((t) {
+      final dt = DateTime.fromMillisecondsSinceEpoch(t.date);
+      return dt.year == selectedDate.year && dt.month == selectedDate.month && dt.day == selectedDate.day;
+    }).toList();
+
+    final dateStr = DateFormat('EEEE, d MMMM yyyy', 'el').format(selectedDate);
+
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Container(
+          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+          decoration: BoxDecoration(
+            gradient: const LinearGradient(
+              colors: [Color(0xFF2563EB), Color(0xFF1D4ED8)],
+              begin: Alignment.topLeft,
+              end: Alignment.bottomRight,
+            ),
+            borderRadius: BorderRadius.circular(20),
+            boxShadow: [
+              BoxShadow(color: const Color(0xFF2563EB).withValues(alpha: 0.3), blurRadius: 10, offset: const Offset(0, 4)),
+            ],
+          ),
+          child: Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              IconButton(
+                icon: const Icon(Icons.chevron_left_rounded, color: Colors.white, size: 24),
+                onPressed: () => onDateChanged(selectedDate.subtract(const Duration(days: 1))),
+                tooltip: "Προηγούμενη Ημέρα",
+              ),
+              Expanded(
+                child: Column(
+                  children: [
+                    const Text(
+                      "ΠΡΟΓΡΑΜΜΑ ΗΜΕΡΑΣ",
+                      style: TextStyle(color: Colors.white70, fontWeight: FontWeight.w900, fontSize: 10, letterSpacing: 1.5),
+                    ),
+                    const SizedBox(height: 2),
+                    Text(
+                      dateStr.toUpperCase(),
+                      textAlign: TextAlign.center,
+                      style: const TextStyle(color: Colors.white, fontWeight: FontWeight.w900, fontSize: 13),
+                    ),
+                  ],
+                ),
+              ),
+              IconButton(
+                icon: const Icon(Icons.chevron_right_rounded, color: Colors.white, size: 24),
+                onPressed: () => onDateChanged(selectedDate.add(const Duration(days: 1))),
+                tooltip: "Επόμενη Ημέρα",
+              ),
+            ],
+          ),
+        ),
+        const SizedBox(height: 16),
+        Row(
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          children: [
+            Container(
+              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+              decoration: BoxDecoration(
+                color: Colors.blue.withValues(alpha: 0.1),
+                borderRadius: BorderRadius.circular(12),
+              ),
+              child: Text(
+                "${tasks.length} ${tasks.length == 1 ? 'Εργασία' : 'Εργασίες'}",
+                style: const TextStyle(fontWeight: FontWeight.w900, fontSize: 11, color: Colors.blue),
+              ),
+            ),
+            ElevatedButton.icon(
+              onPressed: () => showTaskEntryDialog(context, initialDate: selectedDate),
+              icon: const Icon(Icons.add_rounded, size: 18),
+              label: const Text("ΝΕΑ ΕΡΓΑΣΙΑ", style: TextStyle(fontWeight: FontWeight.w900, fontSize: 11)),
+              style: ElevatedButton.styleFrom(
+                backgroundColor: const Color(0xFF2563EB),
+                foregroundColor: Colors.white,
+                elevation: 0,
+                padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
+              ),
+            ),
+          ],
+        ),
+        const Divider(height: 24),
+        Expanded(
+          child: tasks.isEmpty
+              ? Center(
+                  child: Column(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      Icon(Icons.event_available_rounded, size: 56, color: Colors.blue.withValues(alpha: 0.2)),
+                      const SizedBox(height: 12),
+                      const Text(
+                        "Δεν υπάρχουν προγραμματισμένες εργασίες",
+                        style: TextStyle(fontWeight: FontWeight.bold, fontSize: 13, color: Colors.blueGrey),
+                      ),
+                      const SizedBox(height: 4),
+                      const Text(
+                        "Πατήστε '+ ΝΕΑ ΕΡΓΑΣΙΑ' για προσθήκη",
+                        style: TextStyle(fontSize: 11, color: Colors.grey),
+                      ),
+                    ],
+                  ),
+                )
+              : ListView.separated(
+                  itemCount: tasks.length,
+                  separatorBuilder: (context, index) => const SizedBox(height: 10),
+                  itemBuilder: (context, index) {
+                    final task = tasks[index];
+                    final projectName = provider.projects
+                        .firstWhere(
+                          (p) => p.id == task.projectId,
+                          orElse: () => Project(name: "ΓΕΝΙΚΗ", clientName: "", address: ""),
+                        )
+                        .name;
+                    return _MobileTaskCard(
+                      task: task,
+                      projectName: projectName,
+                      onToggle: (val) => provider.updateTask(task.copyWith(isCompleted: val)),
+                      onDelete: () => provider.deleteTask(task.id),
+                      onEdit: () => showTaskEntryDialog(context, task: task),
+                    );
+                  },
+                ),
+        ),
+      ],
     );
   }
 }

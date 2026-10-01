@@ -38,7 +38,7 @@ class _CompanyExpensesScreenState extends State<CompanyExpensesScreen> with Sing
     final isDesktop = MediaQuery.of(context).size.width > 900;
 
     return Scaffold(
-      backgroundColor: const Color(0xFFF1F5F9),
+      backgroundColor: const Color(0xFFE2E8F0),
       appBar: AppBar(
         title: const Text(
           "ΟΙΚΟΝΟΜΙΚΑ ΕΤΑΙΡΕΙΑΣ", 
@@ -224,8 +224,22 @@ class _CompanyExpensesScreenState extends State<CompanyExpensesScreen> with Sing
 
   void _showExpenseDialog(BuildContext context, {CompanyExpenseEntity? initialExpense}) {
     final descController = TextEditingController(text: initialExpense?.description ?? "");
-    final totalAmountController = TextEditingController(text: initialExpense?.amount.toString() ?? "");
+    final totalAmountController = TextEditingController(text: initialExpense?.amount == 0.0 || initialExpense?.amount == null ? "" : initialExpense!.amount.toString());
     final invoiceController = TextEditingController(text: initialExpense?.invoiceNumber ?? "");
+    
+    const validCategories = [
+      "ΚΑΥΣΙΜΑ / ΟΧΗΜΑΤΑ",
+      "ΝΕΟΣ ΕΞΟΠΛΙΣΜΟΣ",
+      "ΣΥΝΤΗΡΗΣΗ ΕΞΟΠΛΙΣΜΟΥ",
+      "ΛΕΙΤΟΥΡΓΙΚΑ / ΠΑΓΙΑ",
+      "ΑΝΑΛΩΣΙΜΑ / ΓΡΑΦΕΙΟ",
+      "ΓΕΝΙΚΟ / ΑΛΛΟ",
+    ];
+    String selectedCategory = initialExpense?.category ?? "ΓΕΝΙΚΟ / ΑΛΛΟ";
+    if (!validCategories.contains(selectedCategory)) {
+      selectedCategory = "ΓΕΝΙΚΟ / ΑΛΛΟ";
+    }
+
     bool hasVat = initialExpense?.hasVat ?? false;
     int date = initialExpense?.date ?? DateTime.now().millisecondsSinceEpoch;
     bool isDistribute = false;
@@ -256,13 +270,36 @@ class _CompanyExpensesScreenState extends State<CompanyExpensesScreen> with Sing
                 child: Column(
                   mainAxisSize: MainAxisSize.min,
                   children: [
+                    DropdownButtonFormField<String>(
+                      value: selectedCategory,
+                      isExpanded: true,
+                      style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 13, color: Color(0xFF1E293B)),
+                      decoration: const InputDecoration(
+                        labelText: "Κατηγορία Εξόδου",
+                        prefixIcon: Icon(Icons.category_outlined),
+                        border: OutlineInputBorder(borderRadius: BorderRadius.all(Radius.circular(16))),
+                      ),
+                      items: const [
+                        DropdownMenuItem(value: "ΚΑΥΣΙΜΑ / ΟΧΗΜΑΤΑ", child: Text("⛽ ΚΑΥΣΙΜΑ / ΟΧΗΜΑΤΑ")),
+                        DropdownMenuItem(value: "ΝΕΟΣ ΕΞΟΠΛΙΣΜΟΣ", child: Text("🧰 ΝΕΟΣ ΕΞΟΠΛΙΣΜΟΣ")),
+                        DropdownMenuItem(value: "ΣΥΝΤΗΡΗΣΗ ΕΞΟΠΛΙΣΜΟΥ", child: Text("🛠️ ΣΥΝΤΗΡΗΣΗ ΕΞΟΠΛΙΣΜΟΥ")),
+                        DropdownMenuItem(value: "ΛΕΙΤΟΥΡΓΙΚΑ / ΠΑΓΙΑ", child: Text("🏢 ΛΕΙΤΟΥΡΓΙΚΑ / ΠΑΓΙΑ")),
+                        DropdownMenuItem(value: "ΑΝΑΛΩΣΙΜΑ / ΓΡΑΦΕΙΟ", child: Text("📄 ΑΝΑΛΩΣΙΜΑ / ΓΡΑΦΕΙΟ")),
+                        DropdownMenuItem(value: "ΓΕΝΙΚΟ / ΑΛΛΟ", child: Text("📁 ΓΕΝΙΚΟ / ΑΛΛΟ")),
+                      ],
+                      onChanged: (v) {
+                        if (v != null) setState(() => selectedCategory = v);
+                      },
+                    ),
+                    const SizedBox(height: 16),
                     TextField(
                       controller: descController, 
                       decoration: const InputDecoration(
                         labelText: "Περιγραφή Εξόδου", 
                         prefixIcon: Icon(Icons.description_outlined),
                         border: OutlineInputBorder(borderRadius: BorderRadius.all(Radius.circular(16))),
-                      )
+                      ),
+                      textCapitalization: TextCapitalization.sentences,
                     ),
                     const SizedBox(height: 16),
                     OutlinedButton.icon(
@@ -321,6 +358,20 @@ class _CompanyExpensesScreenState extends State<CompanyExpensesScreen> with Sing
                         contentPadding: const EdgeInsets.symmetric(horizontal: 16),
                       ),
                     ),
+                    if (hasVat && totalAmount > 0) ...[
+                      const SizedBox(height: 8),
+                      Container(
+                        padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
+                        decoration: BoxDecoration(color: Colors.orange.withValues(alpha: 0.08), borderRadius: BorderRadius.circular(12)),
+                        child: Row(
+                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                          children: [
+                            Text("Καθαρή Αξία: ${(totalAmount / 1.24).toStringAsFixed(2)} €", style: const TextStyle(fontSize: 10, fontWeight: FontWeight.bold, color: Colors.blueGrey)),
+                            Text("ΦΠΑ (24%): ${(totalAmount - (totalAmount / 1.24)).toStringAsFixed(2)} €", style: const TextStyle(fontSize: 10, fontWeight: FontWeight.w900, color: Colors.orange)),
+                          ],
+                        ),
+                      ),
+                    ],
                     if (initialExpense == null) ...[
                       const SizedBox(height: 20),
                       const Divider(),
@@ -415,8 +466,20 @@ class _CompanyExpensesScreenState extends State<CompanyExpensesScreen> with Sing
               ),
               ElevatedButton(
                 onPressed: (isDistribute && isOverAllocated) ? null : () async {
-                  if (descController.text.isEmpty) return;
+                  final desc = descController.text.trim();
+                  if (desc.isEmpty) {
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      const SnackBar(content: Text("Παρακαλώ συμπληρώστε την περιγραφή του εξόδου.")),
+                    );
+                    return;
+                  }
                   final totalAmountVal = double.tryParse(totalAmountController.text.replaceAll(',', '.')) ?? 0.0;
+                  if (totalAmountVal <= 0) {
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      const SnackBar(content: Text("Παρακαλώ εισάγετε ένα ποσό μεγαλύτερο του 0.")),
+                    );
+                    return;
+                  }
 
                   if (isDistribute && initialExpense == null) {
                     for (var entry in projectDistributions.entries) {
@@ -424,23 +487,24 @@ class _CompanyExpensesScreenState extends State<CompanyExpensesScreen> with Sing
                       await provider.addExpense(entry.key, Expense(
                         projectId: entry.key,
                         date: date,
-                        description: "[ΕΠΙΜΕΡΙΣΜΟΣ] ${descController.text}",
+                        description: "[ΕΠΙΜΕΡΙΣΜΟΣ] $desc",
                         workerName: "ΕΤΑΙΡΕΙΑ / ΑΠΟΘΗΚΗ",
                         amount: projectAmt,
                         hasVat: hasVat,
-                        expenseType: invoiceController.text.isNotEmpty ? "INVOICE" : "PAYMENT",
-                        invoiceNumber: invoiceController.text.isNotEmpty ? invoiceController.text : null,
+                        expenseType: invoiceController.text.trim().isNotEmpty ? "INVOICE" : "PAYMENT",
+                        invoiceNumber: invoiceController.text.trim().isNotEmpty ? invoiceController.text.trim() : null,
                         categoryType: "MATERIAL",
                       ));
                     }
                   } else {
                     final e = CompanyExpenseEntity(
                       id: initialExpense?.id ?? 0,
-                      description: descController.text, 
+                      description: desc, 
                       amount: totalAmountVal, 
                       hasVat: hasVat, 
-                      invoiceNumber: invoiceController.text.isNotEmpty ? invoiceController.text : null,
-                      date: date
+                      invoiceNumber: invoiceController.text.trim().isNotEmpty ? invoiceController.text.trim() : null,
+                      date: date,
+                      category: selectedCategory,
                     );
                     if (initialExpense == null) {
                       await provider.addCompanyExpense(e);
@@ -922,137 +986,200 @@ class _QuarterlyVatSection extends StatelessWidget {
   }
 }
 
-class _GeneralExpensesList extends StatelessWidget {
+class _GeneralExpensesList extends StatefulWidget {
   final ProjectProvider provider;
   final Function(CompanyExpenseEntity) onEdit;
   
   const _GeneralExpensesList({required this.provider, required this.onEdit});
 
   @override
+  State<_GeneralExpensesList> createState() => _GeneralExpensesListState();
+}
+
+class _GeneralExpensesListState extends State<_GeneralExpensesList> {
+  String _selectedCategoryFilter = "ΟΛΑ";
+
+  @override
   Widget build(BuildContext context) {
-    final expenses = provider.companyExpenses;
-    if (expenses.isEmpty) {
-      return Container(
-        padding: const EdgeInsets.all(40),
-        decoration: BoxDecoration(
-          color: Colors.white,
-          borderRadius: BorderRadius.circular(24),
-          border: Border.all(color: Colors.grey.withValues(alpha: 0.1)),
-        ),
-        child: const Center(
-          child: Column(
-            children: [
-              Icon(Icons.receipt_long_outlined, color: Colors.grey, size: 48),
-              SizedBox(height: 16),
-              Text(
-                "Δεν έχουν καταχωρηθεί πάγια έξοδα", 
-                style: TextStyle(color: Colors.grey, fontWeight: FontWeight.bold)
-              ),
-            ],
-          )
-        ),
-      );
-    }
+    final allExpenses = widget.provider.companyExpenses;
+    final categories = ["ΟΛΑ", "ΚΑΥΣΙΜΑ / ΟΧΗΜΑΤΑ", "ΝΕΟΣ ΕΞΟΠΛΙΣΜΟΣ", "ΣΥΝΤΗΡΗΣΗ ΕΞΟΠΛΙΣΜΟΥ", "ΛΕΙΤΟΥΡΓΙΚΑ / ΠΑΓΙΑ", "ΑΝΑΛΩΣΙΜΑ / ΓΡΑΦΕΙΟ", "ΓΕΝΙΚΟ / ΑΛΛΟ"];
+
+    final filteredExpenses = _selectedCategoryFilter == "ΟΛΑ"
+        ? allExpenses
+        : allExpenses.where((e) => e.category == _selectedCategoryFilter).toList();
 
     return Column(
-      children: expenses.map((e) => Container(
-        margin: const EdgeInsets.only(bottom: 12),
-        decoration: BoxDecoration(
-          gradient: LinearGradient(
-            colors: [Colors.red.withValues(alpha: 0.08), Colors.red.withValues(alpha: 0.01)],
-            begin: Alignment.topLeft,
-            end: Alignment.bottomRight,
-          ),
-          borderRadius: BorderRadius.circular(24),
-          border: Border.all(color: Colors.red.withValues(alpha: 0.12), width: 1),
-          boxShadow: [BoxShadow(color: Colors.black.withValues(alpha: 0.01), blurRadius: 10)],
-        ),
-        child: InkWell(
-          onTap: () => onEdit(e),
-          borderRadius: BorderRadius.circular(24),
-          child: Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-            child: Row(
-              children: [
-                Container(
-                  padding: const EdgeInsets.all(10),
-                  decoration: BoxDecoration(
-                    gradient: const LinearGradient(colors: [Colors.redAccent, Colors.red]),
-                    borderRadius: BorderRadius.circular(12),
-                    boxShadow: [BoxShadow(color: Colors.red.withValues(alpha: 0.3), blurRadius: 8)],
-                  ),
-                  child: const Icon(Icons.outbox_rounded, color: Colors.white, size: 20),
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        // Filter Chips Bar
+        SingleChildScrollView(
+          scrollDirection: Axis.horizontal,
+          child: Row(
+            children: categories.map((cat) {
+              final isSelected = _selectedCategoryFilter == cat;
+              return Padding(
+                padding: const EdgeInsets.only(right: 8.0),
+                child: FilterChip(
+                  label: Text(cat, style: TextStyle(fontSize: 10, fontWeight: FontWeight.bold, color: isSelected ? Colors.white : Colors.blueGrey)),
+                  selected: isSelected,
+                  onSelected: (val) => setState(() => _selectedCategoryFilter = cat),
+                  selectedColor: Colors.redAccent,
+                  backgroundColor: Colors.white,
+                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12), side: BorderSide(color: isSelected ? Colors.redAccent : Colors.black.withValues(alpha: 0.1))),
+                  showCheckmark: false,
                 ),
-                const SizedBox(width: 16),
-                Expanded(
+              );
+            }).toList(),
+          ),
+        ),
+        const SizedBox(height: 16),
+
+        if (filteredExpenses.isEmpty)
+          Container(
+            width: double.infinity,
+            padding: const EdgeInsets.all(32),
+            decoration: BoxDecoration(
+              color: Colors.white,
+              borderRadius: BorderRadius.circular(24),
+              border: Border.all(color: Colors.grey.withValues(alpha: 0.1)),
+            ),
+            child: const Center(
+              child: Column(
+                children: [
+                  Icon(Icons.receipt_long_outlined, color: Colors.grey, size: 44),
+                  SizedBox(height: 12),
+                  Text(
+                    "Δεν βρέθηκαν γενικά έξοδα εταιρείας", 
+                    style: TextStyle(color: Colors.grey, fontWeight: FontWeight.bold, fontSize: 12)
+                  ),
+                ],
+              ),
+            ),
+          )
+        else
+          Column(
+            children: filteredExpenses.map((e) => Container(
+              margin: const EdgeInsets.only(bottom: 12),
+              decoration: BoxDecoration(
+                gradient: LinearGradient(
+                  colors: [Colors.red.withValues(alpha: 0.08), Colors.red.withValues(alpha: 0.01)],
+                  begin: Alignment.topLeft,
+                  end: Alignment.bottomRight,
+                ),
+                borderRadius: BorderRadius.circular(24),
+                border: Border.all(color: Colors.red.withValues(alpha: 0.12), width: 1),
+                boxShadow: [BoxShadow(color: Colors.black.withValues(alpha: 0.01), blurRadius: 10)],
+              ),
+              child: InkWell(
+                onTap: () => widget.onEdit(e),
+                borderRadius: BorderRadius.circular(24),
+                child: Padding(
+                  padding: const EdgeInsets.all(16),
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      Text(
-                        e.description.toUpperCase(),
-                        style: const TextStyle(
-                          fontWeight: FontWeight.w900, 
-                          fontSize: 11, 
-                          letterSpacing: 0.5, 
-                          color: Color(0xFF1E293B)
-                        ),
-                      ),
-                      Padding(
-                        padding: const EdgeInsets.only(top: 4.0),
-                        child: Row(
-                          children: [
-                            Text(
-                              DateFormat('dd/MM/yyyy').format(DateTime.fromMillisecondsSinceEpoch(e.date)),
-                              style: const TextStyle(fontSize: 9, fontWeight: FontWeight.bold, color: Colors.grey),
+                      Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        children: [
+                          Container(
+                            padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                            decoration: BoxDecoration(
+                              color: Colors.redAccent.withValues(alpha: 0.1),
+                              borderRadius: BorderRadius.circular(10),
+                              border: Border.all(color: Colors.redAccent.withValues(alpha: 0.2)),
                             ),
-                            if (e.invoiceNumber != null && e.invoiceNumber!.isNotEmpty) ...[
-                              const SizedBox(width: 8),
-                              Container(width: 3, height: 3, decoration: const BoxDecoration(color: Colors.grey, shape: BoxShape.circle)),
-                              const SizedBox(width: 8),
+                            child: Text(
+                              e.category.toUpperCase(),
+                              style: const TextStyle(fontSize: 9, fontWeight: FontWeight.w900, color: Colors.redAccent),
+                            ),
+                          ),
+                          Row(
+                            children: [
                               Text(
-                                "ΤΙΜ: ${e.invoiceNumber}", 
-                                style: const TextStyle(fontSize: 9, color: Colors.blue, fontWeight: FontWeight.bold)
+                                "${e.amount.toStringAsFixed(2)} €",
+                                style: const TextStyle(fontWeight: FontWeight.w900, color: Colors.red, fontSize: 15),
                               ),
                             ],
-                          ],
-                        ),
+                          ),
+                        ],
+                      ),
+                      const SizedBox(height: 12),
+                      Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        children: [
+                          Expanded(
+                            child: InkWell(
+                              onTap: () => widget.onEdit(e),
+                              child: Text(
+                                e.description.toUpperCase(),
+                                style: const TextStyle(fontWeight: FontWeight.w900, fontSize: 14, color: Color(0xFF1E293B)),
+                                maxLines: 2,
+                                overflow: TextOverflow.ellipsis,
+                              ),
+                            ),
+                          ),
+                          Row(
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              IconButton(
+                                icon: const Icon(Icons.edit_outlined, size: 20, color: Color(0xFF2563EB)),
+                                onPressed: () => widget.onEdit(e),
+                                padding: EdgeInsets.zero,
+                                constraints: const BoxConstraints(),
+                                splashRadius: 20,
+                              ),
+                              const SizedBox(width: 8),
+                              IconButton(
+                                icon: const Icon(Icons.delete_outline_rounded, size: 20, color: Colors.redAccent),
+                                onPressed: () => _confirmDelete(context, widget.provider, e),
+                                padding: EdgeInsets.zero,
+                                constraints: const BoxConstraints(),
+                                splashRadius: 20,
+                              ),
+                            ],
+                          ),
+                        ],
+                      ),
+                      const SizedBox(height: 8),
+                      Wrap(
+                        spacing: 12,
+                        runSpacing: 6,
+                        crossAxisAlignment: WrapCrossAlignment.center,
+                        children: [
+                          Row(
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              const Icon(Icons.access_time_rounded, size: 14, color: Colors.grey),
+                              const SizedBox(width: 4),
+                              Text(
+                                DateFormat('dd/MM/yyyy').format(DateTime.fromMillisecondsSinceEpoch(e.date)),
+                                style: const TextStyle(fontSize: 11, fontWeight: FontWeight.bold, color: Colors.grey),
+                              ),
+                            ],
+                          ),
+                          if (e.hasVat)
+                            Container(
+                              padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
+                              decoration: BoxDecoration(color: Colors.orange.withValues(alpha: 0.1), borderRadius: BorderRadius.circular(6)),
+                              child: Text(
+                                "ΦΠΑ 24% (${(e.amount - (e.amount / 1.24)).toStringAsFixed(2)}€)",
+                                style: const TextStyle(fontSize: 10, fontWeight: FontWeight.w900, color: Colors.orange),
+                              ),
+                            ),
+                          if (e.invoiceNumber != null && e.invoiceNumber!.isNotEmpty)
+                            Text(
+                              "ΤΙΜΟΛΟΓΙΟ: ${e.invoiceNumber}",
+                              style: const TextStyle(fontSize: 10, color: Color(0xFF2563EB), fontWeight: FontWeight.bold),
+                            ),
+                        ],
                       ),
                     ],
                   ),
                 ),
-                Column(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  crossAxisAlignment: CrossAxisAlignment.end,
-                  children: [
-                    Text(
-                      "${e.amount.toStringAsFixed(2)} €",
-                      style: const TextStyle(fontWeight: FontWeight.w900, color: Colors.red, fontSize: 13),
-                    ),
-                    Row(
-                      mainAxisSize: MainAxisSize.min,
-                      children: [
-                        IconButton(
-                          icon: const Icon(Icons.edit_outlined, size: 16, color: Colors.blueGrey),
-                          onPressed: () => onEdit(e),
-                          padding: EdgeInsets.zero,
-                          constraints: const BoxConstraints(),
-                        ),
-                        const SizedBox(width: 8),
-                        IconButton(
-                          icon: const Icon(Icons.delete_outline_rounded, size: 18, color: Colors.redAccent),
-                          onPressed: () => _confirmDelete(context, provider, e),
-                          padding: EdgeInsets.zero,
-                          constraints: const BoxConstraints(),
-                        ),
-                      ],
-                    ),
-                  ],
-                ),
-              ],
-            ),
+              ),
+            )).toList(),
           ),
-        ),
-      )).toList(),
+      ],
     );
   }
 
@@ -1060,16 +1187,18 @@ class _GeneralExpensesList extends StatelessWidget {
     showDialog(
       context: context,
       builder: (context) => AlertDialog(
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(24)),
         title: const Text("ΔΙΑΓΡΑΦΗ ΕΞΟΔΟΥ", style: TextStyle(fontWeight: FontWeight.w900)),
         content: Text("Είστε σίγουροι ότι θέλετε να διαγράψετε το έξοδο '${e.description}';"),
         actions: [
           TextButton(onPressed: () => Navigator.pop(context), child: const Text("ΑΚΥΡΟ")),
-          TextButton(
+          ElevatedButton(
             onPressed: () async {
               await provider.deleteCompanyExpense(e.id);
               if (context.mounted) Navigator.pop(context);
-            }, 
-            child: const Text("ΔΙΑΓΡΑΦΗ", style: TextStyle(color: Colors.red, fontWeight: FontWeight.bold))
+            },
+            style: ElevatedButton.styleFrom(backgroundColor: Colors.red, foregroundColor: Colors.white),
+            child: const Text("ΔΙΑΓΡΑΦΗ", style: TextStyle(fontWeight: FontWeight.bold)),
           ),
         ],
       ),

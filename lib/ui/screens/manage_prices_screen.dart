@@ -11,7 +11,7 @@ class ManagePricesScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: const Color(0xFFF1F5F9),
+      backgroundColor: const Color(0xFFE2E8F0),
       appBar: AppBar(title: const Text("ΠΡΟΤΥΠΑ ΤΙΜΩΝ", style: TextStyle(fontWeight: FontWeight.w900, fontSize: 16))),
       body: ListView.builder(
         padding: const EdgeInsets.all(24),
@@ -68,7 +68,7 @@ class _CategoryPricesScreenState extends State<_CategoryPricesScreen> {
     final color = widget.category.color;
     
     return Scaffold(
-      backgroundColor: const Color(0xFFF1F5F9),
+      backgroundColor: const Color(0xFFE2E8F0),
       appBar: AppBar(
         title: Text(widget.category.label.toUpperCase(), style: const TextStyle(fontWeight: FontWeight.w900, fontSize: 14)),
       ),

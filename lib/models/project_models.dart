@@ -291,6 +291,7 @@ class Partner {
   final String phone;
   final String trade;
   final double baseRate;
+  final String aiPricingData;
 
   Partner({
     this.id = 0,
@@ -298,6 +299,7 @@ class Partner {
     required this.phone,
     required this.trade,
     this.baseRate = 0.0,
+    this.aiPricingData = "",
   });
 
   Map<String, dynamic> toMap() {
@@ -307,6 +309,7 @@ class Partner {
       'phone': phone,
       'trade': trade,
       'baseRate': baseRate,
+      'aiPricingData': aiPricingData,
     };
   }
 
@@ -317,6 +320,7 @@ class Partner {
       phone: map['phone'],
       trade: map['trade'],
       baseRate: (map['baseRate'] as num).toDouble(),
+      aiPricingData: map['aiPricingData'] ?? "",
     );
   }
 }
@@ -778,6 +782,7 @@ class CompanyExpenseEntity {
   final bool isMonthly;
   final bool hasVat;
   final String? invoiceNumber;
+  final String category;
 
   CompanyExpenseEntity({
     this.id = 0,
@@ -787,6 +792,7 @@ class CompanyExpenseEntity {
     this.isMonthly = false,
     this.hasVat = false,
     this.invoiceNumber,
+    this.category = "ΓΕΝΙΚΟ / ΑΛΛΟ",
   }) : date = date ?? DateTime.now().millisecondsSinceEpoch;
 
   Map<String, dynamic> toMap() {
@@ -798,6 +804,7 @@ class CompanyExpenseEntity {
       'isMonthly': isMonthly ? 1 : 0,
       'hasVat': hasVat ? 1 : 0,
       'invoiceNumber': invoiceNumber,
+      'category': category,
     };
   }
 
@@ -810,6 +817,29 @@ class CompanyExpenseEntity {
       isMonthly: map['isMonthly'] == 1,
       hasVat: map['hasVat'] == 1,
       invoiceNumber: map['invoiceNumber'],
+      category: map['category'] ?? "ΓΕΝΙΚΟ / ΑΛΛΟ",
+    );
+  }
+
+  CompanyExpenseEntity copyWith({
+    int? id,
+    int? date,
+    String? description,
+    double? amount,
+    bool? isMonthly,
+    bool? hasVat,
+    String? invoiceNumber,
+    String? category,
+  }) {
+    return CompanyExpenseEntity(
+      id: id ?? this.id,
+      date: date ?? this.date,
+      description: description ?? this.description,
+      amount: amount ?? this.amount,
+      isMonthly: isMonthly ?? this.isMonthly,
+      hasVat: hasVat ?? this.hasVat,
+      invoiceNumber: invoiceNumber ?? this.invoiceNumber,
+      category: category ?? this.category,
     );
   }
 }
@@ -1303,10 +1333,72 @@ class ProjectChecklistItem {
 
   factory ProjectChecklistItem.fromMap(Map<String, dynamic> map) {
     return ProjectChecklistItem(
+      id: map['id'] is int ? map['id'] : (int.tryParse(map['id']?.toString() ?? '0') ?? 0),
+      projectId: map['projectId'] is int ? map['projectId'] : (int.tryParse(map['projectId']?.toString() ?? '0') ?? 0),
+      title: map['title']?.toString() ?? "",
+      isChecked: map['isChecked'] == 1 || map['isChecked'] == true || map['isChecked'] == '1',
+    );
+  }
+
+  ProjectChecklistItem copyWith({
+    int? id,
+    int? projectId,
+    String? title,
+    bool? isChecked,
+  }) {
+    return ProjectChecklistItem(
+      id: id ?? this.id,
+      projectId: projectId ?? this.projectId,
+      title: title ?? this.title,
+      isChecked: isChecked ?? this.isChecked,
+    );
+  }
+}
+
+class ProjectSpecificationEntity {
+  final int id;
+  final int projectId;
+  final String category;
+  final String name;
+  final String brandCode;
+  final String supplier;
+  final String notes;
+  final int dateAdded;
+
+  ProjectSpecificationEntity({
+    this.id = 0,
+    required this.projectId,
+    required this.category,
+    required this.name,
+    this.brandCode = "",
+    this.supplier = "",
+    this.notes = "",
+    int? dateAdded,
+  }) : dateAdded = dateAdded ?? DateTime.now().millisecondsSinceEpoch;
+
+  Map<String, dynamic> toMap() {
+    return {
+      if (id != 0) 'id': id,
+      'projectId': projectId,
+      'category': category,
+      'name': name,
+      'brandCode': brandCode,
+      'supplier': supplier,
+      'notes': notes,
+      'dateAdded': dateAdded,
+    };
+  }
+
+  factory ProjectSpecificationEntity.fromMap(Map<String, dynamic> map) {
+    return ProjectSpecificationEntity(
       id: map['id'],
       projectId: map['projectId'],
-      title: map['title'] ?? "",
-      isChecked: map['isChecked'] == 1,
+      category: map['category'] ?? "ΑΛΛΟ",
+      name: map['name'] ?? "",
+      brandCode: map['brandCode'] ?? "",
+      supplier: map['supplier'] ?? "",
+      notes: map['notes'] ?? "",
+      dateAdded: map['dateAdded'],
     );
   }
 }
@@ -1335,19 +1427,19 @@ class ProjectNote {
 
   factory ProjectNote.fromMap(Map<String, dynamic> map) {
     return ProjectNote(
-      id: map['id'],
-      projectId: map['projectId'],
-      content: map['content'] ?? "",
-      dateAdded: map['dateAdded'],
+      id: map['id'] is int ? map['id'] : (int.tryParse(map['id']?.toString() ?? '0') ?? 0),
+      projectId: map['projectId'] is int ? map['projectId'] : (int.tryParse(map['projectId']?.toString() ?? '0') ?? 0),
+      content: map['content']?.toString() ?? "",
+      dateAdded: map['dateAdded'] is int ? map['dateAdded'] : (int.tryParse(map['dateAdded']?.toString() ?? '0') ?? DateTime.now().millisecondsSinceEpoch),
     );
   }
 
-  ProjectNote copyWith({String? content}) {
+  ProjectNote copyWith({int? id, int? projectId, String? content, int? dateAdded}) {
     return ProjectNote(
-      id: id,
-      projectId: projectId,
+      id: id ?? this.id,
+      projectId: projectId ?? this.projectId,
       content: content ?? this.content,
-      dateAdded: dateAdded,
+      dateAdded: dateAdded ?? this.dateAdded,
     );
   }
 }

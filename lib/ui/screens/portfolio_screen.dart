@@ -23,7 +23,7 @@ class _PortfolioScreenState extends State<PortfolioScreen> {
     final isDesktop = MediaQuery.of(context).size.width > 900;
 
     return Scaffold(
-      backgroundColor: const Color(0xFFF1F5F9),
+      backgroundColor: const Color(0xFFE2E8F0),
       appBar: AppBar(
         title: const Text("ΨΗΦΙΑΚΟ PORTFOLIO", style: TextStyle(fontWeight: FontWeight.w900, fontSize: 14)),
       ),

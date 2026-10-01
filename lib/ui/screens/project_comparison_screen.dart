@@ -14,7 +14,7 @@ class ProjectComparisonScreen extends StatelessWidget {
     final projects = provider.projects;
 
     return Scaffold(
-      backgroundColor: const Color(0xFFF1F5F9),
+      backgroundColor: const Color(0xFFE2E8F0),
       appBar: AppBar(title: const Text("ΣΥΓΚΡΙΣΗ ΕΡΓΩΝ (ROI)", style: TextStyle(fontWeight: FontWeight.w900, fontSize: 14))),
       body: FutureBuilder<List<ProjectROIData>>(
         future: Future.wait(projects.map((p) => provider.calculateProjectROIData(p.id))),

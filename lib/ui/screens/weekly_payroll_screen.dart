@@ -38,7 +38,7 @@ class _WeeklyPayrollScreenState extends State<WeeklyPayrollScreen> {
     final isDesktop = Responsive.isDesktop(context);
 
     return Scaffold(
-      backgroundColor: const Color(0xFFF1F5F9),
+      backgroundColor: const Color(0xFFE2E8F0),
       appBar: AppBar(
         title: Column(
           children: [
@@ -128,30 +128,40 @@ class _WeeklyPayrollScreenState extends State<WeeklyPayrollScreen> {
         final totalDebt = snapshot.data ?? 0.0;
         return Padding(
           padding: const EdgeInsets.fromLTRB(20, 24, 20, 8),
-          child: PremiumCard(
-            accentColor: Colors.blue,
-            padding: const EdgeInsets.all(20),
+          child: Container(
+            decoration: BoxDecoration(
+              color: Colors.white,
+              borderRadius: BorderRadius.circular(16),
+              boxShadow: [
+                BoxShadow(
+                  color: Colors.black.withValues(alpha: 0.02),
+                  blurRadius: 10,
+                  offset: const Offset(0, 2),
+                ),
+              ],
+            ),
+            padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 20),
             child: Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
                 Row(
                   children: [
                     Container(
-                      padding: const EdgeInsets.all(10),
-                      decoration: BoxDecoration(color: Colors.blue.withValues(alpha: 0.1), borderRadius: BorderRadius.circular(12)),
+                      padding: const EdgeInsets.all(8),
+                      decoration: BoxDecoration(color: Colors.blue.withValues(alpha: 0.1), borderRadius: BorderRadius.circular(10)),
                       child: const Icon(Icons.account_balance_wallet_rounded, color: Colors.blue, size: 20),
                     ),
                     const SizedBox(width: 16),
                     Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        const Text("ΣΥΝΟΛΙΚΗ ΟΦΕΙΛΗ", style: TextStyle(fontSize: 10, fontWeight: FontWeight.w900, color: Colors.blueGrey, letterSpacing: 0.5)),
-                        Text("(Έως ${DateFormat('dd/MM').format(endOfPeriod)})", style: const TextStyle(fontSize: 8, color: Colors.grey, fontWeight: FontWeight.bold)),
+                        const Text("ΣΥΝΟΛΙΚΗ ΟΦΕΙΛΗ", style: TextStyle(fontSize: 11, fontWeight: FontWeight.w900, color: Color(0xFF1E293B), letterSpacing: 0.5)),
+                        Text("(Έως ${DateFormat('dd/MM').format(endOfPeriod)})", style: const TextStyle(fontSize: 9, color: Colors.grey, fontWeight: FontWeight.bold)),
                       ],
                     ),
                   ],
                 ),
-                Text("${totalDebt.toStringAsFixed(2)} €", style: const TextStyle(fontWeight: FontWeight.w900, fontSize: 18, color: Color(0xFF1E293B))),
+                Text("${totalDebt.toStringAsFixed(2)} €", style: const TextStyle(fontWeight: FontWeight.w900, fontSize: 20, color: Color(0xFF1E293B))),
               ],
             ),
           ),
@@ -180,25 +190,25 @@ class _WeeklyPayrollScreenState extends State<WeeklyPayrollScreen> {
 
   Widget _buildPeriodNavigatorPremium(DateTime start, DateTime end) {
     return Padding(
-      padding: const EdgeInsets.symmetric(vertical: 16),
+      padding: const EdgeInsets.symmetric(vertical: 24),
       child: Row(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
           _navBtn(Icons.chevron_left_rounded, () => setState(() => _calendarDate = _isMonthly ? DateTime(_calendarDate.year, _calendarDate.month - 1, 1) : _calendarDate.subtract(const Duration(days: 7)))),
-          const SizedBox(width: 24),
+          const SizedBox(width: 16),
           Container(
-            padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
+            padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
             decoration: BoxDecoration(
               color: Colors.white,
-              borderRadius: BorderRadius.circular(16),
+              borderRadius: BorderRadius.circular(20),
               boxShadow: [BoxShadow(color: Colors.black.withValues(alpha: 0.02), blurRadius: 10)],
             ),
             child: Text(
               _isMonthly ? DateFormat('MMMM yyyy', 'el').format(start).toUpperCase() : "${DateFormat('dd/MM').format(start)} - ${DateFormat('dd/MM').format(end)}",
-              style: const TextStyle(fontWeight: FontWeight.w900, color: Color(0xFF1E293B), fontSize: 14, letterSpacing: 0.5),
+              style: const TextStyle(fontWeight: FontWeight.w900, color: Color(0xFF1E293B), fontSize: 13, letterSpacing: 0.5),
             ),
           ),
-          const SizedBox(width: 24),
+          const SizedBox(width: 16),
           _navBtn(Icons.chevron_right_rounded, () => setState(() => _calendarDate = _isMonthly ? DateTime(_calendarDate.year, _calendarDate.month + 1, 1) : _calendarDate.add(const Duration(days: 7)))),
         ],
       ),
@@ -208,11 +218,15 @@ class _WeeklyPayrollScreenState extends State<WeeklyPayrollScreen> {
   Widget _navBtn(IconData icon, VoidCallback onTap) {
     return InkWell(
       onTap: onTap,
-      borderRadius: BorderRadius.circular(12),
+      borderRadius: BorderRadius.circular(20),
       child: Container(
-        padding: const EdgeInsets.all(8),
-        decoration: BoxDecoration(color: Colors.white, borderRadius: BorderRadius.circular(12), border: Border.all(color: Colors.black.withValues(alpha: 0.05))),
-        child: Icon(icon, size: 24, color: Colors.blueGrey),
+        padding: const EdgeInsets.all(10),
+        decoration: BoxDecoration(
+          color: Colors.white, 
+          borderRadius: BorderRadius.circular(20), 
+          boxShadow: [BoxShadow(color: Colors.black.withValues(alpha: 0.02), blurRadius: 10)],
+        ),
+        child: Icon(icon, size: 20, color: Colors.blueGrey),
       ),
     );
   }
@@ -230,8 +244,8 @@ class _WeeklyPayrollScreenState extends State<WeeklyPayrollScreen> {
       child: Container(
         margin: const EdgeInsets.symmetric(horizontal: 16),
         decoration: BoxDecoration(
-          color: const Color(0xFFF8FAFC),
-          borderRadius: BorderRadius.circular(32),
+          color: Colors.white,
+          borderRadius: BorderRadius.circular(24),
           border: Border.all(color: Colors.black.withValues(alpha: 0.08)),
           boxShadow: [BoxShadow(color: Colors.black.withValues(alpha: 0.03), blurRadius: 20)],
         ),
@@ -242,7 +256,7 @@ class _WeeklyPayrollScreenState extends State<WeeklyPayrollScreen> {
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               Container(
-                color: const Color(0xFFEEF2FF),
+                color: Colors.white,
                 child: Row(
                   children: [
                     SizedBox(width: workerWidth, child: const Padding(padding: EdgeInsets.symmetric(horizontal: 20, vertical: 16), child: Text("ΕΡΓΑΤΗΣ", style: TextStyle(fontWeight: FontWeight.w900, fontSize: 10, color: Colors.blueGrey, letterSpacing: 1)))),
@@ -250,7 +264,7 @@ class _WeeklyPayrollScreenState extends State<WeeklyPayrollScreen> {
                       width: dayWidth,
                       height: 50,
                       alignment: Alignment.center,
-                      decoration: BoxDecoration(border: Border(left: BorderSide(color: Colors.black.withValues(alpha: 0.03)))),
+                      decoration: BoxDecoration(border: Border(left: BorderSide(color: Colors.black.withValues(alpha: 0.05)))),
                       child: Column(
                         mainAxisAlignment: MainAxisAlignment.center,
                         children: [
@@ -290,8 +304,20 @@ class _WeeklyPayrollScreenState extends State<WeeklyPayrollScreen> {
 
     return Padding(
       padding: const EdgeInsets.all(20.0),
-      child: PremiumCard(
-        accentColor: Colors.blueGrey,
+      child: Container(
+        decoration: BoxDecoration(
+          color: Colors.white,
+          borderRadius: BorderRadius.circular(24),
+          border: Border.all(color: Colors.blue.withValues(alpha: 0.15), width: 1.5),
+          boxShadow: [
+            BoxShadow(
+              color: Colors.black.withValues(alpha: 0.03),
+              blurRadius: 15,
+              offset: const Offset(0, 4),
+            ),
+          ],
+        ),
+        padding: const EdgeInsets.all(20.0),
         child: Column(
           children: [
             Row(
@@ -380,7 +406,7 @@ class _SummaryBox extends StatelessWidget {
   Widget build(BuildContext context) {
     return Container(
       padding: const EdgeInsets.all(16),
-      decoration: BoxDecoration(color: color.withValues(alpha: 0.05), borderRadius: BorderRadius.circular(16), border: Border.all(color: color.withValues(alpha: 0.1))),
+      decoration: BoxDecoration(color: Colors.white, borderRadius: BorderRadius.circular(16), border: Border.all(color: color.withValues(alpha: 0.15))),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
@@ -424,7 +450,7 @@ class _WorkerRowPremium extends StatelessWidget {
     final totalPaid = payments.fold(0.0, (sum, p) => sum + p.amount);
 
     return Container(
-      decoration: BoxDecoration(border: Border(bottom: BorderSide(color: Colors.black.withValues(alpha: 0.03)))),
+      decoration: BoxDecoration(border: Border(bottom: BorderSide(color: Colors.black.withValues(alpha: 0.05)))),
       child: Row(
         children: [
           InkWell(
@@ -433,7 +459,7 @@ class _WorkerRowPremium extends StatelessWidget {
               width: workerWidth,
               height: 64,
               padding: const EdgeInsets.symmetric(horizontal: 12),
-              color: Colors.blue.withValues(alpha: 0.02),
+              color: Colors.white,
               child: Row(
                 children: [
                   Expanded(
@@ -455,7 +481,7 @@ class _WorkerRowPremium extends StatelessWidget {
             return Container(
               width: dayWidth,
               height: 64,
-              decoration: BoxDecoration(border: Border(left: BorderSide(color: Colors.black.withValues(alpha: 0.03)))),
+              decoration: BoxDecoration(border: Border(left: BorderSide(color: Colors.black.withValues(alpha: 0.05)))),
               child: SingleChildScrollView(
                 child: Column(
                   mainAxisAlignment: MainAxisAlignment.center,
@@ -508,7 +534,7 @@ class _WorkerRowPremium extends StatelessWidget {
                             children: [
                               Container(
                                 padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 1),
-                                decoration: BoxDecoration(color: Colors.blue.withValues(alpha: 0.08), borderRadius: BorderRadius.circular(4)),
+                                decoration: BoxDecoration(color: Colors.blue.withValues(alpha: 0.1), borderRadius: BorderRadius.circular(4)),
                                 child: Text(pName.toUpperCase(), style: const TextStyle(fontSize: 7, fontWeight: FontWeight.w900, color: Colors.blue)),
                               ),
                               if (a.overtimeAmount > 0) Text("+${a.overtimeAmount.toInt()}", style: const TextStyle(fontSize: 8, color: Color(0xFF38B000), fontWeight: FontWeight.w900)),
@@ -566,14 +592,16 @@ class _WorkerRowPremium extends StatelessWidget {
                 width: balanceWidth,
                 height: 64,
                 padding: const EdgeInsets.symmetric(horizontal: 16),
-                decoration: BoxDecoration(border: Border(left: BorderSide(color: Colors.black.withValues(alpha: 0.03)))),
+                decoration: BoxDecoration(border: Border(left: BorderSide(color: Colors.black.withValues(alpha: 0.05)))),
                 child: Column(
                   mainAxisAlignment: MainAxisAlignment.center,
                   crossAxisAlignment: CrossAxisAlignment.end,
                   children: [
-                    Text("${totalEarned.toInt()}€", style: const TextStyle(fontSize: 9, fontWeight: FontWeight.bold, color: Colors.grey)),
-                    if (totalPaid > 0) Text("-${totalPaid.toInt()}€", style: const TextStyle(fontSize: 8, color: Colors.red, fontWeight: FontWeight.bold)),
-                    Text("${balance.toInt()}€", style: TextStyle(fontSize: 14, fontWeight: FontWeight.w900, color: balance > 1 ? const Color(0xFFF72585) : Colors.blueGrey)),
+                    if (totalEarned > 0 || totalPaid > 0) ...[
+                      Text("${totalEarned.toInt()}€", style: const TextStyle(fontSize: 8, fontWeight: FontWeight.bold, color: Colors.grey)),
+                      if (totalPaid > 0) Text("-${totalPaid.toInt()}€", style: const TextStyle(fontSize: 8, color: Colors.blue, fontWeight: FontWeight.bold)),
+                    ],
+                    Text("${balance.toInt()}€", style: TextStyle(fontSize: 14, fontWeight: FontWeight.w900, color: balance > 0 ? const Color(0xFFF72585) : Colors.blueGrey)),
                   ],
                 ),
               );
@@ -736,8 +764,19 @@ class _ProjectCategoryTotalsSectionPremium extends StatelessWidget {
                 ).name;
                 return Padding(
                   padding: const EdgeInsets.only(bottom: 16.0),
-                  child: PremiumCard(
-                    accentColor: Colors.blue,
+                  child: Container(
+                    decoration: BoxDecoration(
+                      color: Colors.white,
+                      borderRadius: BorderRadius.circular(24),
+                      border: Border.all(color: Colors.blue.withValues(alpha: 0.15), width: 1.5),
+                      boxShadow: [
+                        BoxShadow(
+                          color: Colors.black.withValues(alpha: 0.03),
+                          blurRadius: 15,
+                          offset: const Offset(0, 4),
+                        ),
+                      ],
+                    ),
                     padding: const EdgeInsets.all(20),
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,

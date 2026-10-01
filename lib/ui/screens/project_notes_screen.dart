@@ -30,7 +30,7 @@ class _ProjectNotesScreenState extends State<ProjectNotesScreen> {
     final isDesktop = MediaQuery.of(context).size.width > 900;
 
     return Scaffold(
-      backgroundColor: const Color(0xFFF1F5F9),
+      backgroundColor: const Color(0xFFE2E8F0),
       appBar: AppBar(
         title: Column(
           children: [
@@ -46,18 +46,34 @@ class _ProjectNotesScreenState extends State<ProjectNotesScreen> {
       ),
       body: Center(
         child: Container(
-          constraints: BoxConstraints(maxWidth: isDesktop ? 1000 : double.infinity),
+          constraints: BoxConstraints(maxWidth: isDesktop ? 1100 : double.infinity),
           child: notes.isEmpty
               ? _buildEmptyState()
-              : ListView.builder(
-                  padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 24),
-                  itemCount: notes.length,
-                  itemBuilder: (context, index) => _NoteCard(
-                    note: notes[index],
-                    onEdit: () => _showNoteDialog(context, note: notes[index]),
-                    onDelete: () => _showDeleteConfirm(context, notes[index]),
-                  ),
-                ),
+              : isDesktop
+                  ? GridView.builder(
+                      padding: const EdgeInsets.all(24),
+                      gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+                        crossAxisCount: 2,
+                        crossAxisSpacing: 16,
+                        mainAxisSpacing: 16,
+                        mainAxisExtent: 165,
+                      ),
+                      itemCount: notes.length,
+                      itemBuilder: (context, index) => _NoteCard(
+                        note: notes[index],
+                        onEdit: () => _showNoteDialog(context, note: notes[index]),
+                        onDelete: () => _showDeleteConfirm(context, notes[index]),
+                      ),
+                    )
+                  : ListView.builder(
+                      padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 24),
+                      itemCount: notes.length,
+                      itemBuilder: (context, index) => _NoteCard(
+                        note: notes[index],
+                        onEdit: () => _showNoteDialog(context, note: notes[index]),
+                        onDelete: () => _showDeleteConfirm(context, notes[index]),
+                      ),
+                    ),
         ),
       ),
     );
@@ -155,29 +171,114 @@ class _NoteCard extends StatelessWidget {
   Widget build(BuildContext context) {
     final date = DateFormat('dd/MM/yyyy HH:mm').format(DateTime.fromMillisecondsSinceEpoch(note.dateAdded));
     return Container(
-      margin: const EdgeInsets.only(bottom: 16),
-      child: PremiumCard(
-        accentColor: Colors.blue,
-        padding: const EdgeInsets.all(20),
-        onTap: onEdit,
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+      margin: const EdgeInsets.only(bottom: 12),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(20),
+        border: Border.all(color: Colors.blue.withValues(alpha: 0.3), width: 1.2),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.blue.withValues(alpha: 0.05),
+            blurRadius: 10,
+            offset: const Offset(0, 4),
+          ),
+        ],
+      ),
+      child: Material(
+        color: Colors.transparent,
+        borderRadius: BorderRadius.circular(20),
+        child: InkWell(
+          onTap: () => _showNoteOptionsModal(context, note, onEdit, onDelete),
+          onLongPress: () => _showNoteOptionsModal(context, note, onEdit, onDelete),
+          borderRadius: BorderRadius.circular(20),
+          child: Padding(
+            padding: const EdgeInsets.all(18),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text(date, style: const TextStyle(fontSize: 10, fontWeight: FontWeight.bold, color: Colors.blueGrey)),
-                IconButton(
-                  icon: const Icon(Icons.delete_outline_rounded, size: 20, color: Colors.black12),
-                  onPressed: onDelete,
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    Row(
+                      children: [
+                        const Icon(Icons.access_time_rounded, size: 13, color: Colors.blueGrey),
+                        const SizedBox(width: 4),
+                        Text(date, style: const TextStyle(fontSize: 11, fontWeight: FontWeight.bold, color: Colors.blueGrey)),
+                      ],
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 12),
+                Text(
+                  note.content,
+                  style: const TextStyle(fontSize: 14, color: Color(0xFF1E293B), fontWeight: FontWeight.w600, height: 1.5),
+                  maxLines: 4,
+                  overflow: TextOverflow.ellipsis,
                 ),
               ],
             ),
-            const SizedBox(height: 8),
-            Text(
-              note.content,
-              style: const TextStyle(fontSize: 14, color: Color(0xFF1E293B), height: 1.5),
+          ),
+        ),
+      ),
+    );
+  }
+
+  void _showNoteOptionsModal(BuildContext context, ProjectNote note, VoidCallback onEdit, VoidCallback onDelete) {
+    showModalBottomSheet(
+      context: context,
+      backgroundColor: Colors.transparent,
+      builder: (context) => Container(
+        padding: const EdgeInsets.all(24),
+        decoration: const BoxDecoration(
+          color: Colors.white,
+          borderRadius: BorderRadius.vertical(top: Radius.circular(28)),
+        ),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Center(
+              child: Container(
+                width: 36,
+                height: 4,
+                decoration: BoxDecoration(color: Colors.grey[300], borderRadius: BorderRadius.circular(10)),
+              ),
             ),
+            const SizedBox(height: 16),
+            const Text("ΕΠΙΛΟΓΕΣ ΣΗΜΕΙΩΣΗΣ", style: TextStyle(fontWeight: FontWeight.w900, fontSize: 14, color: Colors.blueGrey)),
+            const SizedBox(height: 12),
+            Container(
+              width: double.infinity,
+              padding: const EdgeInsets.all(12),
+              decoration: BoxDecoration(color: const Color(0xFFF8FAFC), borderRadius: BorderRadius.circular(12)),
+              child: Text(note.content, maxLines: 3, overflow: TextOverflow.ellipsis, style: const TextStyle(fontSize: 12, color: Color(0xFF334155), fontWeight: FontWeight.w600)),
+            ),
+            const SizedBox(height: 16),
+            ListTile(
+              leading: Container(
+                padding: const EdgeInsets.all(8),
+                decoration: BoxDecoration(color: Colors.blue.withValues(alpha: 0.1), shape: BoxShape.circle),
+                child: const Icon(Icons.edit_note_rounded, color: Colors.blue),
+              ),
+              title: const Text("Επεξεργασία Σημείωσης", style: TextStyle(fontWeight: FontWeight.bold, fontSize: 14)),
+              onTap: () {
+                Navigator.pop(context);
+                onEdit();
+              },
+            ),
+            ListTile(
+              leading: Container(
+                padding: const EdgeInsets.all(8),
+                decoration: BoxDecoration(color: Colors.red.withValues(alpha: 0.1), shape: BoxShape.circle),
+                child: const Icon(Icons.delete_outline_rounded, color: Colors.red),
+              ),
+              title: const Text("Διαγραφή Σημείωσης", style: TextStyle(fontWeight: FontWeight.bold, fontSize: 14, color: Colors.red)),
+              onTap: () {
+                Navigator.pop(context);
+                onDelete();
+              },
+            ),
+            const SizedBox(height: 12),
           ],
         ),
       ),

@@ -30,7 +30,7 @@ class _ClientsScreenState extends State<ClientsScreen> {
     final isDesktop = MediaQuery.of(context).size.width > 900;
 
     return Scaffold(
-      backgroundColor: const Color(0xFFF1F5F9),
+      backgroundColor: const Color(0xFFE2E8F0),
       appBar: AppBar(
         title: const Text("ΠΕΛΑΤΟΛΟΓΙΟ", style: TextStyle(fontWeight: FontWeight.w900, fontSize: 14)),
         actions: [
@@ -201,62 +201,82 @@ class _ClientCard extends StatelessWidget {
   Widget build(BuildContext context) {
     const color = Color(0xFF4361EE);
     
-    return PremiumCard(
-      onTap: onClick,
-      onLongPress: onLongClick,
-      accentColor: color,
-      padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
-      child: Row(
-        children: [
-          Container(
-            width: 52, height: 52,
-            decoration: BoxDecoration(
-              gradient: LinearGradient(colors: [color, color.withValues(alpha: 0.7)]),
-              borderRadius: BorderRadius.circular(16),
-              boxShadow: [BoxShadow(color: color.withValues(alpha: 0.3), blurRadius: 8, offset: const Offset(0, 4))],
-            ),
-            alignment: Alignment.center,
-            child: Text(
-              client.name.isNotEmpty ? client.name[0].toUpperCase() : "?",
-              style: const TextStyle(fontWeight: FontWeight.w900, color: Colors.white, fontSize: 20),
-            ),
+    return Container(
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(20),
+        border: Border.all(color: color.withValues(alpha: 0.15), width: 1.5),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withValues(alpha: 0.03),
+            blurRadius: 15,
+            offset: const Offset(0, 4),
           ),
-          const SizedBox(width: 16),
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              mainAxisAlignment: MainAxisAlignment.center,
+        ],
+      ),
+      child: Material(
+        color: Colors.transparent,
+        borderRadius: BorderRadius.circular(20),
+        child: InkWell(
+          onTap: onClick,
+          onLongPress: onLongClick,
+          borderRadius: BorderRadius.circular(20),
+          child: Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 20),
+            child: Row(
               children: [
-                Row(
-                  children: [
-                    Expanded(child: Text(client.name.toUpperCase(), style: const TextStyle(fontWeight: FontWeight.w900, fontSize: 14, color: Color(0xFF1E293B), letterSpacing: 0.2), maxLines: 1, overflow: TextOverflow.ellipsis)),
-                    const SizedBox(width: 8),
-                    _StatusBadge(status: client.status),
-                  ],
+                Container(
+                  width: 52, height: 52,
+                  decoration: BoxDecoration(
+                    gradient: LinearGradient(colors: [color, color.withValues(alpha: 0.7)]),
+                    borderRadius: BorderRadius.circular(16),
+                    boxShadow: [BoxShadow(color: color.withValues(alpha: 0.3), blurRadius: 8, offset: const Offset(0, 4))],
+                  ),
+                  alignment: Alignment.center,
+                  child: Text(
+                    client.name.isNotEmpty ? client.name[0].toUpperCase() : "?",
+                    style: const TextStyle(fontWeight: FontWeight.w900, color: Colors.white, fontSize: 20),
+                  ),
                 ),
-                const SizedBox(height: 4),
-                Row(
-                  children: [
-                    Text(client.phone, style: TextStyle(color: color.withValues(alpha: 0.6), fontWeight: FontWeight.w900, fontSize: 10)),
-                    if (client.followUpDate != null) ...[
-                      const SizedBox(width: 8),
-                      Icon(Icons.event_note_rounded, size: 10, color: Colors.orange.withValues(alpha: 0.6)),
-                      const SizedBox(width: 4),
-                      Text(DateFormat('dd/MM').format(DateTime.fromMillisecondsSinceEpoch(client.followUpDate!)), style: const TextStyle(fontSize: 9, color: Colors.orange, fontWeight: FontWeight.bold)),
+                const SizedBox(width: 20),
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      Row(
+                        children: [
+                          Expanded(child: Text(client.name.toUpperCase(), style: const TextStyle(fontWeight: FontWeight.w900, fontSize: 14, color: Color(0xFF1E293B), letterSpacing: 0.2), maxLines: 1, overflow: TextOverflow.ellipsis)),
+                          const SizedBox(width: 8),
+                          _StatusBadge(status: client.status),
+                        ],
+                      ),
+                      const SizedBox(height: 6),
+                      Row(
+                        children: [
+                          Text(client.phone, style: TextStyle(color: color.withValues(alpha: 0.6), fontWeight: FontWeight.w900, fontSize: 10)),
+                          if (client.followUpDate != null) ...[
+                            const SizedBox(width: 8),
+                            Icon(Icons.event_note_rounded, size: 10, color: Colors.orange.withValues(alpha: 0.6)),
+                            const SizedBox(width: 4),
+                            Text(DateFormat('dd/MM').format(DateTime.fromMillisecondsSinceEpoch(client.followUpDate!)), style: const TextStyle(fontSize: 9, color: Colors.orange, fontWeight: FontWeight.bold)),
+                          ],
+                        ],
+                      ),
                     ],
-                  ],
+                  ),
+                ),
+                IconButton(
+                  icon: const Icon(Icons.delete_outline_rounded, color: Colors.redAccent, size: 22),
+                  onPressed: onDelete,
+                  tooltip: "Διαγραφή Πελάτη",
+                  padding: EdgeInsets.zero,
+                  constraints: const BoxConstraints(),
                 ),
               ],
             ),
           ),
-          IconButton(
-            icon: const Icon(Icons.delete_outline_rounded, color: Colors.redAccent, size: 22),
-            onPressed: onDelete,
-            tooltip: "Διαγραφή Πελάτη",
-            padding: EdgeInsets.zero,
-            constraints: const BoxConstraints(),
-          ),
-        ],
+        ),
       ),
     );
   }

@@ -18,6 +18,9 @@ import 'package:mtc2026/ui/screens/market_archive_screen.dart';
 import 'package:mtc2026/ui/screens/job_recipes_screen.dart';
 import 'package:mtc2026/ui/screens/global_payroll_screen.dart';
 import 'package:mtc2026/ui/screens/managers_screen.dart';
+import 'package:mtc2026/ui/screens/human_resources_screen.dart';
+import 'package:mtc2026/ui/screens/materials_management_screen.dart';
+import 'package:mtc2026/ui/screens/jobs_management_screen.dart';
 
 class CompanyHubScreen extends StatefulWidget {
   const CompanyHubScreen({super.key});
@@ -42,7 +45,7 @@ class _CompanyHubScreenState extends State<CompanyHubScreen> {
         return true;
       },
       child: Scaffold(
-        backgroundColor: const Color(0xFFF1F5F9),
+        backgroundColor: const Color(0xFFE2E8F0),
         appBar: AppBar(
           title: Text(
             _viewMode == "MATERIALS"
@@ -90,20 +93,29 @@ class _CompanyHubScreenState extends State<CompanyHubScreen> {
       children: [
         const SizedBox(height: 20),
         _PremiumHubCategoryCard(
+          label: "ΑΝΘΡΩΠΙΝΟ ΔΥΝΑΜΙΚΟ",
+          subtitle: "Συνεργάτες, Παρουσιολόγιο, Πελάτες & Υπεύθυνοι Έργων",
+          icon: Icons.badge_rounded,
+          color: const Color(0xFF7209B7),
+          onClick: () => Navigator.push(context, MaterialPageRoute(builder: (context) => const HumanResourcesScreen())),
+          isDesktop: isDesktop,
+        ),
+        const SizedBox(height: 16),
+        _PremiumHubCategoryCard(
           label: "ΔΙΑΧΕΙΡΙΣΗ ΥΛΙΚΟΥ",
           subtitle: "Αποθήκη, Βαν, Εργαλεία & Οχήματα",
           icon: Icons.inventory_2_rounded,
           color: const Color(0xFF4361EE),
-          onClick: () => setState(() => _viewMode = "MATERIALS"),
+          onClick: () => Navigator.push(context, MaterialPageRoute(builder: (context) => const MaterialsManagementScreen())),
           isDesktop: isDesktop,
         ),
         const SizedBox(height: 16),
         _PremiumHubCategoryCard(
           label: "ΔΙΑΧΕΙΡΙΣΗ ΕΡΓΑΣΙΩΝ",
-          subtitle: "Συνεργάτες, Παρουσιολόγιο, Ταμείο & Συνταγές",
+          subtitle: "Ταμείο, Τιμοκατάλογος, Αγορές & Συνταγές",
           icon: Icons.engineering_rounded,
-          color: const Color(0xFF7209B7),
-          onClick: () => setState(() => _viewMode = "JOBS"),
+          color: const Color(0xFF059669),
+          onClick: () => Navigator.push(context, MaterialPageRoute(builder: (context) => const JobsManagementScreen())),
           isDesktop: isDesktop,
         ),
         const SizedBox(height: 16),
@@ -122,24 +134,6 @@ class _CompanyHubScreenState extends State<CompanyHubScreen> {
           icon: Icons.monetization_on_rounded,
           color: const Color(0xFFB5179E),
           onClick: () => Navigator.push(context, MaterialPageRoute(builder: (context) => const CompanyExpensesScreen())),
-          isDesktop: isDesktop,
-        ),
-        const SizedBox(height: 16),
-        _PremiumHubCategoryCard(
-          label: "ΠΕΛΑΤΕΣ",
-          subtitle: "Κατάλογος Πελατών & Leads",
-          icon: Icons.person_search_rounded,
-          color: const Color(0xFF4CC9F0),
-          onClick: () => Navigator.push(context, MaterialPageRoute(builder: (context) => const ClientsScreen())),
-          isDesktop: isDesktop,
-        ),
-        const SizedBox(height: 16),
-        _PremiumHubCategoryCard(
-          label: "ΥΠΕΥΘΥΝΟΙ ΕΡΓΩΝ",
-          subtitle: "Διαχείριση Managers & PIN Πρόσβασης",
-          icon: Icons.engineering_rounded,
-          color: Colors.teal,
-          onClick: () => Navigator.push(context, MaterialPageRoute(builder: (context) => const ManagersScreen())),
           isDesktop: isDesktop,
         ),
         const SizedBox(height: 32),
@@ -170,7 +164,7 @@ class _CompanyHubScreenState extends State<CompanyHubScreen> {
                     color: Color(0xFFFF9800),
                   ),
                   IconButton.filledTonal(
-                    onPressed: () => _showAddNoteDialog(context, provider),
+                    onPressed: () => _showNoteDialog(context, provider),
                     icon: const Icon(Icons.add_rounded),
                     style: IconButton.styleFrom(
                       backgroundColor: const Color(0xFFFF9800).withValues(alpha: 0.1),
@@ -189,58 +183,22 @@ class _CompanyHubScreenState extends State<CompanyHubScreen> {
                   ),
                 )
               else
-                Column(
-                  children: notes.map((note) {
-                    final proj = provider.projects.firstWhere(
-                      (p) => p.id == note.projectId,
-                      orElse: () => Project(name: "ΕΡΓΟ #${note.projectId}", clientName: "", address: ""),
-                    );
-                    final dateStr = DateFormat('dd/MM/yyyy HH:mm').format(DateTime.fromMillisecondsSinceEpoch(note.dateAdded));
-                    return Container(
-                      width: double.infinity,
-                      margin: const EdgeInsets.only(bottom: 10),
-                      padding: const EdgeInsets.all(14),
-                      decoration: BoxDecoration(
-                        color: Colors.white,
-                        borderRadius: BorderRadius.circular(16),
-                        border: Border.all(color: const Color(0xFFFF9800).withValues(alpha: 0.2)),
+                isDesktop && notes.length >= 2
+                    ? GridView.builder(
+                        shrinkWrap: true,
+                        physics: const NeverScrollableScrollPhysics(),
+                        gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+                          crossAxisCount: 2,
+                          crossAxisSpacing: 12,
+                          mainAxisSpacing: 12,
+                          mainAxisExtent: 165,
+                        ),
+                        itemCount: notes.length,
+                        itemBuilder: (context, index) => _buildNoteCardItem(context, notes[index], provider),
+                      )
+                    : Column(
+                        children: notes.map((note) => _buildNoteCardItem(context, note, provider)).toList(),
                       ),
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Row(
-                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                            children: [
-                              Container(
-                                padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
-                                decoration: BoxDecoration(
-                                  color: const Color(0xFFFF9800).withValues(alpha: 0.1),
-                                  borderRadius: BorderRadius.circular(8),
-                                ),
-                                child: Text(proj.name.toUpperCase(), style: const TextStyle(fontSize: 10, fontWeight: FontWeight.w900, color: Color(0xFFFF9800))),
-                              ),
-                              Row(
-                                children: [
-                                  Text(dateStr, style: const TextStyle(fontSize: 10, fontWeight: FontWeight.bold, color: Colors.blueGrey)),
-                                  const SizedBox(width: 8),
-                                  IconButton(
-                                    icon: const Icon(Icons.delete_outline_rounded, size: 16, color: Colors.redAccent),
-                                    onPressed: () async {
-                                      await provider.deleteProjectNote(note.projectId, note.id);
-                                      setState(() {});
-                                    },
-                                  ),
-                                ],
-                              ),
-                            ],
-                          ),
-                          const SizedBox(height: 8),
-                          Text(note.content, style: const TextStyle(fontSize: 12, color: Color(0xFF1E293B), fontWeight: FontWeight.w600)),
-                        ],
-                      ),
-                    );
-                  }).toList(),
-                ),
             ],
           ),
         );
@@ -248,7 +206,168 @@ class _CompanyHubScreenState extends State<CompanyHubScreen> {
     );
   }
 
-  void _showAddNoteDialog(BuildContext context, ProjectProvider provider) {
+  Widget _buildNoteCardItem(BuildContext context, ProjectNote note, ProjectProvider provider) {
+    final proj = provider.projects.firstWhere(
+      (p) => p.id == note.projectId,
+      orElse: () => Project(name: "ΕΡΓΟ #${note.projectId}", clientName: "", address: ""),
+    );
+    final dateStr = DateFormat('dd/MM/yyyy HH:mm').format(DateTime.fromMillisecondsSinceEpoch(note.dateAdded));
+
+    return Container(
+      width: double.infinity,
+      margin: const EdgeInsets.only(bottom: 8),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(20),
+        border: Border.all(color: const Color(0xFFFF9800).withValues(alpha: 0.3), width: 1.2),
+        boxShadow: [
+          BoxShadow(
+            color: const Color(0xFFFF9800).withValues(alpha: 0.06),
+            blurRadius: 10,
+            offset: const Offset(0, 4),
+          ),
+        ],
+      ),
+      child: Material(
+        color: Colors.transparent,
+        borderRadius: BorderRadius.circular(20),
+        child: InkWell(
+          onTap: () => _showNoteOptions(context, note, provider),
+          onLongPress: () => _showNoteOptions(context, note, provider),
+          borderRadius: BorderRadius.circular(20),
+          child: Padding(
+            padding: const EdgeInsets.all(16),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    Flexible(
+                      child: Container(
+                        padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                        decoration: BoxDecoration(
+                          color: const Color(0xFFFF9800).withValues(alpha: 0.1),
+                          borderRadius: BorderRadius.circular(10),
+                          border: Border.all(color: const Color(0xFFFF9800).withValues(alpha: 0.2)),
+                        ),
+                        child: Text(
+                          proj.name.toUpperCase(),
+                          style: const TextStyle(fontSize: 10, fontWeight: FontWeight.w900, color: Color(0xFFE65100)),
+                          overflow: TextOverflow.ellipsis,
+                        ),
+                      ),
+                    ),
+                    const SizedBox(width: 8),
+                    Row(
+                      children: [
+                        const Icon(Icons.access_time_rounded, size: 12, color: Colors.blueGrey),
+                        const SizedBox(width: 4),
+                        Text(
+                          dateStr,
+                          style: const TextStyle(fontSize: 10, fontWeight: FontWeight.bold, color: Colors.blueGrey),
+                        ),
+                      ],
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 12),
+                Text(
+                  note.content,
+                  style: const TextStyle(fontSize: 13, color: Color(0xFF1E293B), fontWeight: FontWeight.w600, height: 1.4),
+                  maxLines: 4,
+                  overflow: TextOverflow.ellipsis,
+                ),
+              ],
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+
+  void _showNoteOptions(BuildContext context, ProjectNote note, ProjectProvider provider) {
+    final proj = provider.projects.firstWhere(
+      (p) => p.id == note.projectId,
+      orElse: () => Project(name: "ΕΡΓΟ #${note.projectId}", clientName: "", address: ""),
+    );
+
+    showModalBottomSheet(
+      context: context,
+      backgroundColor: Colors.transparent,
+      builder: (context) => Container(
+        padding: const EdgeInsets.all(24),
+        decoration: const BoxDecoration(
+          color: Colors.white,
+          borderRadius: BorderRadius.vertical(top: Radius.circular(28)),
+        ),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Center(
+              child: Container(
+                width: 36,
+                height: 4,
+                decoration: BoxDecoration(color: Colors.grey[300], borderRadius: BorderRadius.circular(10)),
+              ),
+            ),
+            const SizedBox(height: 16),
+            Row(
+              children: [
+                Container(
+                  padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                  decoration: BoxDecoration(
+                    color: const Color(0xFFFF9800).withValues(alpha: 0.1),
+                    borderRadius: BorderRadius.circular(8),
+                  ),
+                  child: Text(proj.name.toUpperCase(), style: const TextStyle(fontSize: 11, fontWeight: FontWeight.w900, color: Color(0xFFE65100))),
+                ),
+                const SizedBox(width: 8),
+                const Text("ΕΠΙΛΟΓΕΣ ΣΗΜΕΙΩΣΗΣ", style: TextStyle(fontWeight: FontWeight.w900, fontSize: 13, color: Colors.blueGrey)),
+              ],
+            ),
+            const SizedBox(height: 12),
+            Container(
+              width: double.infinity,
+              padding: const EdgeInsets.all(12),
+              decoration: BoxDecoration(color: const Color(0xFFF8FAFC), borderRadius: BorderRadius.circular(12)),
+              child: Text(note.content, maxLines: 3, overflow: TextOverflow.ellipsis, style: const TextStyle(fontSize: 12, color: Color(0xFF334155), fontWeight: FontWeight.w600)),
+            ),
+            const SizedBox(height: 16),
+            ListTile(
+              leading: Container(
+                padding: const EdgeInsets.all(8),
+                decoration: BoxDecoration(color: Colors.blue.withValues(alpha: 0.1), shape: BoxShape.circle),
+                child: const Icon(Icons.edit_note_rounded, color: Colors.blue),
+              ),
+              title: const Text("Επεξεργασία Σημείωσης", style: TextStyle(fontWeight: FontWeight.bold, fontSize: 14)),
+              onTap: () {
+                Navigator.pop(context);
+                _showNoteDialog(context, provider, noteToEdit: note);
+              },
+            ),
+            ListTile(
+              leading: Container(
+                padding: const EdgeInsets.all(8),
+                decoration: BoxDecoration(color: Colors.red.withValues(alpha: 0.1), shape: BoxShape.circle),
+                child: const Icon(Icons.delete_outline_rounded, color: Colors.red),
+              ),
+              title: const Text("Διαγραφή Σημείωσης", style: TextStyle(fontWeight: FontWeight.bold, fontSize: 14, color: Colors.red)),
+              onTap: () async {
+                Navigator.pop(context);
+                await provider.deleteProjectNote(note.projectId, note.id);
+                setState(() {});
+              },
+            ),
+            const SizedBox(height: 12),
+          ],
+        ),
+      ),
+    );
+  }
+
+  void _showNoteDialog(BuildContext context, ProjectProvider provider, {ProjectNote? noteToEdit}) {
     if (provider.projects.isEmpty) {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(content: Text("Δεν υπάρχουν έργα για προσθήκη σημείωσης.")),
@@ -256,18 +375,18 @@ class _CompanyHubScreenState extends State<CompanyHubScreen> {
       return;
     }
 
-    int? selectedProjectId = provider.projects.first.id;
-    final noteController = TextEditingController();
+    int? selectedProjectId = noteToEdit?.projectId ?? provider.projects.first.id;
+    final noteController = TextEditingController(text: noteToEdit?.content ?? "");
 
     showDialog(
       context: context,
       builder: (context) => StatefulBuilder(
         builder: (context, setDialogState) => AlertDialog(
           shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(28)),
-          title: const PremiumHeader(
-            title: "ΝΕΑ ΣΗΜΕΙΩΣΗ ΕΡΓΟΥ",
-            icon: Icons.note_add_rounded,
-            color: Color(0xFFFF9800),
+          title: PremiumHeader(
+            title: noteToEdit == null ? "ΝΕΑ ΣΗΜΕΙΩΣΗ ΕΡΓΟΥ" : "ΕΠΕΞΕΡΓΑΣΙΑ ΣΗΜΕΙΩΣΗΣ",
+            icon: noteToEdit == null ? Icons.note_add_rounded : Icons.edit_note_rounded,
+            color: const Color(0xFFFF9800),
           ),
           content: Column(
             mainAxisSize: MainAxisSize.min,
@@ -292,7 +411,8 @@ class _CompanyHubScreenState extends State<CompanyHubScreen> {
               const SizedBox(height: 16),
               TextField(
                 controller: noteController,
-                maxLines: 3,
+                maxLines: 4,
+                autofocus: true,
                 decoration: const InputDecoration(
                   labelText: "Περιεχόμενο Σημείωσης",
                   hintText: "Γράψτε εδώ τη σημείωσή σας...",
@@ -311,13 +431,22 @@ class _CompanyHubScreenState extends State<CompanyHubScreen> {
               onPressed: () async {
                 final content = noteController.text.trim();
                 if (content.isNotEmpty && selectedProjectId != null) {
-                  await provider.addProjectNote(
-                    ProjectNote(
-                      projectId: selectedProjectId!,
-                      content: content,
-                      dateAdded: DateTime.now().millisecondsSinceEpoch,
-                    ),
-                  );
+                  if (noteToEdit == null) {
+                    await provider.addProjectNote(
+                      ProjectNote(
+                        projectId: selectedProjectId!,
+                        content: content,
+                        dateAdded: DateTime.now().millisecondsSinceEpoch,
+                      ),
+                    );
+                  } else {
+                    await provider.updateProjectNote(
+                      noteToEdit.copyWith(
+                        projectId: selectedProjectId!,
+                        content: content,
+                      ),
+                    );
+                  }
                   if (context.mounted) Navigator.pop(context);
                   setState(() {});
                 }
@@ -326,7 +455,7 @@ class _CompanyHubScreenState extends State<CompanyHubScreen> {
                 backgroundColor: const Color(0xFFFF9800),
                 foregroundColor: Colors.white,
               ),
-              child: const Text("ΠΡΟΣΘΗΚΗ", style: TextStyle(fontWeight: FontWeight.bold)),
+              child: Text(noteToEdit == null ? "ΠΡΟΣΘΗΚΗ" : "ΑΠΟΘΗΚΕΥΣΗ", style: const TextStyle(fontWeight: FontWeight.bold)),
             ),
           ],
         ),
@@ -347,6 +476,7 @@ class _CompanyHubScreenState extends State<CompanyHubScreen> {
 
   Widget _buildJobsGrid(bool isDesktop) {
     final hubs = [
+      _HomeHub(label: "ΑΝΘΡΩΠΙΝΟ ΔΥΝΑΜΙΚΟ", icon: Icons.badge_rounded, id: "HUMAN_RESOURCES", color: const Color(0xFF7209B7)),
       _HomeHub(label: "ΣΥΝΕΡΓΑΤΕΣ", icon: Icons.groups_rounded, id: "PARTNERS", color: const Color(0xFF7209B7)),
       _HomeHub(label: "ΚΕΝΤΡΙΚΟ ΤΑΜΕΙΟ", icon: Icons.account_balance_wallet_rounded, id: "GLOBAL_PAYROLL", color: Colors.indigo),
       _HomeHub(label: "ΠΑΡΟΥΣΙΟΛΟΓΙΟ", icon: Icons.price_check_rounded, id: "WEEKLY_PAYROLL", color: const Color(0xFF38B000)),
@@ -369,76 +499,15 @@ class _PremiumHubCategoryCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Container(
-      height: isDesktop ? 100 : 110,
-      decoration: BoxDecoration(
-        gradient: LinearGradient(
-          colors: [color.withValues(alpha: 0.1), color.withValues(alpha: 0.02)],
-          begin: Alignment.topLeft,
-          end: Alignment.bottomRight,
-        ),
-        borderRadius: BorderRadius.circular(20),
-        border: Border.all(color: color.withValues(alpha: 0.15), width: 1.5),
-        boxShadow: [
-          BoxShadow(color: color.withValues(alpha: 0.05), blurRadius: 15, offset: const Offset(0, 4)),
-        ],
-      ),
-      child: Material(
-        color: Colors.transparent,
-        child: InkWell(
-          onTap: onClick,
-          borderRadius: BorderRadius.circular(20),
-          child: Padding(
-            padding: EdgeInsets.symmetric(horizontal: isDesktop ? 24 : 20),
-            child: Row(
-              children: [
-                Container(
-                  width: isDesktop ? 52 : 56, 
-                  height: isDesktop ? 52 : 56,
-                  decoration: BoxDecoration(
-                    gradient: LinearGradient(
-                      colors: [color, color.withValues(alpha: 0.7)],
-                      begin: Alignment.topLeft,
-                      end: Alignment.bottomRight,
-                    ),
-                    borderRadius: BorderRadius.circular(isDesktop ? 16 : 20),
-                    boxShadow: [BoxShadow(color: color.withValues(alpha: 0.3), blurRadius: 10, offset: const Offset(0, 4))],
-                  ),
-                  child: Icon(icon, color: Colors.white, size: isDesktop ? 26 : 30),
-                ),
-                SizedBox(width: isDesktop ? 20 : 24),
-                Expanded(
-                  child: Column(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      FittedBox(
-                        fit: BoxFit.scaleDown,
-                        child: Text(
-                          label, 
-                          style: TextStyle(fontWeight: FontWeight.w900, fontSize: isDesktop ? 15 : 17, letterSpacing: 0.5, color: const Color(0xFF1E293B))
-                        ),
-                      ),
-                      const SizedBox(height: 2),
-                      Text(
-                        subtitle, 
-                        style: TextStyle(color: Colors.grey.withValues(alpha: 0.8), fontSize: isDesktop ? 11 : 11, fontWeight: FontWeight.bold),
-                        maxLines: 2,
-                        overflow: TextOverflow.ellipsis,
-                      ),
-                    ],
-                  ),
-                ),
-                Icon(Icons.arrow_forward_ios_rounded, color: color.withValues(alpha: 0.2), size: isDesktop ? 20 : 18),
-              ],
-            ),
-          ),
-        ),
-      ),
+    return PremiumPageNavButtonFilled(
+      text: label,
+      subtitle: subtitle,
+      icon: icon,
+      color: color,
+      onPressed: onClick,
     );
   }
 }
-
 class _HomeHub {
   final String label;
   final IconData icon;
@@ -469,7 +538,8 @@ class _HubGrid extends StatelessWidget {
           hub: hub,
           isDesktop: isDesktop,
           onClick: () {
-            if (hub.id == "PARTNERS") Navigator.push(context, MaterialPageRoute(builder: (context) => const PartnersScreen()));
+            if (hub.id == "HUMAN_RESOURCES") Navigator.push(context, MaterialPageRoute(builder: (context) => const HumanResourcesScreen()));
+            else if (hub.id == "PARTNERS") Navigator.push(context, MaterialPageRoute(builder: (context) => const PartnersScreen()));
             else if (hub.id == "CLIENTS") Navigator.push(context, MaterialPageRoute(builder: (context) => const ClientsScreen()));
             else if (hub.id == "GLOBAL_PAYROLL") Navigator.push(context, MaterialPageRoute(builder: (context) => const GlobalPayrollScreen()));
             else if (hub.id == "LOCATION_WAREHOUSE") Navigator.push(context, MaterialPageRoute(builder: (context) => const LocationSelectorScreen(locationName: "ΑΠΟΘΗΚΗ", locationType: "WAREHOUSE")));
@@ -502,44 +572,43 @@ class _PremiumHubCard extends StatelessWidget {
   Widget build(BuildContext context) {
     return Container(
       decoration: BoxDecoration(
-        gradient: LinearGradient(
-          colors: [hub.color.withValues(alpha: 0.1), hub.color.withValues(alpha: 0.02)],
-          begin: Alignment.topLeft,
-          end: Alignment.bottomRight,
-        ),
-        borderRadius: BorderRadius.circular(20),
-        border: Border.all(color: hub.color.withValues(alpha: 0.12), width: 1.5),
+        color: hub.color,
+        borderRadius: BorderRadius.circular(24),
         boxShadow: [
-          BoxShadow(color: hub.color.withValues(alpha: 0.05), blurRadius: 10, offset: const Offset(0, 3)),
+          BoxShadow(
+          ),
         ],
       ),
       child: Material(
         color: Colors.transparent,
         child: InkWell(
           onTap: onClick,
-          borderRadius: BorderRadius.circular(20),
+          borderRadius: BorderRadius.circular(24),
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
               Container(
-                width: isDesktop ? 48 : 42, 
-                height: isDesktop ? 48 : 42,
+                width: 52,
+                height: 52,
                 decoration: BoxDecoration(
-                  gradient: LinearGradient(colors: [hub.color, hub.color.withValues(alpha: 0.7)]),
-                  shape: BoxShape.circle,
-                  boxShadow: [BoxShadow(color: hub.color.withValues(alpha: 0.3), blurRadius: 8, offset: const Offset(0, 3))],
-                  border: Border.all(color: Colors.white.withValues(alpha: 0.2), width: 1.5),
+                  color: Colors.white.withValues(alpha: 0.2),
+                  borderRadius: BorderRadius.circular(16),
                 ),
-                child: Icon(hub.icon, color: Colors.white, size: isDesktop ? 22 : 20),
+                child: Icon(hub.icon, color: Colors.white, size: 26),
               ),
-              SizedBox(height: isDesktop ? 10 : 8),
+              const SizedBox(height: 12),
               Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 8.0),
+                padding: const EdgeInsets.symmetric(horizontal: 12.0),
                 child: FittedBox(
                   fit: BoxFit.scaleDown,
                   child: Text(
-                    hub.label, 
-                    style: TextStyle(fontWeight: FontWeight.w900, fontSize: isDesktop ? 12 : 10, color: const Color(0xFF1E293B), letterSpacing: 0.5), 
+                    hub.label.toUpperCase(),
+                    style: TextStyle(
+                      fontWeight: FontWeight.w900, 
+                      fontSize: isDesktop ? 12 : 11, 
+                      color: Colors.white, 
+                      letterSpacing: 0.5,
+                    ),
                     textAlign: TextAlign.center
                   ),
                 ),

@@ -1,11 +1,12 @@
 import 'dart:convert';
 import 'dart:async';
-
+import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:mtc2026/database/database_helper.dart';
 import 'package:mtc2026/models/project_models.dart';
 import 'package:mtc2026/models/breakdown_models.dart';
+import 'package:archive/archive.dart';
 import 'package:mtc2026/models/enums.dart';
 import 'package:mtc2026/models/alert_model.dart';
 import 'package:mtc2026/utils/api_client.dart';
@@ -49,6 +50,10 @@ class ProjectProvider with ChangeNotifier {
   List<ProjectNote> get currentProjectNotes => _currentProjectNotes;
   List<ProjectSketch> get currentProjectSketches => _currentProjectSketches;
   List<ProjectDocument> get currentProjectDocuments => _currentProjectDocuments;
+  List<ProjectSpecificationEntity> _projectSpecs = [];
+  List<ProjectSpecificationEntity> get projectSpecs => _projectSpecs;
+  List<ProjectChecklistItem> _projectChecklists = [];
+  List<ProjectChecklistItem> get projectChecklists => _projectChecklists;
   Settings get settings => _settings;
   Map<String, double> get dashboardStats => _dashboardStats;
   List<SystemAlert> get alerts => _alerts;
@@ -233,8 +238,14 @@ class ProjectProvider with ChangeNotifier {
       final data = await DatabaseHelper().getAllDataForSync(includePhotos: includePhotos);
       print("Sync: Uploading ${data.keys.length} tables (includePhotos: $includePhotos)...");
       
+      // Compress the JSON payload with GZIP
+      final jsonString = jsonEncode({"data": data});
+      final bytes = utf8.encode(jsonString);
+      final gzipBytes = GZipEncoder().encode(bytes);
+      final base64Gzip = base64Encode(gzipBytes!);
+
       final response = await ApiClient().post("/api/sync/upload", {
-        "data": data,
+        "compressedData": base64Gzip,
       });
       
       if (response.statusCode == 200) {
@@ -298,8 +309,18 @@ class ProjectProvider with ChangeNotifier {
       
       if (response.statusCode == 200) {
         final decodedData = jsonDecode(response.body);
-        print("Sync: Data received from server. Keys: ${decodedData.keys}");
-        final Map<String, dynamic> responseData = decodedData is Map<String, dynamic> ? decodedData : {'data': decodedData};
+        Map<String, dynamic> responseData;
+
+        // Check if server sent compressed data
+        if (decodedData['compressedData'] != null) {
+          final gzipBytes = base64Decode(decodedData['compressedData']);
+          final bytes = GZipDecoder().decodeBytes(gzipBytes);
+          final jsonString = utf8.decode(bytes);
+          responseData = jsonDecode(jsonString);
+        } else {
+          responseData = decodedData is Map<String, dynamic> ? decodedData : {'data': decodedData};
+        }
+
         await DatabaseHelper().importDataFromSync(responseData);
         await fetchProjects();
         print("Sync: Download Successful");
@@ -332,17 +353,6 @@ class ProjectProvider with ChangeNotifier {
     if (kIsWeb && !_hasLoadedLocalCache) {
       _hasLoadedLocalCache = true;
       await DatabaseHelper().loadWebMemoryFromLocal();
-    }
-
-    // 1. Auto-download at startup if logged in
-    if (!_hasDownloadedOnWeb) {
-      final prefs = await SharedPreferences.getInstance();
-      if (prefs.getBool('is_logged_in') ?? false) {
-        _hasDownloadedOnWeb = true;
-        debugPrint("Startup: Auto-downloading data from cloud...");
-        await manualDownloadFromCloud();
-        return; 
-      }
     }
 
     final prefs = await SharedPreferences.getInstance();
@@ -425,21 +435,17 @@ class ProjectProvider with ChangeNotifier {
     _currentProjectExpenses = await db.getExpenses(projectId);
     _currentProjectQuoteItems = await db.getQuoteItems(projectId);
     _currentProjectNotes = await db.getProjectNotes(projectId);
+    _projectChecklists = await db.getProjectChecklist(projectId);
+    _projectSpecs = await db.getProjectSpecs(projectId);
     _currentProjectSketches = await db.getProjectSketches(projectId);
     _currentProjectDocuments = await db.getProjectDocuments(projectId);
     notifyListeners();
   }
 
   Future<void> _autoSync([String? tableName]) async {
-    try {
-      if (tableName != null) {
-        await syncSingleTable(tableName);
-      } else {
-        await manualUploadToCloud(includePhotos: false);
-      }
-    } catch (e) {
-      debugPrint("AutoSync Error: $e");
-    }
+    // Απενεργοποιήθηκε κατόπιν αιτήματος. Ο συγχρονισμός γίνεται πλέον 
+    // ΜΟΝΟ χειροκίνητα από τα κουμπιά UPLOAD / DOWNLOAD στις Ρυθμίσεις.
+    return;
   }
 
   // --- CRUD METHODS ---
@@ -645,11 +651,11 @@ class ProjectProvider with ChangeNotifier {
     final scheduledDate = taskDate.subtract(Duration(minutes: t.reminderTime!));
 
     if (scheduledDate.isAfter(DateTime.now())) {
-      final projectName = _projects.firstWhere((p) => p.id == t.projectId, orElse: () => Project(name: "MTC", clientName: "", address: "")).name;
+      final project = _projects.firstWhere((p) => p.id == t.projectId, orElse: () => Project(name: "MTC", clientName: "", address: ""));
       
       await NotificationService().scheduleNotification(
         id: t.id,
-        title: "Υπενθύμιση Εργασίας: $projectName",
+        title: "Υπενθύμιση Εργασίας: ${project.name}",
         body: t.description,
         scheduledDate: scheduledDate,
       );
@@ -823,25 +829,30 @@ class ProjectProvider with ChangeNotifier {
       await DatabaseHelper().getMaintenance(vid);
   Future<void> addMaintenance(
     VehicleMaintenanceEntity m,
-    bool addAsExpense,
-  ) async {
+    bool addAsExpense, {
+    bool hasVat = false,
+    String? invoiceNumber,
+  }) async {
     await DatabaseHelper().insertMaintenance(m);
-    if (addAsExpense) {
+    if (addAsExpense && m.cost > 0) {
       await addCompanyExpense(
         CompanyExpenseEntity(
-          description: "ΣΥΝΤΗΡΗΣΗ: ${m.description}",
+          description: "ΕΞΟΔΟ ΟΧΗΜΑΤΟΣ: ${m.description}",
           amount: m.cost,
           date: m.date,
+          hasVat: hasVat,
+          invoiceNumber: invoiceNumber,
         ),
       );
+    } else {
+      await fetchProjects();
+      await _autoSync();
     }
-    notifyListeners();
-    await _autoSync();
   }
 
   Future<void> deleteMaintenance(int id) async {
     await DatabaseHelper().deleteMaintenance(id);
-    notifyListeners();
+    await fetchProjects();
     await _autoSync();
   }
 
@@ -940,9 +951,27 @@ class ProjectProvider with ChangeNotifier {
 
   // --- PROJECT CHECKLISTS ---
   Future<List<ProjectChecklistItem>> getProjectChecklist(int projectId) async => await DatabaseHelper().getProjectChecklist(projectId);
-  Future<void> addChecklistItem(ProjectChecklistItem item) async { await DatabaseHelper().insertChecklistItem(item); notifyListeners(); await _autoSync(); }
-  Future<void> updateChecklistItem(ProjectChecklistItem item) async { await DatabaseHelper().updateChecklistItem(item); notifyListeners(); await _autoSync(); }
-  Future<void> deleteChecklistItem(int id) async { await DatabaseHelper().deleteChecklistItem(id); notifyListeners(); await _autoSync(); }
+  Future<List<ProjectChecklistItem>> getAllProjectChecklists() async => await DatabaseHelper().getAllProjectChecklists();
+  Future<void> addChecklistItem(ProjectChecklistItem item) async { 
+    await DatabaseHelper().insertChecklistItem(item); 
+    _projectChecklists = await DatabaseHelper().getProjectChecklist(item.projectId);
+    notifyListeners(); 
+    await _autoSync(); 
+  }
+  Future<void> updateChecklistItem(ProjectChecklistItem item) async { 
+    await DatabaseHelper().updateChecklistItem(item); 
+    _projectChecklists = await DatabaseHelper().getProjectChecklist(item.projectId);
+    notifyListeners(); 
+    await _autoSync(); 
+  }
+  Future<void> deleteChecklistItem(int id, [int? projectId]) async { 
+    await DatabaseHelper().deleteChecklistItem(id); 
+    if (projectId != null) {
+      _projectChecklists = await DatabaseHelper().getProjectChecklist(projectId);
+    }
+    notifyListeners(); 
+    await _autoSync(); 
+  }
 
   // --- SETTINGS ---
   Future<void> updateSettings(Settings s) async {
@@ -1317,6 +1346,25 @@ class ProjectProvider with ChangeNotifier {
   Future<void> deleteCompanyExpense(int id) async {
     await DatabaseHelper().deleteCompanyExpense(id);
     await fetchProjects();
+  }
+
+  Future<void> addProjectSpec(ProjectSpecificationEntity spec) async {
+    await DatabaseHelper().insertProjectSpec(spec);
+    await fetchProjectData(spec.projectId);
+    await _autoSync();
+  }
+
+  Future<void> updateProjectSpec(ProjectSpecificationEntity spec) async {
+    await DatabaseHelper().updateProjectSpec(spec);
+    await fetchProjectData(spec.projectId);
+    await _autoSync();
+  }
+
+  Future<void> deleteProjectSpec(int id) async {
+    final spec = _projectSpecs.firstWhere((s) => s.id == id);
+    await DatabaseHelper().deleteProjectSpec(id);
+    await fetchProjectData(spec.projectId);
+    await _autoSync();
   }
 
   Future<void> _seedBasics(DatabaseHelper db) async {

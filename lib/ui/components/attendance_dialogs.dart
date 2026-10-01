@@ -88,15 +88,14 @@ class _AddAttendanceDialogState extends State<AddAttendanceDialog> {
               },
             ),
             const SizedBox(height: 12),
-            if (widget.initialProjectId == null)
-              DropdownButtonFormField<int>(
-                value: _selectedProjectId,
-                decoration: const InputDecoration(labelText: "Έργο", border: OutlineInputBorder()),
-                items: widget.projects.isEmpty
-                  ? [const DropdownMenuItem(value: null, child: Text("Δεν βρέθηκαν έργα"))]
-                  : widget.projects.map((p) => DropdownMenuItem(value: p.id, child: Text(p.name, style: const TextStyle(fontSize: 14)))).toList(),
-                onChanged: (v) => setState(() => _selectedProjectId = v),
-              ),
+            DropdownButtonFormField<int>(
+              value: _selectedProjectId,
+              decoration: const InputDecoration(labelText: "Έργο", border: OutlineInputBorder()),
+              items: widget.projects.isEmpty
+                ? [const DropdownMenuItem(value: null, child: Text("Δεν βρέθηκαν έργα"))]
+                : widget.projects.map((p) => DropdownMenuItem(value: p.id, child: Text(p.name, style: const TextStyle(fontSize: 14)))).toList(),
+              onChanged: (v) => setState(() => _selectedProjectId = v),
+            ),
             const SizedBox(height: 12),
             Row(
               children: [

@@ -24,7 +24,7 @@ class _GlobalToolsScreenState extends State<GlobalToolsScreen> {
     final provider = Provider.of<ProjectProvider>(context);
 
     return Scaffold(
-      backgroundColor: const Color(0xFFF1F5F9),
+      backgroundColor: const Color(0xFFE2E8F0),
       appBar: AppBar(
         title: Text(widget.category.toUpperCase(), style: const TextStyle(fontWeight: FontWeight.w900, fontSize: 14)),
         actions: [

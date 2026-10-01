@@ -12,6 +12,7 @@ import 'package:mtc2026/ui/calculators/floors_calculator.dart';
 import 'package:mtc2026/ui/calculators/metal_calculator.dart';
 import 'package:mtc2026/ui/calculators/carpentry_calculator.dart';
 import 'package:mtc2026/ui/calculators/engineering_calculator.dart';
+import 'package:mtc2026/ui/calculators/earthworks_calculator.dart';
 import 'package:mtc2026/models/enums.dart';
 import 'package:mtc2026/models/project_models.dart';
 import 'package:mtc2026/providers/project_provider.dart';
@@ -153,6 +154,7 @@ class _CategoryScreenState extends State<CategoryScreen> {
           runSpacing: 8,
           alignment: WrapAlignment.start,
           children: [
+            if (widget.category == AppDestinations.EARTHWORKS) _calcBtn("Υπολογιστής", Icons.landslide_rounded, EarthworksCalculator(onResult: _handleCalcResult)),
             if (widget.category == AppDestinations.WINDOWS) _calcBtn("Υπολογιστής", Icons.calculate_rounded, WindowCalculator(onResult: _handleCalcResult)),
             if (widget.category == AppDestinations.DRYWALL) _calcBtn("Υλικά & Εργασία", Icons.square_rounded, DrywallCalculator(onResult: _handleCalcResult)),
             if (widget.category == AppDestinations.GENERAL || widget.category == AppDestinations.TILES) _calcBtn("Υλικά (Άμμος/Τσιμ.)", Icons.home_work_rounded, MortarCalculator(category: widget.category.name, onResult: _handleCalcResult)),

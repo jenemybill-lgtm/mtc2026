@@ -53,7 +53,7 @@ class _TaskDialogState extends State<TaskDialog> {
         constraints: const BoxConstraints(maxWidth: 450),
         decoration: BoxDecoration(
           color: const Color(0xFFF8FAFC), // Soft off-white for eye comfort
-          borderRadius: BorderRadius.circular(40),
+          borderRadius: BorderRadius.circular(24),
           boxShadow: [
             BoxShadow(color: Colors.black.withValues(alpha: 0.15), blurRadius: 40, offset: const Offset(0, 20)),
           ],
@@ -72,7 +72,7 @@ class _TaskDialogState extends State<TaskDialog> {
                     begin: Alignment.topLeft,
                     end: Alignment.bottomRight,
                   ),
-                  borderRadius: BorderRadius.vertical(top: Radius.circular(40)),
+                  borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
                 ),
                 child: Column(
                   children: [
@@ -88,7 +88,7 @@ class _TaskDialogState extends State<TaskDialog> {
                     const SizedBox(height: 20),
                     Text(
                       widget.initialTask == null ? "ΝΈΑ ΕΡΓΑΣΊΑ" : "ΕΠΕΞΕΡΓΑΣΊΑ",
-                      style: const TextStyle(color: Colors.white, fontWeight: FontWeight.w900, fontSize: 18, letterSpacing: 2),
+                      style: const TextStyle(color: Colors.white, fontWeight: FontWeight.w800, fontSize: 18, letterSpacing: 2),
                     ),
                   ],
                 ),
@@ -137,13 +137,13 @@ class _TaskDialogState extends State<TaskDialog> {
                       style: const TextStyle(fontWeight: FontWeight.w700, fontSize: 14, color: Color(0xFF1E293B)),
                       decoration: InputDecoration(
                         labelText: "ΠΕΡΙΓΡΑΦΗ",
-                        labelStyle: const TextStyle(fontWeight: FontWeight.w900, fontSize: 9, letterSpacing: 1.5, color: Colors.blueGrey),
+                        labelStyle: const TextStyle(fontWeight: FontWeight.w800, fontSize: 9, letterSpacing: 1.5, color: Colors.blueGrey),
                         hintText: "Τι πρέπει να γίνει...",
                         prefixIcon: const Icon(Icons.edit_note_rounded, color: primaryColor),
                         filled: true,
                         fillColor: Colors.white,
-                        enabledBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(20), borderSide: BorderSide(color: Colors.black.withValues(alpha: 0.05))),
-                        focusedBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(20), borderSide: const BorderSide(color: primaryColor, width: 2)),
+                        enabledBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(16), borderSide: BorderSide(color: Colors.black.withValues(alpha: 0.05))),
+                        focusedBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(16), borderSide: const BorderSide(color: primaryColor, width: 2)),
                       ),
                     ),
                     const SizedBox(height: 16),
@@ -152,20 +152,20 @@ class _TaskDialogState extends State<TaskDialog> {
                     DropdownButtonFormField<int>(
                       value: _selectedProjectId,
                       isExpanded: true,
-                      style: const TextStyle(fontWeight: FontWeight.w800, fontSize: 13, color: Color(0xFF1E293B)),
+                      style: const TextStyle(fontWeight: FontWeight.w700, fontSize: 13, color: Color(0xFF1E293B)),
                       decoration: InputDecoration(
                         labelText: "ΕΠΙΛΟΓΗ ΕΡΓΟΥ",
-                        labelStyle: const TextStyle(fontWeight: FontWeight.w900, fontSize: 9, letterSpacing: 1.5, color: Colors.blueGrey),
+                        labelStyle: const TextStyle(fontWeight: FontWeight.w800, fontSize: 9, letterSpacing: 1.5, color: Colors.blueGrey),
                         prefixIcon: const Icon(Icons.business_center_rounded, color: primaryColor),
                         filled: true,
                         fillColor: Colors.white,
-                        border: OutlineInputBorder(borderRadius: BorderRadius.circular(20), borderSide: BorderSide.none),
-                        enabledBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(20), borderSide: BorderSide(color: Colors.black.withValues(alpha: 0.05))),
+                        border: OutlineInputBorder(borderRadius: BorderRadius.circular(16), borderSide: BorderSide.none),
+                        enabledBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(16), borderSide: BorderSide(color: Colors.black.withValues(alpha: 0.05))),
                       ),
                       items: [
                         const DropdownMenuItem<int>(
                           value: null,
-                          child: Text("ΓΕΝΙΚΗ ΕΤΑΙΡΕΙΑΣ", style: TextStyle(fontWeight: FontWeight.w900, fontSize: 11, color: Colors.blueGrey)),
+                          child: Text("ΓΕΝΙΚΗ ΕΤΑΙΡΕΙΑΣ", style: TextStyle(fontWeight: FontWeight.w800, fontSize: 11, color: Colors.blueGrey)),
                         ),
                         ...widget.projects.map((p) => DropdownMenuItem(
                           value: p.id,
@@ -178,15 +178,15 @@ class _TaskDialogState extends State<TaskDialog> {
                     DropdownButtonFormField<int?>(
                       value: _selectedReminderMinutes,
                       isExpanded: true,
-                      style: const TextStyle(fontWeight: FontWeight.w800, fontSize: 13, color: Color(0xFF1E293B)),
+                      style: const TextStyle(fontWeight: FontWeight.w700, fontSize: 13, color: Color(0xFF1E293B)),
                       decoration: InputDecoration(
                         labelText: "ΥΠΕΝΘΥΜΙΣΗ",
-                        labelStyle: const TextStyle(fontWeight: FontWeight.w900, fontSize: 9, letterSpacing: 1.5, color: Colors.blueGrey),
+                        labelStyle: const TextStyle(fontWeight: FontWeight.w800, fontSize: 9, letterSpacing: 1.5, color: Colors.blueGrey),
                         prefixIcon: const Icon(Icons.notifications_active_rounded, color: primaryColor),
                         filled: true,
                         fillColor: Colors.white,
-                        border: OutlineInputBorder(borderRadius: BorderRadius.circular(20), borderSide: BorderSide.none),
-                        enabledBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(20), borderSide: BorderSide(color: Colors.black.withValues(alpha: 0.05))),
+                        border: OutlineInputBorder(borderRadius: BorderRadius.circular(16), borderSide: BorderSide.none),
+                        enabledBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(16), borderSide: BorderSide(color: Colors.black.withValues(alpha: 0.05))),
                       ),
                       items: const [
                         DropdownMenuItem<int?>(value: null, child: Text("ΧΩΡΙΣ ΥΠΕΝΘΥΜΙΣΗ")),
@@ -198,15 +198,10 @@ class _TaskDialogState extends State<TaskDialog> {
                         DropdownMenuItem<int?>(value: 1440, child: Text("1 ΗΜΕΡΑ ΠΡΙΝ")),
                       ],
                       onChanged: (v) async {
-                        if (v != null) {
-                          final granted = await NotificationService().requestPermissions();
-                          if (!granted && mounted) {
-                            ScaffoldMessenger.of(context).showSnackBar(
-                              const SnackBar(content: Text("Απαιτείται άδεια για τις ειδοποιήσεις")),
-                            );
-                          }
-                        }
                         setState(() => _selectedReminderMinutes = v);
+                        if (v != null) {
+                          await NotificationService().requestPermissions();
+                        }
                       },
                     ),
                   ],
@@ -222,7 +217,7 @@ class _TaskDialogState extends State<TaskDialog> {
                       child: TextButton(
                         onPressed: () => Navigator.pop(context),
                         style: TextButton.styleFrom(padding: const EdgeInsets.symmetric(vertical: 20)),
-                        child: Text("ΑΚΥΡΟ", style: TextStyle(fontWeight: FontWeight.w900, color: Colors.blueGrey.withValues(alpha: 0.4), letterSpacing: 1)),
+                        child: Text("ΑΚΥΡΟ", style: TextStyle(fontWeight: FontWeight.w800, color: Colors.blueGrey.withValues(alpha: 0.6), letterSpacing: 1)),
                       ),
                     ),
                     const SizedBox(width: 16),
@@ -231,18 +226,19 @@ class _TaskDialogState extends State<TaskDialog> {
                       child: PremiumButton(
                         label: widget.initialTask == null ? "ΠΡΟΣΘΗΚΗ" : "ΑΠΟΘΗΚΕΥΣΗ",
                         icon: Icons.check_circle_outline_rounded,
-                        onTap: () {
-                          if (_descController.text.isNotEmpty) {
+                        onTap: () async {
+                          final desc = _descController.text.trim();
+                          if (desc.isNotEmpty) {
                             final finalDate = DateTime(_selectedDate.year, _selectedDate.month, _selectedDate.day, _selectedTime.hour, _selectedTime.minute);
-                            widget.onConfirm(Task(
+                            await widget.onConfirm(Task(
                               id: widget.initialTask?.id ?? 0,
                               projectId: _selectedProjectId ?? 0,
                               date: finalDate.millisecondsSinceEpoch,
-                              description: _descController.text,
+                              description: desc,
                               isCompleted: widget.initialTask?.isCompleted ?? false,
                               reminderTime: _selectedReminderMinutes,
                             ));
-                            Navigator.pop(context);
+                            if (context.mounted) Navigator.pop(context);
                           }
                         },
                         color: primaryColor,

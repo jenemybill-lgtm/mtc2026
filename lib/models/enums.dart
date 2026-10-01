@@ -13,6 +13,7 @@ enum AppDestinations {
   DRYWALL('Γυψοσανίδες', Icons.square, Color(0xFF9E9E9E)),
   INSULATION('Θερμοπρόσοψη', Icons.texture, Color(0xFF4CAF50)),
   WINDOWS('Κουφώματα', Icons.door_front_door, Color(0xFF3F51B5)),
+  EARTHWORKS('Χωματουργικά', Icons.landslide, Color(0xFF8D6E63)),
   BETON('Μπετά', Icons.architecture, Color(0xFF455A64)),
   METAL('Μεταλλικά', Icons.precision_manufacturing, Color(0xFF263238)),
   ENGINEERING('Μελέτες & Επιβλέψεις', Icons.design_services, Color(0xFF673AB7));

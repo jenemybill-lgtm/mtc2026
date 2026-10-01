@@ -51,7 +51,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: const Color(0xFFF1F5F9),
+      backgroundColor: const Color(0xFFE2E8F0),
       body: CustomScrollView(
         slivers: [
           SliverAppBar(
@@ -185,39 +185,105 @@ class _SettingsScreenState extends State<SettingsScreen> {
                   _SettingsSection(
                     title: "CLOUD & ΑΣΦΑΛΕΙΑ",
                     icon: Icons.cloud_done_rounded,
-                    child: Column(
-                      children: [
-                        Row(
+                    child: Consumer<ProjectProvider>(
+                      builder: (context, provider, child) {
+                        return Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
-                            Expanded(
-                              child: _buildActionButton(
-                                label: "BACKUP",
-                                icon: Icons.upload_rounded,
-                                color: Colors.blueGrey,
-                                onTap: _handleBackup,
-                              ),
+                            const Text(
+                              "ΣΥΓΧΡΟΝΙΣΜΟΣ ΔΕΔΟΜΕΝΩΝ (CLOUD SYNC)",
+                              style: TextStyle(fontWeight: FontWeight.w900, fontSize: 10, color: Colors.blueGrey, letterSpacing: 1),
                             ),
-                            const SizedBox(width: 12),
-                            Expanded(
-                              child: _buildActionButton(
-                                label: "RESTORE",
-                                icon: Icons.download_rounded,
-                                color: const Color(0xFF4361EE),
-                                onTap: _handleRestore,
+                            const SizedBox(height: 12),
+                            if (provider.isSyncing)
+                              const Padding(
+                                padding: EdgeInsets.symmetric(vertical: 12),
+                                child: Center(
+                                  child: Row(
+                                    mainAxisAlignment: MainAxisAlignment.center,
+                                    children: [
+                                      SizedBox(width: 18, height: 18, child: CircularProgressIndicator(strokeWidth: 2)),
+                                      SizedBox(width: 12),
+                                      Text("Συγχρονισμός σε εξέλιξη...", style: TextStyle(fontWeight: FontWeight.bold, fontSize: 12, color: Colors.blue)),
+                                    ],
+                                  ),
+                                ),
+                              )
+                            else
+                              Row(
+                                children: [
+                                  Expanded(
+                                    child: ElevatedButton.icon(
+                                      onPressed: () => _handleCloudUpload(context, provider),
+                                      icon: const Icon(Icons.cloud_upload_rounded, size: 18),
+                                      label: const Text("UPLOAD CLOUD", style: TextStyle(fontWeight: FontWeight.w900, fontSize: 10)),
+                                      style: ElevatedButton.styleFrom(
+                                        backgroundColor: const Color(0xFF2563EB),
+                                        foregroundColor: Colors.white,
+                                        padding: const EdgeInsets.symmetric(vertical: 14),
+                                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+                                      ),
+                                    ),
+                                  ),
+                                  const SizedBox(width: 12),
+                                  Expanded(
+                                    child: ElevatedButton.icon(
+                                      onPressed: () => _handleCloudDownload(context, provider),
+                                      icon: const Icon(Icons.cloud_download_rounded, size: 18),
+                                      label: const Text("DOWNLOAD CLOUD", style: TextStyle(fontWeight: FontWeight.w900, fontSize: 10)),
+                                      style: ElevatedButton.styleFrom(
+                                        backgroundColor: const Color(0xFF3A0CA3),
+                                        foregroundColor: Colors.white,
+                                        padding: const EdgeInsets.symmetric(vertical: 14),
+                                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+                                      ),
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            const SizedBox(height: 20),
+                            const Divider(),
+                            const SizedBox(height: 12),
+                            const Text(
+                              "ΤΟΠΙΚΑ ΑΝΤΙΓΡΑΦΑ ΑΣΦΑΛΕΙΑΣ (LOCAL BACKUP)",
+                              style: TextStyle(fontWeight: FontWeight.w900, fontSize: 10, color: Colors.blueGrey, letterSpacing: 1),
+                            ),
+                            const SizedBox(height: 12),
+                            Row(
+                              children: [
+                                Expanded(
+                                  child: _buildActionButton(
+                                    label: "BACKUP",
+                                    icon: Icons.upload_file_rounded,
+                                    color: Colors.blueGrey,
+                                    onTap: _handleBackup,
+                                  ),
+                                ),
+                                const SizedBox(width: 12),
+                                Expanded(
+                                  child: _buildActionButton(
+                                    label: "RESTORE",
+                                    icon: Icons.restore_page_rounded,
+                                    color: const Color(0xFF4361EE),
+                                    onTap: _handleRestore,
+                                  ),
+                                ),
+                              ],
+                            ),
+                            const SizedBox(height: 20),
+                            const Divider(),
+                            const SizedBox(height: 8),
+                            Center(
+                              child: TextButton.icon(
+                                onPressed: _handleLogout,
+                                icon: const Icon(Icons.logout_rounded, size: 18),
+                                label: const Text("ΑΠΟΣΥΝΔΕΣΗ ΑΠΟ ΕΤΑΙΡΕΙΑ", style: TextStyle(fontWeight: FontWeight.w900, fontSize: 11)),
+                                style: TextButton.styleFrom(foregroundColor: Colors.red),
                               ),
                             ),
                           ],
-                        ),
-                        const SizedBox(height: 20),
-                        const Divider(),
-                        const SizedBox(height: 8),
-                        TextButton.icon(
-                          onPressed: _handleLogout,
-                          icon: const Icon(Icons.logout_rounded, size: 18),
-                          label: const Text("ΑΠΟΣΥΝΔΕΣΗ ΑΠΟ ΕΤΑΙΡΕΙΑ", style: TextStyle(fontWeight: FontWeight.w900, fontSize: 11)),
-                          style: TextButton.styleFrom(foregroundColor: Colors.red),
-                        ),
-                      ],
+                        );
+                      },
                     ),
                   ),
                   const SizedBox(height: 100),
@@ -300,6 +366,30 @@ class _SettingsScreenState extends State<SettingsScreen> {
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
       ),
     );
+  }
+
+  Future<void> _handleCloudUpload(BuildContext context, ProjectProvider provider) async {
+    final success = await provider.manualUploadToCloud(includePhotos: true);
+    if (context.mounted) {
+      ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+        content: Text(success ? "Τα δεδομένα ανέβηκαν επιτυχώς στο Cloud!" : "Αποτυχία ανεβάσματος στο Cloud."),
+        backgroundColor: success ? Colors.green : Colors.red,
+        behavior: SnackBarBehavior.floating,
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+      ));
+    }
+  }
+
+  Future<void> _handleCloudDownload(BuildContext context, ProjectProvider provider) async {
+    final success = await provider.manualDownloadFromCloud();
+    if (context.mounted) {
+      ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+        content: Text(success ? "Τα δεδομένα λήφθηκαν επιτυχώς από το Cloud!" : "Αποτυχία λήψης από το Cloud."),
+        backgroundColor: success ? Colors.green : Colors.red,
+        behavior: SnackBarBehavior.floating,
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+      ));
+    }
   }
 
   Future<void> _handleBackup() async {

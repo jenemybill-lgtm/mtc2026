@@ -39,7 +39,7 @@ class _ProjectListScreenState extends State<ProjectListScreen> with SingleTicker
     final completedProjects = projectProvider.projects.where((p) => p.status == 2).toList();
 
     return Scaffold(
-      backgroundColor: const Color(0xFFF1F5F9),
+      backgroundColor: const Color(0xFFE2E8F0),
       appBar: AppBar(
         title: const Text("ΔΙΑΧΕΙΡΙΣΗ ΕΡΓΩΝ", style: TextStyle(fontWeight: FontWeight.w900, fontSize: 16)),
         bottom: PreferredSize(
@@ -229,10 +229,10 @@ class _ProjectList extends StatelessWidget {
           shrinkWrap: true,
           physics: const NeverScrollableScrollPhysics(),
           gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
-            crossAxisCount: isDesktop ? 4 : 1,
-            crossAxisSpacing: 16,
-            mainAxisSpacing: 16,
-            childAspectRatio: isDesktop ? 3.2 : 3.2,
+            crossAxisCount: isDesktop ? 5 : 2,
+            crossAxisSpacing: 12,
+            mainAxisSpacing: 12,
+            mainAxisExtent: isDesktop ? 135 : 145,
           ),
           itemCount: projects.length,
           itemBuilder: (context, index) {
@@ -365,66 +365,171 @@ class ProjectCardPremium extends StatelessWidget {
   final VoidCallback onClick;
   final VoidCallback onLongClick;
 
-  const ProjectCardPremium({super.key, required this.project, required this.accentColor, required this.onClick, required this.onLongClick});
+  const ProjectCardPremium({
+    super.key,
+    required this.project,
+    required this.accentColor,
+    required this.onClick,
+    required this.onLongClick,
+  });
 
   @override
   Widget build(BuildContext context) {
     final isCompleted = project.isCompleted;
+    final statusLabel = project.status == 0
+        ? "ΠΡΟΣΦΟΡΑ"
+        : (isCompleted ? "ΑΡΧΕΙΟ" : "ΕΝΕΡΓΟ");
+
+    final dateStr = project.deliveryDate != null
+        ? DateFormat('dd/MM/yy').format(DateTime.fromMillisecondsSinceEpoch(project.deliveryDate!))
+        : (project.startDate != null && project.startDate != 0
+            ? DateFormat('dd/MM/yy').format(DateTime.fromMillisecondsSinceEpoch(project.startDate!))
+            : null);
 
     return Container(
       decoration: BoxDecoration(
-        color: accentColor.withValues(alpha: 0.08),
-        borderRadius: BorderRadius.circular(32),
-        border: Border.all(color: accentColor.withValues(alpha: 0.25), width: 1.2),
+        color: accentColor,
+        borderRadius: BorderRadius.circular(20),
         boxShadow: [
-          BoxShadow(color: accentColor.withValues(alpha: 0.04), blurRadius: 15, offset: const Offset(0, 6)),
+          BoxShadow(
+            color: accentColor.withValues(alpha: 0.35),
+            blurRadius: 15,
+            offset: const Offset(0, 6),
+          ),
         ],
       ),
       child: Material(
         color: Colors.transparent,
+        borderRadius: BorderRadius.circular(20),
         child: InkWell(
           onTap: onClick,
           onLongPress: onLongClick,
-          borderRadius: BorderRadius.circular(32),
+          borderRadius: BorderRadius.circular(20),
           child: Padding(
-            padding: const EdgeInsets.all(16),
-            child: Row(
+            padding: const EdgeInsets.all(12),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Container(
-                  width: 44,
-                  height: 44,
-                  decoration: BoxDecoration(
-                    color: accentColor.withValues(alpha: 0.1),
-                    borderRadius: BorderRadius.circular(10),
-                  ),
-                  child: Icon(
-                    isCompleted ? Icons.check_circle_outline_rounded : Icons.business_center_rounded,
-                    color: accentColor,
-                    size: 20,
-                  ),
+                // Top Row: Icon badge + Status tag + Budget chip
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    Row(
+                      children: [
+                        Container(
+                          width: 30,
+                          height: 30,
+                          decoration: BoxDecoration(
+                            color: Colors.white.withValues(alpha: 0.2),
+                            borderRadius: BorderRadius.circular(10),
+                          ),
+                          child: Icon(
+                            isCompleted
+                                ? Icons.check_circle_rounded
+                                : project.status == 0
+                                    ? Icons.edit_document
+                                    : Icons.business_center_rounded,
+                            color: Colors.white,
+                            size: 16,
+                          ),
+                        ),
+                        const SizedBox(width: 8),
+                        Container(
+                          padding: const EdgeInsets.symmetric(horizontal: 7, vertical: 3),
+                          decoration: BoxDecoration(
+                            color: Colors.white.withValues(alpha: 0.15),
+                            borderRadius: BorderRadius.circular(8),
+                          ),
+                          child: Text(
+                            statusLabel,
+                            style: const TextStyle(
+                              fontSize: 8,
+                              fontWeight: FontWeight.w900,
+                              color: Colors.white,
+                              letterSpacing: 0.5,
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
+                    if (project.proposalValue > 0)
+                      Text(
+                        "${project.proposalValue.toStringAsFixed(0)}€",
+                        style: const TextStyle(
+                          fontSize: 11,
+                          fontWeight: FontWeight.w900,
+                          color: Colors.white,
+                        ),
+                      ),
+                  ],
                 ),
-                const SizedBox(width: 16),
+
+                const SizedBox(height: 8),
+
+                // Center Title & Client Subtitle
                 Expanded(
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: [
-                      FittedBox(
-                        fit: BoxFit.scaleDown,
-                        child: Text(
-                          project.name.toUpperCase(),
-                          style: const TextStyle(fontWeight: FontWeight.w800, fontSize: 13, color: Color(0xFF0F172A), letterSpacing: -0.2),
-                        ),
-                      ),
-                      const SizedBox(height: 2),
                       Text(
-                        project.clientName.toUpperCase(),
-                        style: TextStyle(fontWeight: FontWeight.w800, fontSize: 8, color: accentColor.withValues(alpha: 0.8), letterSpacing: 0.5),
+                        project.name.toUpperCase(),
+                        style: const TextStyle(
+                          fontWeight: FontWeight.w900,
+                          fontSize: 12,
+                          color: Colors.white,
+                          letterSpacing: -0.2,
+                          height: 1.2,
+                        ),
+                        maxLines: 2,
+                        overflow: TextOverflow.ellipsis,
                       ),
+                      if (project.clientName.isNotEmpty) ...[
+                        const SizedBox(height: 3),
+                        Row(
+                          children: [
+                            Icon(Icons.person_outline_rounded, size: 10, color: Colors.white.withValues(alpha: 0.7)),
+                            const SizedBox(width: 3),
+                            Expanded(
+                              child: Text(
+                                project.clientName.toUpperCase(),
+                                style: TextStyle(
+                                  fontWeight: FontWeight.w800,
+                                  fontSize: 9,
+                                  color: Colors.white.withValues(alpha: 0.8),
+                                  letterSpacing: 0.2,
+                                ),
+                                maxLines: 1,
+                                overflow: TextOverflow.ellipsis,
+                              ),
+                            ),
+                          ],
+                        ),
+                      ],
                     ],
                   ),
                 ),
-                Icon(Icons.chevron_right_rounded, color: Colors.blueGrey.withValues(alpha: 0.2), size: 18),
+
+                // Bottom Row: Date badge
+                if (dateStr != null) ...[
+                  const SizedBox(height: 4),
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      Row(
+                        children: [
+                          Icon(Icons.calendar_today_rounded, size: 9, color: Colors.white.withValues(alpha: 0.7)),
+                          const SizedBox(width: 4),
+                          Text(
+                            dateStr,
+                            style: const TextStyle(fontSize: 8, fontWeight: FontWeight.bold, color: Colors.white),
+                          ),
+                        ],
+                      ),
+                      Icon(Icons.chevron_right_rounded, size: 14, color: Colors.white.withValues(alpha: 0.5)),
+                    ],
+                  ),
+                ],
               ],
             ),
           ),
