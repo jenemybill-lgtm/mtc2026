@@ -227,9 +227,14 @@ class ProjectProvider with ChangeNotifier {
   bool _isSyncing = false;
   bool get isSyncing => _isSyncing;
 
-  Future<bool> manualUploadToCloud({bool includePhotos = false}) async {
+  Future<String?> manualUploadToCloud({bool includePhotos = false}) async {
     final prefs = await SharedPreferences.getInstance();
-    if (!(prefs.getBool('is_logged_in') ?? false)) return false;
+    final isLoggedIn = prefs.getBool('is_logged_in') ?? false;
+    final token = prefs.getString('auth_token');
+
+    if (!isLoggedIn || token == null || token.isEmpty) {
+      return "Δεν είστε συνδεδεμένος. Παρακαλώ αποσυνδεθείτε και κάντε ξανά Login.";
+    }
 
     _isSyncing = true;
     notifyListeners();
@@ -250,14 +255,25 @@ class ProjectProvider with ChangeNotifier {
       
       if (response.statusCode == 200) {
         print("Sync: Upload Successful");
-        return true;
+        return null; // Success
+      } else if (response.statusCode == 401) {
+        print("Sync: Upload Unauthorized (401)");
+        await prefs.remove('auth_token');
+        await prefs.setBool('is_logged_in', false);
+        return "Η συνεδρία σας έληξε (401). Παρακαλώ συνδεθείτε ξανά (Login).";
       } else {
         print("Sync: Upload Failed (${response.statusCode}): ${response.body}");
-        return false;
+        try {
+          final errorObj = jsonDecode(response.body);
+          if (errorObj is Map && errorObj.containsKey('message')) {
+            return "Σφάλμα (${response.statusCode}): ${errorObj['message']}";
+          }
+        } catch (_) {}
+        return "Σφάλμα Server (${response.statusCode})";
       }
     } catch (e) {
       print("Sync: Upload Error: $e");
-      return false;
+      return "Σφάλμα Δικτύου: $e";
     } finally {
       _isSyncing = false;
       notifyListeners();
@@ -296,9 +312,14 @@ class ProjectProvider with ChangeNotifier {
     }
   }
 
-  Future<bool> manualDownloadFromCloud() async {
+  Future<String?> manualDownloadFromCloud() async {
     final prefs = await SharedPreferences.getInstance();
-    if (!(prefs.getBool('is_logged_in') ?? false)) return false;
+    final isLoggedIn = prefs.getBool('is_logged_in') ?? false;
+    final token = prefs.getString('auth_token');
+
+    if (!isLoggedIn || token == null || token.isEmpty) {
+      return "Δεν είστε συνδεδεμένος. Παρακαλώ αποσυνδεθείτε και κάντε ξανά Login.";
+    }
 
     _isSyncing = true;
     notifyListeners();
@@ -324,14 +345,25 @@ class ProjectProvider with ChangeNotifier {
         await DatabaseHelper().importDataFromSync(responseData);
         await fetchProjects();
         print("Sync: Download Successful");
-        return true;
+        return null; // Success
+      } else if (response.statusCode == 401) {
+        print("Sync: Download Unauthorized (401)");
+        await prefs.remove('auth_token');
+        await prefs.setBool('is_logged_in', false);
+        return "Η συνεδρία σας έληξε (401). Παρακαλώ συνδεθείτε ξανά (Login).";
       } else {
         print("Sync: Download Failed (${response.statusCode}): ${response.body}");
-        return false;
+        try {
+          final errorObj = jsonDecode(response.body);
+          if (errorObj is Map && errorObj.containsKey('message')) {
+            return "Σφάλμα (${response.statusCode}): ${errorObj['message']}";
+          }
+        } catch (_) {}
+        return "Σφάλμα Server (${response.statusCode})";
       }
     } catch (e) {
       print("Sync: Download Error: $e");
-      return false;
+      return "Σφάλμα Δικτύου: $e";
     } finally {
       _isSyncing = false;
       notifyListeners();

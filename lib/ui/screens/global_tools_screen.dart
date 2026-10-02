@@ -262,106 +262,196 @@ class _ToolEntryDialogState extends State<_ToolEntryDialog> {
   Widget build(BuildContext context) {
     final provider = Provider.of<ProjectProvider>(context);
     final projects = provider.projects;
+    const color = Color(0xFF4361EE);
 
-    return AlertDialog(
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(32)),
-      title: PremiumHeader(
-        title: widget.initialTool == null ? "ΠΡΟΣΘΗΚΗ ΕΡΓΑΛΕΙΟΥ" : "ΕΠΕΞΕΡΓΑΣΙΑ", 
-        icon: Icons.handyman_rounded
-      ),
-      content: Container(
+    return Dialog(
+      backgroundColor: Colors.transparent,
+      child: Container(
         width: MediaQuery.of(context).size.width * 0.9,
+        constraints: const BoxConstraints(maxWidth: 500),
+        decoration: BoxDecoration(
+          color: Colors.white,
+          borderRadius: BorderRadius.circular(32),
+          boxShadow: [BoxShadow(color: Colors.black.withValues(alpha: 0.1), blurRadius: 30)],
+        ),
         child: SingleChildScrollView(
           child: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
-              TextField(controller: _nameController, decoration: const InputDecoration(labelText: "Όνομα Εργαλείου", prefixIcon: Icon(Icons.edit_rounded))),
-              const SizedBox(height: 16),
-              Row(
-                children: [
-                  Expanded(child: TextField(controller: _qtyController, decoration: const InputDecoration(labelText: "Ποσότητα", prefixIcon: Icon(Icons.numbers_rounded)), keyboardType: TextInputType.number)),
-                  const SizedBox(width: 12),
-                  Expanded(
-                    child: DropdownButtonFormField<String>(
-                      value: widget.category,
-                      decoration: const InputDecoration(labelText: "Κατηγορία"),
-                      items: provider.toolCategories.map((c) => DropdownMenuItem(value: c, child: Text(c, style: const TextStyle(fontSize: 10)))).toList(),
-                      onChanged: (v) {}, // Category is fixed from parent usually, but could be enabled
-                    ),
+              Padding(
+                padding: const EdgeInsets.only(top: 32, bottom: 16),
+                child: Container(
+                  padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
+                  decoration: BoxDecoration(
+                    color: color.withValues(alpha: 0.08),
+                    borderRadius: BorderRadius.circular(20),
                   ),
-                ],
-              ),
-              const SizedBox(height: 24),
-              
-              // Location Selection
-              const PremiumHeader(title: "ΤΟΠΟΘΕΣΙΑ", icon: Icons.location_on_rounded, color: Colors.blueGrey),
-              const SizedBox(height: 12),
-              SegmentedButton<String>(
-                segments: const [
-                  ButtonSegment(value: "WAREHOUSE", label: Text("ΑΠΟΘΗΚΗ", style: TextStyle(fontSize: 9, fontWeight: FontWeight.bold))),
-                  ButtonSegment(value: "VAN", label: Text("ΒΑΝ", style: TextStyle(fontSize: 9, fontWeight: FontWeight.bold))),
-                  ButtonSegment(value: "PROJECT", label: Text("ΕΡΓΟ", style: TextStyle(fontSize: 9, fontWeight: FontWeight.bold))),
-                ],
-                selected: {_selectedLocationType},
-                onSelectionChanged: (s) => setState(() {
-                  _selectedLocationType = s.first;
-                  if (_selectedLocationType != "PROJECT") {
-                    _selectedLocationId = 0;
-                    _customLocationName = "";
-                  }
-                }),
-              ),
-              
-              if (_selectedLocationType == "PROJECT") ...[
-                const SizedBox(height: 16),
-                DropdownButtonFormField<int>(
-                  value: _selectedLocationId != 0 ? _selectedLocationId : (projects.isNotEmpty ? projects.first.id : null),
-                  decoration: const InputDecoration(labelText: "Επιλογή Έργου"),
-                  items: projects.map((p) => DropdownMenuItem(value: p.id, child: Text(p.name.toUpperCase(), style: const TextStyle(fontSize: 12)))).toList(),
-                  onChanged: (v) {
-                    if (v != null) {
-                      setState(() {
-                        _selectedLocationId = v;
-                        _customLocationName = projects.firstWhere((p) => p.id == v).name;
-                      });
-                    }
-                  },
+                  child: Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Icon(widget.initialTool == null ? Icons.handyman_rounded : Icons.edit_rounded, color: color, size: 24),
+                      const SizedBox(width: 12),
+                      Text(
+                        widget.initialTool == null ? "ΠΡΟΣΘΗΚΗ ΕΡΓΑΛΕΙΟΥ" : "ΕΠΕΞΕΡΓΑΣΙΑ",
+                        style: const TextStyle(fontWeight: FontWeight.w900, color: Color(0xFF1E293B), fontSize: 16, letterSpacing: 0.5),
+                      ),
+                    ],
+                  ),
                 ),
-              ],
-              
-              const SizedBox(height: 24),
-              TextField(controller: _commentsController, decoration: const InputDecoration(labelText: "Σχόλια / Σημειώσεις", prefixIcon: Icon(Icons.notes_rounded)), maxLines: 2),
+              ),
+              Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 32, vertical: 16),
+                child: Column(
+                  children: [
+                    _buildMinimalTextField(_nameController, "Όνομα Εργαλείου", Icons.edit_rounded),
+                    const SizedBox(height: 16),
+                    Row(
+                      children: [
+                        Expanded(
+                          child: _buildMinimalTextField(_qtyController, "Ποσότητα", Icons.numbers_rounded, type: TextInputType.number),
+                        ),
+                        const SizedBox(width: 12),
+                        Expanded(
+                          child: DropdownButtonFormField<String>(
+                            value: widget.category,
+                            isExpanded: true,
+                            decoration: InputDecoration(
+                              labelText: "Κατηγορία",
+                              filled: true,
+                              fillColor: const Color(0xFFE2E8F0).withValues(alpha: 0.6),
+                              border: OutlineInputBorder(borderRadius: BorderRadius.circular(16), borderSide: BorderSide.none),
+                            ),
+                            items: provider.toolCategories.map((c) => DropdownMenuItem(value: c, child: Text(c, style: const TextStyle(fontSize: 12, fontWeight: FontWeight.bold)))).toList(),
+                            onChanged: (v) {},
+                          ),
+                        ),
+                      ],
+                    ),
+                    const SizedBox(height: 24),
+                    
+                    // Location Selection
+                    const Align(
+                      alignment: Alignment.centerLeft,
+                      child: Text("ΤΟΠΟΘΕΣΙΑ", style: TextStyle(fontSize: 11, fontWeight: FontWeight.w900, color: Colors.blueGrey, letterSpacing: 1)),
+                    ),
+                    const SizedBox(height: 12),
+                    SegmentedButton<String>(
+                      style: SegmentedButton.styleFrom(
+                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+                        selectedBackgroundColor: color,
+                        selectedForegroundColor: Colors.white,
+                      ),
+                      segments: const [
+                        ButtonSegment(value: "WAREHOUSE", label: Text("ΑΠΟΘΗΚΗ", style: TextStyle(fontSize: 10, fontWeight: FontWeight.bold))),
+                        ButtonSegment(value: "VAN", label: Text("ΒΑΝ", style: TextStyle(fontSize: 10, fontWeight: FontWeight.bold))),
+                        ButtonSegment(value: "PROJECT", label: Text("ΕΡΓΟ", style: TextStyle(fontSize: 10, fontWeight: FontWeight.bold))),
+                      ],
+                      selected: {_selectedLocationType},
+                      onSelectionChanged: (s) => setState(() {
+                        _selectedLocationType = s.first;
+                        if (_selectedLocationType != "PROJECT") {
+                          _selectedLocationId = 0;
+                          _customLocationName = "";
+                        }
+                      }),
+                    ),
+                    
+                    if (_selectedLocationType == "PROJECT") ...[
+                      const SizedBox(height: 16),
+                      DropdownButtonFormField<int>(
+                        value: _selectedLocationId != 0 ? _selectedLocationId : (projects.isNotEmpty ? projects.first.id : null),
+                        isExpanded: true,
+                        decoration: InputDecoration(
+                          labelText: "Επιλογή Έργου",
+                          filled: true,
+                          fillColor: const Color(0xFFE2E8F0).withValues(alpha: 0.6),
+                          border: OutlineInputBorder(borderRadius: BorderRadius.circular(16), borderSide: BorderSide.none),
+                        ),
+                        items: projects.map((p) => DropdownMenuItem(value: p.id, child: Text(p.name.toUpperCase(), style: const TextStyle(fontSize: 12, fontWeight: FontWeight.bold)))).toList(),
+                        onChanged: (v) {
+                          if (v != null) {
+                            setState(() {
+                              _selectedLocationId = v;
+                              _customLocationName = projects.firstWhere((p) => p.id == v).name;
+                            });
+                          }
+                        },
+                      ),
+                    ],
+                    
+                    const SizedBox(height: 20),
+                    _buildMinimalTextField(_commentsController, "Σχόλια / Σημειώσεις", Icons.notes_rounded, maxLines: 2),
+                  ],
+                ),
+              ),
+              Padding(
+                padding: const EdgeInsets.fromLTRB(32, 8, 32, 32),
+                child: Row(
+                  children: [
+                    Expanded(
+                      child: TextButton(
+                        onPressed: () => Navigator.pop(context), 
+                        child: const Text("ΑΚΥΡΟ", style: TextStyle(fontWeight: FontWeight.w900, fontSize: 14, color: Colors.blueGrey)),
+                      ),
+                    ),
+                    const SizedBox(width: 16),
+                    Expanded(
+                      child: ElevatedButton(
+                        onPressed: () async {
+                          if (_nameController.text.isNotEmpty) {
+                            final tool = Tool(
+                              id: widget.initialTool?.id ?? 0,
+                              name: _nameController.text,
+                              category: widget.category,
+                              quantity: double.tryParse(_qtyController.text) ?? 1.0,
+                              comments: _commentsController.text,
+                              locationType: _selectedLocationType,
+                              locationId: _selectedLocationId,
+                              customLocationName: _customLocationName,
+                            );
+                            if (widget.initialTool == null) {
+                              await provider.addTool(tool);
+                            } else {
+                              await provider.updateTool(tool);
+                            }
+                            widget.onConfirm();
+                            Navigator.pop(context);
+                          }
+                        },
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: color,
+                          padding: const EdgeInsets.symmetric(vertical: 16),
+                          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+                          elevation: 0,
+                        ),
+                        child: const Text("ΑΠΟΘΗΚΕΥΣΗ", style: TextStyle(fontWeight: FontWeight.w900, fontSize: 14)),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
             ],
           ),
         ),
       ),
-      actions: [
-        TextButton(onPressed: () => Navigator.pop(context), child: const Text("ΑΚΥΡΟ", style: TextStyle(fontWeight: FontWeight.w900))),
-        ElevatedButton(
-          onPressed: () async {
-            if (_nameController.text.isNotEmpty) {
-              final tool = Tool(
-                id: widget.initialTool?.id ?? 0,
-                name: _nameController.text,
-                category: widget.category,
-                quantity: double.tryParse(_qtyController.text) ?? 1.0,
-                comments: _commentsController.text,
-                locationType: _selectedLocationType,
-                locationId: _selectedLocationId,
-                customLocationName: _customLocationName,
-              );
-              if (widget.initialTool == null) {
-                await provider.addTool(tool);
-              } else {
-                await provider.updateTool(tool);
-              }
-              widget.onConfirm();
-              Navigator.pop(context);
-            }
-          },
-          child: const Text("ΑΠΟΘΗΚΕΥΣΗ", style: TextStyle(fontWeight: FontWeight.w900)),
-        ),
-      ],
+    );
+  }
+
+  Widget _buildMinimalTextField(TextEditingController controller, String label, IconData icon, {TextInputType type = TextInputType.text, int maxLines = 1}) {
+    return TextField(
+      controller: controller,
+      keyboardType: type,
+      maxLines: maxLines,
+      style: const TextStyle(fontWeight: FontWeight.bold, color: Color(0xFF1E293B)),
+      decoration: InputDecoration(
+        labelText: label,
+        labelStyle: const TextStyle(fontWeight: FontWeight.w600, color: Colors.blueGrey),
+        prefixIcon: Icon(icon, color: Colors.blueGrey),
+        filled: true,
+        fillColor: const Color(0xFFE2E8F0).withValues(alpha: 0.6),
+        border: OutlineInputBorder(borderRadius: BorderRadius.circular(16), borderSide: BorderSide.none),
+        focusedBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(16), borderSide: const BorderSide(color: Color(0xFF4361EE), width: 2)),
+      ),
     );
   }
 }

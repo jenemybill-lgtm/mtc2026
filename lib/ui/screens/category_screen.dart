@@ -142,34 +142,36 @@ class _CategoryScreenState extends State<CategoryScreen> {
 
   Widget _buildCalculatorsBar() {
     final isDesktop = MediaQuery.of(context).size.width > 900;
-    return Container(
-      width: double.infinity,
-      color: Colors.white,
-      alignment: Alignment.centerLeft,
-      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-      child: Container(
-        constraints: BoxConstraints(maxWidth: isDesktop ? 950 : double.infinity),
-        child: Wrap(
-          spacing: 8,
-          runSpacing: 8,
-          alignment: WrapAlignment.start,
-          children: [
-            if (widget.category == AppDestinations.EARTHWORKS) _calcBtn("Υπολογιστής", Icons.landslide_rounded, EarthworksCalculator(onResult: _handleCalcResult)),
-            if (widget.category == AppDestinations.WINDOWS) _calcBtn("Υπολογιστής", Icons.calculate_rounded, WindowCalculator(onResult: _handleCalcResult)),
-            if (widget.category == AppDestinations.DRYWALL) _calcBtn("Υλικά & Εργασία", Icons.square_rounded, DrywallCalculator(onResult: _handleCalcResult)),
-            if (widget.category == AppDestinations.GENERAL || widget.category == AppDestinations.TILES) _calcBtn("Υλικά (Άμμος/Τσιμ.)", Icons.home_work_rounded, MortarCalculator(category: widget.category.name, onResult: _handleCalcResult)),
-            if (widget.category == AppDestinations.ELECTRICAL) _calcBtn("Υπολογιστής", Icons.bolt_rounded, ElectricalCalculator(onResult: _handleCalcResult)),
-            if (widget.category == AppDestinations.PLUMBING) _calcBtn("Υπολογιστής", Icons.water_drop_rounded, PlumbingCalculator(onResult: _handleCalcResult)),
-            if (widget.category == AppDestinations.PAINTING) _calcBtn("Υπολογιστής", Icons.brush_rounded, PaintingCalculator(onResult: _handleCalcResult)),
-            if (widget.category == AppDestinations.TILES) _calcBtn("Υπολογιστής", Icons.grid_view_rounded, TilesCalculator(onResult: _handleCalcResult)),
-            if (widget.category == AppDestinations.BETON) _calcBtn("Υπολογιστής", Icons.warehouse_rounded, BetonCalculator(onResult: _handleCalcResult)),
-            if (widget.category == AppDestinations.FLOORS) _calcBtn("Υπολογιστής", Icons.square_foot_rounded, FloorsCalculator(onResult: _handleCalcResult)),
-            if (widget.category == AppDestinations.METAL) _calcBtn("Υπολογιστής", Icons.construction_rounded, MetalCalculator(onResult: _handleCalcResult)),
-            if (widget.category == AppDestinations.CARPENTRY) _calcBtn("Υπολογιστής", Icons.kitchen_rounded, CarpentryCalculator(onResult: _handleCalcResult)),
-            if (widget.category == AppDestinations.ENGINEERING) _calcBtn("Υπολογιστής", Icons.design_services_rounded, EngineeringCalculator(onResult: _handleCalcResult)),
-            _actionBtn("ΠΡΟΤΥΠΑ", Icons.style_rounded, _showPriceTemplatesSheet),
-            _actionBtn("ΣΥΝΤΑΓΕΣ (RECIPES)", Icons.auto_fix_high_rounded, _showRecipesSheet),
-          ],
+    final catColor = widget.category.color;
+
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 12.0),
+      child: Center(
+        child: Container(
+          constraints: BoxConstraints(maxWidth: isDesktop ? 950 : double.infinity),
+          alignment: Alignment.centerLeft,
+          child: Wrap(
+            spacing: 10,
+            runSpacing: 10,
+            alignment: WrapAlignment.start,
+            children: [
+              if (widget.category == AppDestinations.EARTHWORKS) _calcBtn("Υπολογιστής", Icons.landslide_rounded, EarthworksCalculator(onResult: _handleCalcResult), catColor),
+              if (widget.category == AppDestinations.WINDOWS) _calcBtn("Υπολογιστής", Icons.calculate_rounded, WindowCalculator(onResult: _handleCalcResult), catColor),
+              if (widget.category == AppDestinations.DRYWALL) _calcBtn("Υλικά & Εργασία", Icons.square_rounded, DrywallCalculator(onResult: _handleCalcResult), catColor),
+              if (widget.category == AppDestinations.GENERAL || widget.category == AppDestinations.TILES) _calcBtn("Υλικά (Άμμος/Τσιμ.)", Icons.home_work_rounded, MortarCalculator(category: widget.category.name, onResult: _handleCalcResult), catColor),
+              if (widget.category == AppDestinations.ELECTRICAL) _calcBtn("Υπολογιστής", Icons.bolt_rounded, ElectricalCalculator(onResult: _handleCalcResult), catColor),
+              if (widget.category == AppDestinations.PLUMBING) _calcBtn("Υπολογιστής", Icons.water_drop_rounded, PlumbingCalculator(onResult: _handleCalcResult), catColor),
+              if (widget.category == AppDestinations.PAINTING) _calcBtn("Υπολογιστής", Icons.brush_rounded, PaintingCalculator(onResult: _handleCalcResult), catColor),
+              if (widget.category == AppDestinations.TILES) _calcBtn("Υπολογιστής", Icons.grid_view_rounded, TilesCalculator(onResult: _handleCalcResult), catColor),
+              if (widget.category == AppDestinations.BETON) _calcBtn("Υπολογιστής", Icons.warehouse_rounded, BetonCalculator(onResult: _handleCalcResult), catColor),
+              if (widget.category == AppDestinations.FLOORS) _calcBtn("Υπολογιστής", Icons.square_foot_rounded, FloorsCalculator(onResult: _handleCalcResult), catColor),
+              if (widget.category == AppDestinations.METAL) _calcBtn("Υπολογιστής", Icons.construction_rounded, MetalCalculator(onResult: _handleCalcResult), catColor),
+              if (widget.category == AppDestinations.CARPENTRY) _calcBtn("Υπολογιστής", Icons.kitchen_rounded, CarpentryCalculator(onResult: _handleCalcResult), catColor),
+              if (widget.category == AppDestinations.ENGINEERING) _calcBtn("Υπολογιστής", Icons.design_services_rounded, EngineeringCalculator(onResult: _handleCalcResult), catColor),
+              _actionBtn("ΠΡΟΤΥΠΑ", Icons.style_rounded, _showPriceTemplatesSheet, const Color(0xFF2563EB)),
+              _actionBtn("ΣΥΝΤΑΓΕΣ (RECIPES)", Icons.auto_fix_high_rounded, _showRecipesSheet, const Color(0xFF7209B7)),
+            ],
+          ),
         ),
       ),
     );
@@ -284,26 +286,104 @@ class _CategoryScreenState extends State<CategoryScreen> {
     );
   }
 
-  Widget _calcBtn(String label, IconData icon, Widget calculator) {
-    return Padding(
-      padding: const EdgeInsets.only(right: 8.0),
-      child: OutlinedButton.icon(
-        onPressed: () => _showCalculator(calculator),
-        icon: Icon(icon, size: 16),
-        label: Text(label, style: const TextStyle(fontSize: 11, fontWeight: FontWeight.bold)),
-        style: OutlinedButton.styleFrom(shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12))),
+  Widget _calcBtn(String label, IconData icon, Widget calculator, Color color) {
+    return Container(
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(16),
+        border: Border.all(color: color.withValues(alpha: 0.25), width: 1.2),
+        boxShadow: [
+          BoxShadow(
+            color: color.withValues(alpha: 0.08),
+            blurRadius: 10,
+            offset: const Offset(0, 3),
+          ),
+        ],
+      ),
+      child: Material(
+        color: Colors.transparent,
+        borderRadius: BorderRadius.circular(16),
+        child: InkWell(
+          onTap: () => _showCalculator(calculator),
+          borderRadius: BorderRadius.circular(16),
+          child: Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
+            child: Row(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Container(
+                  padding: const EdgeInsets.all(6),
+                  decoration: BoxDecoration(
+                    color: color.withValues(alpha: 0.12),
+                    borderRadius: BorderRadius.circular(10),
+                  ),
+                  child: Icon(icon, size: 14, color: color),
+                ),
+                const SizedBox(width: 8),
+                Text(
+                  label.toUpperCase(),
+                  style: TextStyle(
+                    fontSize: 10,
+                    fontWeight: FontWeight.w900,
+                    color: color,
+                    letterSpacing: 0.5,
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ),
       ),
     );
   }
 
-  Widget _actionBtn(String label, IconData icon, VoidCallback onPressed) {
-    return Padding(
-      padding: const EdgeInsets.only(right: 8.0),
-      child: OutlinedButton.icon(
-        onPressed: onPressed,
-        icon: Icon(icon, size: 16),
-        label: Text(label, style: const TextStyle(fontSize: 11, fontWeight: FontWeight.bold)),
-        style: OutlinedButton.styleFrom(shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12))),
+  Widget _actionBtn(String label, IconData icon, VoidCallback onPressed, Color color) {
+    return Container(
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(16),
+        border: Border.all(color: color.withValues(alpha: 0.25), width: 1.2),
+        boxShadow: [
+          BoxShadow(
+            color: color.withValues(alpha: 0.08),
+            blurRadius: 10,
+            offset: const Offset(0, 3),
+          ),
+        ],
+      ),
+      child: Material(
+        color: Colors.transparent,
+        borderRadius: BorderRadius.circular(16),
+        child: InkWell(
+          onTap: onPressed,
+          borderRadius: BorderRadius.circular(16),
+          child: Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
+            child: Row(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Container(
+                  padding: const EdgeInsets.all(6),
+                  decoration: BoxDecoration(
+                    color: color.withValues(alpha: 0.12),
+                    borderRadius: BorderRadius.circular(10),
+                  ),
+                  child: Icon(icon, size: 14, color: color),
+                ),
+                const SizedBox(width: 8),
+                Text(
+                  label.toUpperCase(),
+                  style: TextStyle(
+                    fontSize: 10,
+                    fontWeight: FontWeight.w900,
+                    color: color,
+                    letterSpacing: 0.5,
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ),
       ),
     );
   }

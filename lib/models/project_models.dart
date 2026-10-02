@@ -356,6 +356,38 @@ class Settings {
     this.aiApiKey = "",
   });
 
+  Settings copyWith({
+    int? id,
+    String? ownerName,
+    String? companyName,
+    String? phone,
+    String? email,
+    String? tagline,
+    bool? isPaymentReminderEnabled,
+    String? logoUri,
+    String? vatNumber,
+    String? appTheme,
+    String? dbApiUrl,
+    String? aiApiUrl,
+    String? aiApiKey,
+  }) {
+    return Settings(
+      id: id ?? this.id,
+      ownerName: ownerName ?? this.ownerName,
+      companyName: companyName ?? this.companyName,
+      phone: phone ?? this.phone,
+      email: email ?? this.email,
+      tagline: tagline ?? this.tagline,
+      isPaymentReminderEnabled: isPaymentReminderEnabled ?? this.isPaymentReminderEnabled,
+      logoUri: logoUri ?? this.logoUri,
+      vatNumber: vatNumber ?? this.vatNumber,
+      appTheme: appTheme ?? this.appTheme,
+      dbApiUrl: dbApiUrl ?? this.dbApiUrl,
+      aiApiUrl: aiApiUrl ?? this.aiApiUrl,
+      aiApiKey: aiApiKey ?? this.aiApiKey,
+    );
+  }
+
   Map<String, dynamic> toMap() {
     return {
       'id': id,

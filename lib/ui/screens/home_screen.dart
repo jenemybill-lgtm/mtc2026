@@ -53,13 +53,12 @@ class _HomeScreenState extends State<HomeScreen> {
               padding: EdgeInsets.only(right: 16),
               child: SizedBox(width: 20, height: 20, child: CircularProgressIndicator(strokeWidth: 2)),
             ),
-          IconButton(
-            icon: const Icon(Icons.refresh_rounded),
-            onPressed: () => provider.fetchProjects(),
-            tooltip: "Ανανέωση δεδομένων",
-          ),
+          _buildTopSyncButton(context, "UPLOAD", Icons.cloud_upload_rounded, const Color(0xFF2563EB), () => _handleCloudUpload(context, provider)),
+          const SizedBox(width: 8),
+          _buildTopSyncButton(context, "DOWNLOAD", Icons.cloud_download_rounded, const Color(0xFF3A0CA3), () => _handleCloudDownload(context, provider)),
+          const SizedBox(width: 12),
           _buildTopAction(context, "Ψηφιακή Κάρτα", Icons.qr_code_2, const Color(0xFFF72585), () => Navigator.push(context, MaterialPageRoute(builder: (context) => DigitalCardScreen(settings: provider.settings)))),
-          const SizedBox(width: 16),
+          const SizedBox(width: 12),
           IconButton(
             icon: const Icon(Icons.settings_rounded), 
             onPressed: () => Navigator.push(context, MaterialPageRoute(builder: (context) => const SettingsScreen())),
@@ -543,6 +542,10 @@ class _HomeScreenState extends State<HomeScreen> {
               const Expanded(child: PremiumHeader(title: "ΙΣΟΛΟΓΙΣΜΟΣ")),
               Row(
                 children: [
+                  _buildIconButton(context, Icons.cloud_upload_rounded, const Color(0xFF2563EB), () => _handleCloudUpload(context, provider)),
+                  const SizedBox(width: 6),
+                  _buildIconButton(context, Icons.cloud_download_rounded, const Color(0xFF3A0CA3), () => _handleCloudDownload(context, provider)),
+                  const SizedBox(width: 6),
                   _buildIconButton(context, Icons.qr_code_2, const Color(0xFFF72585), () {
                     Navigator.push(context, PageRouteBuilder(
                       pageBuilder: (c, a1, a2) => DigitalCardScreen(settings: provider.settings),
@@ -1329,6 +1332,57 @@ class _HomeScreenState extends State<HomeScreen> {
         ],
       ),
     );
+  }
+
+  Widget _buildTopSyncButton(BuildContext context, String label, IconData icon, Color color, VoidCallback onTap) {
+    return InkWell(
+      onTap: onTap,
+      borderRadius: BorderRadius.circular(12),
+      child: Container(
+        padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+        decoration: BoxDecoration(
+          color: color.withValues(alpha: 0.1),
+          borderRadius: BorderRadius.circular(12),
+          border: Border.all(color: color.withValues(alpha: 0.2)),
+        ),
+        child: Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Icon(icon, color: color, size: 16),
+            const SizedBox(width: 6),
+            Text(label, style: TextStyle(color: color, fontWeight: FontWeight.w900, fontSize: 11)),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Future<void> _handleCloudUpload(BuildContext context, ProjectProvider provider) async {
+    await DatabaseHelper().backupDatabase(autoBackup: true);
+    final errorMsg = await provider.manualUploadToCloud(includePhotos: false);
+    if (context.mounted) {
+      final success = errorMsg == null;
+      ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+        content: Text(success ? "Τα δεδομένα ανέβηκαν επιτυχώς στο Cloud!" : errorMsg),
+        backgroundColor: success ? Colors.green : Colors.red,
+        behavior: SnackBarBehavior.floating,
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+      ));
+    }
+  }
+
+  Future<void> _handleCloudDownload(BuildContext context, ProjectProvider provider) async {
+    await DatabaseHelper().backupDatabase(autoBackup: true);
+    final errorMsg = await provider.manualDownloadFromCloud();
+    if (context.mounted) {
+      final success = errorMsg == null;
+      ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+        content: Text(success ? "Τα δεδομένα λήφθηκαν επιτυχώς από το Cloud!" : errorMsg),
+        backgroundColor: success ? Colors.green : Colors.red,
+        behavior: SnackBarBehavior.floating,
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+      ));
+    }
   }
 
   Widget _buildTopAction(BuildContext context, String label, IconData icon, Color color, VoidCallback onTap) {

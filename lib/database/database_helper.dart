@@ -9,6 +9,7 @@ import 'package:share_plus/share_plus.dart';
 import 'package:file_picker/file_picker.dart';
 import 'package:archive/archive_io.dart';
 import 'package:mtc2026/models/project_models.dart';
+import 'package:file_saver/file_saver.dart';
 import 'package:flutter/foundation.dart' show kIsWeb;
 import 'package:intl/intl.dart';
 
@@ -2265,7 +2266,7 @@ class DatabaseHelper {
   }
 
   // Backup & Restore (Full ZIP including data.json and media files)
-  Future<String?> backupDatabase() async {
+  Future<String?> backupDatabase({bool autoBackup = false}) async {
     if (kIsWeb) return null;
     Database? db = await database;
     Map<String, dynamic> backup = {};
@@ -2357,7 +2358,17 @@ class DatabaseHelper {
       for (var file in files) {
         final pathLower = file.path.toLowerCase();
         final nameLower = file.path.split(Platform.pathSeparator).last.toLowerCase();
-        if (pathLower.endsWith('.db') ||
+        final ext = nameLower.contains('.') ? nameLower.split('.').last : '';
+
+        const allowedExtensions = {
+          'jpg', 'jpeg', 'png', 'gif', 'webp', 'pdf', 'doc', 'docx',
+          'xls', 'xlsx', 'dwg', 'dxf', 'txt', 'csv', 'svg', 'json'
+        };
+
+        if (!allowedExtensions.contains(ext) ||
+            nameLower.contains('kernel_blob') ||
+            nameLower.contains('isolate_snapshot') ||
+            pathLower.endsWith('.db') ||
             pathLower.endsWith('.db-journal') ||
             pathLower.endsWith('.lock') ||
             pathLower.endsWith('.tmp') ||
@@ -2378,25 +2389,37 @@ class DatabaseHelper {
 
     encoder.close();
 
-    if (!kIsWeb && (Platform.isWindows || Platform.isMacOS || Platform.isLinux)) {
-      final dateStr = DateFormat('yyyyMMdd_HHmm').format(DateTime.now());
-      final zipBytes = await zipFile.readAsBytes();
-      final Uri? saveUri = await FilePicker.saveFile(
-        dialogTitle: 'Αποθήκευση Αντιγράφου Ασφαλείας (Backup)',
-        fileName: 'mtc_full_backup_$dateStr.zip',
-        type: FileType.custom,
-        allowedExtensions: ['zip'],
-        bytes: zipBytes,
-      );
+    final dateStr = DateFormat('yyyyMMdd_HHmm').format(DateTime.now());
 
-      if (saveUri != null) {
-        final savePath = saveUri.toFilePath();
-        final saveFile = File(savePath);
-        if (!await saveFile.exists()) {
-          await saveFile.writeAsBytes(zipBytes);
+    if (autoBackup) {
+      final autoBackupDir = Directory('${appDir.path}/autobackups');
+      if (!await autoBackupDir.exists()) {
+        await autoBackupDir.create();
+      }
+      final autoZipFile = File('${autoBackupDir.path}/auto_backup_$dateStr.zip');
+      await zipFile.copy(autoZipFile.path);
+
+      // Cleanup: keep only 3 most recent backups
+      final autoFiles = autoBackupDir.listSync().whereType<File>().toList();
+      if (autoFiles.length > 3) {
+        autoFiles.sort((a, b) => a.statSync().modified.compareTo(b.statSync().modified));
+        while (autoFiles.length > 3) {
+          final oldestFile = autoFiles.removeAt(0);
+          await oldestFile.delete();
         }
-        print("Backup: Successfully saved to $savePath");
+      }
+      return autoZipFile.path;
+    }
+
+    if (!kIsWeb && (Platform.isWindows || Platform.isMacOS || Platform.isLinux)) {
+      try {
+        final savePath = await FileSaver.instance.saveFile(
+          name: 'mtc_full_backup_$dateStr.zip',
+          bytes: await zipFile.readAsBytes(),
+        );
         return savePath;
+      } catch (e) {
+        print("Backup: Error saving file on desktop: $e");
       }
       return null;
     }
@@ -2405,6 +2428,16 @@ class DatabaseHelper {
       XFile(zipFile.path),
     ], text: 'MTC Full Backup (ZIP)');
     return zipFile.path;
+  }
+
+  Future<List<File>> getAutoBackups() async {
+    final appDir = await getApplicationDocumentsDirectory();
+    final autoBackupDir = Directory('${appDir.path}/autobackups');
+    if (!await autoBackupDir.exists()) return [];
+    
+    final files = autoBackupDir.listSync().whereType<File>().toList();
+    files.sort((a, b) => b.statSync().modified.compareTo(a.statSync().modified));
+    return files;
   }
 
   Future<void> restoreDatabase(File zipFile) async {
@@ -2440,13 +2473,24 @@ class DatabaseHelper {
                 file.name.startsWith('files/')) {
               String fileName = file.name.split('/').last;
               final fileNameLower = fileName.toLowerCase();
-              if (fileNameLower == 'desktop.ini' ||
+              final ext = fileNameLower.contains('.') ? fileNameLower.split('.').last : '';
+
+              // Skip system, build artifacts, and non-media files
+              const allowedExtensions = {
+                'jpg', 'jpeg', 'png', 'gif', 'webp', 'pdf', 'doc', 'docx',
+                'xls', 'xlsx', 'dwg', 'dxf', 'txt', 'csv', 'svg', 'json'
+              };
+
+              if (!allowedExtensions.contains(ext) ||
+                  fileNameLower.contains('kernel_blob') ||
+                  fileNameLower.contains('isolate_snapshot') ||
+                  fileNameLower == 'desktop.ini' ||
                   fileNameLower == 'thumbs.db' ||
-                  fileNameLower == '.ds_store' ||
-                  fileNameLower.endsWith('.db') ||
-                  fileNameLower.endsWith('.lock')) {
+                  fileNameLower == '.ds_store') {
+                print("Restore: Skipping non-media file: $fileName");
                 continue;
               }
+
               try {
                 final destFile = File('${appDir.path}/$fileName');
                 await destFile.create(recursive: true);

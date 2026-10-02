@@ -174,12 +174,11 @@ class _WorkerCardPremium extends StatelessWidget {
       decoration: BoxDecoration(
         color: Colors.white,
         borderRadius: BorderRadius.circular(20),
-        border: Border.all(color: color.withValues(alpha: 0.15), width: 1.5),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withValues(alpha: 0.03),
+            color: Colors.black.withValues(alpha: 0.05),
             blurRadius: 15,
-            offset: const Offset(0, 4),
+            offset: const Offset(0, 5),
           ),
         ],
       ),
@@ -189,57 +188,83 @@ class _WorkerCardPremium extends StatelessWidget {
         child: InkWell(
           onTap: onTap,
           borderRadius: BorderRadius.circular(20),
-          child: Padding(
-            padding: const EdgeInsets.all(20),
-            child: Row(
-              children: [
-                Container(
-                  width: 52, height: 52,
+          child: Stack(
+            children: [
+              // Accent Line
+              Positioned(
+                left: 0,
+                top: 20,
+                bottom: 20,
+                child: Container(
+                  width: 4,
                   decoration: BoxDecoration(
-                    gradient: LinearGradient(colors: [color, color.withValues(alpha: 0.7)]),
-                    borderRadius: BorderRadius.circular(16),
-                    boxShadow: [BoxShadow(color: color.withValues(alpha: 0.3), blurRadius: 10, offset: const Offset(0, 4))],
+                    color: color,
+                    borderRadius: const BorderRadius.only(
+                      topRight: Radius.circular(4),
+                      bottomRight: Radius.circular(4),
+                    ),
                   ),
-                  child: const Icon(Icons.person_rounded, color: Colors.white, size: 26),
                 ),
-                const SizedBox(width: 20),
-                Expanded(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: [
-                      Text(partner.name.toUpperCase(), style: const TextStyle(fontWeight: FontWeight.w900, fontSize: 12, color: Color(0xFF1E293B)), maxLines: 1, overflow: TextOverflow.ellipsis),
-                      const SizedBox(height: 4),
-                      Row(
-                        children: [
-                          const Icon(Icons.euro_rounded, size: 10, color: Color(0xFF38B000)),
-                          const SizedBox(width: 2),
-                          Text("${partner.baseRate.toStringAsFixed(0)} €", style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 10, color: Color(0xFF38B000))),
-                          const SizedBox(width: 8),
-                          const Icon(Icons.phone_android_rounded, size: 10, color: Colors.blueGrey),
-                          const SizedBox(width: 2),
-                          Expanded(child: Text(partner.phone, style: const TextStyle(fontSize: 10, color: Colors.blueGrey), maxLines: 1, overflow: TextOverflow.ellipsis)),
+              ),
+              Padding(
+                padding: const EdgeInsets.fromLTRB(20, 16, 16, 16),
+                child: Row(
+                  children: [
+                    Container(
+                      width: 52, height: 52,
+                      decoration: BoxDecoration(
+                        gradient: LinearGradient(colors: [color, color.withValues(alpha: 0.7)]),
+                        shape: BoxShape.circle,
+                        boxShadow: [
+                          BoxShadow(
+                            color: color.withValues(alpha: 0.4), 
+                            blurRadius: 12, 
+                            offset: const Offset(0, 4)
+                          )
                         ],
                       ),
-                    ],
-                  ),
+                      child: const Icon(Icons.person_rounded, color: Colors.white, size: 26),
+                    ),
+                    const SizedBox(width: 20),
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          Text(partner.name.toUpperCase(), style: const TextStyle(fontWeight: FontWeight.w900, fontSize: 13, color: Color(0xFF1E293B)), maxLines: 1, overflow: TextOverflow.ellipsis),
+                          const SizedBox(height: 4),
+                          Row(
+                            children: [
+                              const Icon(Icons.euro_rounded, size: 12, color: Color(0xFF38B000)),
+                              const SizedBox(width: 4),
+                              Text("${partner.baseRate.toStringAsFixed(0)} €", style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 11, color: Color(0xFF38B000))),
+                              const SizedBox(width: 12),
+                              const Icon(Icons.phone_android_rounded, size: 12, color: Colors.blueGrey),
+                              const SizedBox(width: 4),
+                              Text(partner.phone, style: const TextStyle(fontSize: 11, color: Colors.blueGrey)),
+                            ],
+                          ),
+                        ],
+                      ),
+                    ),
+                    if (partner.trade == "Αλουμινάς")
+                      IconButton(
+                        tooltip: "AI Εκπαίδευση",
+                        padding: const EdgeInsets.all(4),
+                        constraints: const BoxConstraints(),
+                        onPressed: () {
+                          Navigator.push(context, MaterialPageRoute(builder: (context) => AluminumAiTrainingScreen(partner: partner)));
+                        },
+                        icon: const Icon(Icons.psychology_rounded, color: Color(0xFF7209B7), size: 20),
+                      ),
+                    const SizedBox(width: 8),
+                    IconButton(padding: const EdgeInsets.all(4), constraints: const BoxConstraints(), onPressed: onCall, icon: const Icon(Icons.call_rounded, color: Colors.blue, size: 18)),
+                    const SizedBox(width: 8),
+                    IconButton(padding: const EdgeInsets.all(4), constraints: const BoxConstraints(), onPressed: onDelete, icon: const Icon(Icons.delete_outline_rounded, color: Colors.redAccent, size: 18)),
+                  ],
                 ),
-                if (partner.trade == "Αλουμινάς")
-                  IconButton(
-                    tooltip: "AI Εκπαίδευση",
-                    padding: const EdgeInsets.all(4),
-                    constraints: const BoxConstraints(),
-                    onPressed: () {
-                      Navigator.push(context, MaterialPageRoute(builder: (context) => AluminumAiTrainingScreen(partner: partner)));
-                    },
-                    icon: const Icon(Icons.psychology_rounded, color: Color(0xFF7209B7), size: 20),
-                  ),
-                const SizedBox(width: 8),
-                IconButton(padding: const EdgeInsets.all(4), constraints: const BoxConstraints(), onPressed: onCall, icon: const Icon(Icons.call_rounded, color: Colors.blue, size: 18)),
-                const SizedBox(width: 8),
-                IconButton(padding: const EdgeInsets.all(4), constraints: const BoxConstraints(), onPressed: onDelete, icon: const Icon(Icons.delete_outline_rounded, color: Colors.redAccent, size: 18)),
-              ],
-            ),
+              ),
+            ],
           ),
         ),
       ),
