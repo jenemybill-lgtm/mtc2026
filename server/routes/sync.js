@@ -32,31 +32,20 @@ router.post('/upload', auth, async (req, res) => {
     const { data, compressedData, table } = req.body;
     const companyId = req.user.id;
 
-    let objectId;
-    try {
-      objectId = new mongoose.Types.ObjectId(companyId);
-    } catch (_) {}
-
-    const query = objectId
-      ? { $or: [{ companyId: companyId }, { companyId: objectId }] }
-      : { companyId: companyId };
+    // Convert string ID to ObjectId robustly for MongoDB
+    const objectId = new mongoose.Types.ObjectId(companyId);
 
     const payloadToSave = compressedData ? { compressedData } : data;
 
-    const existing = await CompanyData.findOne(query);
+    // Delete ANY old entries for this company to avoid duplicates
+    await CompanyData.deleteMany({ companyId: objectId });
 
-    if (existing) {
-      await CompanyData.updateMany(
-        query,
-        { $set: { payload: payloadToSave, lastUpdated: new Date() } }
-      );
-    } else {
-      await CompanyData.create({
-        companyId: objectId || companyId,
-        payload: payloadToSave,
-        lastUpdated: new Date()
-      });
-    }
+    // Create exactly one fresh entry
+    await CompanyData.create({
+      companyId: objectId,
+      payload: payloadToSave,
+      lastUpdated: new Date()
+    });
 
     res.json({ message: 'Συγχρονισμός επιτυχής' });
   } catch (err) {
@@ -70,18 +59,11 @@ router.post('/upload', auth, async (req, res) => {
 router.get('/download', auth, async (req, res) => {
   try {
     const companyId = req.user.id;
+    const objectId = new mongoose.Types.ObjectId(companyId);
 
-    let objectId;
-    try {
-      objectId = new mongoose.Types.ObjectId(companyId);
-    } catch (_) {}
+    // Fetch the ONE document that exists for this user
+    const data = await CompanyData.findOne({ companyId: objectId }).sort({ lastUpdated: -1 });
 
-    const query = objectId
-      ? { $or: [{ companyId: companyId }, { companyId: objectId }] }
-      : { companyId: companyId };
-
-    // Fetch the MOST RECENT document sorted by lastUpdated descending
-    const data = await CompanyData.findOne(query).sort({ lastUpdated: -1 });
     if (!data || !data.payload) return res.json({ projects: [] });
 
     res.json(data.payload);
