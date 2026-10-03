@@ -250,7 +250,9 @@ class ProjectProvider with ChangeNotifier {
       final base64Gzip = base64Encode(gzipBytes!);
 
       final response = await ApiClient().post("/api/sync/upload", {
-        "compressedData": base64Gzip,
+        "data": {
+          "compressedData": base64Gzip
+        }
       });
       
       if (response.statusCode == 200) {
