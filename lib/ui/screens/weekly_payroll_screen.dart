@@ -393,7 +393,7 @@ class _WeeklyPayrollScreenState extends State<WeeklyPayrollScreen> {
       payments.retainWhere((p) => p.projectId == widget.projectId);
     }
     final title = widget.projectName != null ? "ΠΑΡΟΥΣΙΟΛΟΓΙΟ ${widget.projectName!.toUpperCase()}" : (_isMonthly ? DateFormat('MMMM yyyy', 'el').format(start) : "ΕΒΔΟΜΑΔΑ ${DateFormat('dd/MM').format(start)}");
-    await ExcelExporter.exportPayroll(title, attendance, payments);
+    await ExcelExporter.exportPayroll(title, attendance, payments, provider.projects);
   }
 }
 

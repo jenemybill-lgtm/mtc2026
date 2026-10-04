@@ -271,20 +271,57 @@ class PdfGenerator {
           pw.SizedBox(height: 20),
           pw.Center(child: pw.Text("ΚΑΤΑΣΤΑΣΗ ΠΛΗΡΩΜΩΝ: $title", style: pw.TextStyle(fontSize: 16, fontWeight: pw.FontWeight.bold))),
           pw.SizedBox(height: 20),
-          pw.Table.fromTextArray(
-            headers: ['ΕΡΓΑΤΗΣ', 'ΜΕΡΕΣ', 'ΔΕΔΟΥΛΕΥΜΕΝΑ (€)', 'ΠΛΗΡΩΜΕΣ (€)', 'ΥΠΟΛΟΙΠΟ (€)'],
-            headerStyle: pw.TextStyle(fontWeight: pw.FontWeight.bold, fontSize: 10),
-            cellStyle: const pw.TextStyle(fontSize: 10),
+          pw.TableHelper.fromTextArray(
+            headers: ['ΕΡΓΑΤΗΣ', 'ΜΕΡΕΣ', 'ΕΡΓΑ & ΕΡΓΑΣΙΕΣ', 'ΔΕΔΟΥΛΕΥΜΕΝΑ\n(€)', 'ΠΛΗΡΩΜΕΣ\n(€)', 'ΥΠΟΛΟΙΠΟ\n(€)'],
+            headerStyle: pw.TextStyle(fontWeight: pw.FontWeight.bold, fontSize: 9),
+            cellStyle: const pw.TextStyle(fontSize: 9),
+            cellPadding: const pw.EdgeInsets.all(6),
+            cellAlignments: {
+              0: pw.Alignment.centerLeft,
+              1: pw.Alignment.center,
+              2: pw.Alignment.centerLeft,
+              3: pw.Alignment.centerRight,
+              4: pw.Alignment.centerRight,
+              5: pw.Alignment.centerRight,
+            },
+            columnWidths: {
+              0: const pw.FlexColumnWidth(2.5), // Εργάτης
+              1: const pw.FlexColumnWidth(1.2), // Μέρες
+              2: const pw.FlexColumnWidth(5.0), // Έργα & Εργασίες (Περισσότερος χώρος)
+              3: const pw.FlexColumnWidth(2.0), // Δεδουλευμένα
+              4: const pw.FlexColumnWidth(2.0), // Πληρωμές
+              5: const pw.FlexColumnWidth(2.0), // Υπόλοιπο
+            },
             data: [
               ...workerNames.map((name) {
-                final days = attendance.where((a) => a.workerName == name).length;
-                final earned = attendance.where((a) => a.workerName == name).fold(0.0, (sum, a) => sum + a.dailyRate + a.overtimeAmount);
+                final wAtt = attendance.where((a) => a.workerName == name).toList();
+                final days = wAtt.length;
+                final earned = wAtt.fold(0.0, (sum, a) => sum + a.dailyRate + a.overtimeAmount);
                 final paid = payments.where((p) => p.workerName == name).fold(0.0, (sum, p) => sum + p.amount);
-                return [name.toUpperCase(), days.toString(), earned.toStringAsFixed(2), paid.toStringAsFixed(2), (earned - paid).toStringAsFixed(2)];
+                
+                final workCounts = <String, int>{};
+                for (var a in wAtt) {
+                  final pName = projects.firstWhere((p) => p.id == a.projectId, orElse: () => Project(name: "ΓΕΝΙΚΟ", clientName: "", address: "")).name;
+                  final cat = a.workCategory.isEmpty ? "Γενικά" : a.workCategory;
+                  final key = "$pName: $cat";
+                  workCounts[key] = (workCounts[key] ?? 0) + 1;
+                }
+                
+                final workSummary = workCounts.entries.map((e) => "${e.key} (${e.value} μέρες)").join("\n");
+                
+                return [
+                  name.toUpperCase(), 
+                  days.toString(), 
+                  workSummary.isNotEmpty ? workSummary : "-",
+                  earned.toStringAsFixed(2), 
+                  paid.toStringAsFixed(2), 
+                  (earned - paid).toStringAsFixed(2)
+                ];
               }),
               [
                 'ΣΥΝΟΛΑ',
                 '${workerNames.fold(0, (sum, name) => sum + attendance.where((a) => a.workerName == name).length)}',
+                '',
                 '${workerNames.fold(0.0, (sum, name) => sum + attendance.where((a) => a.workerName == name).fold(0.0, (s, a) => s + a.dailyRate + a.overtimeAmount)).toStringAsFixed(2)} €',
                 '${workerNames.fold(0.0, (sum, name) => sum + payments.where((p) => p.workerName == name).fold(0.0, (s, p) => s + p.amount)).toStringAsFixed(2)} €',
                 '${workerNames.fold(0.0, (sum, name) => sum + (attendance.where((a) => a.workerName == name).fold(0.0, (s, a) => s + a.dailyRate + a.overtimeAmount) - payments.where((p) => p.workerName == name).fold(0.0, (s, p) => s + p.amount))).toStringAsFixed(2)} €',

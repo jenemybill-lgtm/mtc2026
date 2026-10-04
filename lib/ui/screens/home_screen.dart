@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:provider/provider.dart';
 import 'package:intl/intl.dart';
 import 'package:fl_chart/fl_chart.dart';
@@ -43,9 +44,47 @@ class _HomeScreenState extends State<HomeScreen> {
     final provider = Provider.of<ProjectProvider>(context);
     final isDesktop = Responsive.isDesktop(context);
 
-    return Scaffold(
-      backgroundColor: const Color(0xFFE2E8F0),
-      appBar: isDesktop ? AppBar(
+    return PopScope(
+      canPop: false,
+      onPopInvokedWithResult: (didPop, result) async {
+        if (didPop) return;
+        
+        final shouldExit = await showDialog<bool>(
+          context: context,
+          builder: (ctx) => AlertDialog(
+            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(24)),
+            title: const Row(
+              children: [
+                Icon(Icons.warning_amber_rounded, color: Colors.orange, size: 28),
+                SizedBox(width: 12),
+                Text("ΕΞΟΔΟΣ ΑΠΟ MTC", style: TextStyle(fontWeight: FontWeight.w900, fontSize: 16)),
+              ],
+            ),
+            content: const Text(
+              "Έχετε κάνει συγχρονισμό (Upload στο Cloud) των τελευταίων σας αλλαγών;\n\nΑν δεν το κάνατε, μπορεί να χαθούν τα τελευταία δεδομένα από άλλες συσκευές.",
+              style: TextStyle(fontSize: 14, height: 1.5),
+            ),
+            actions: [
+              TextButton(
+                onPressed: () => Navigator.of(ctx).pop(false), 
+                child: const Text("ΑΚΥΡΩΣΗ", style: TextStyle(fontWeight: FontWeight.bold, color: Colors.blueGrey))
+              ),
+              ElevatedButton(
+                onPressed: () => Navigator.of(ctx).pop(true), 
+                style: ElevatedButton.styleFrom(backgroundColor: Colors.red),
+                child: const Text("ΕΞΟΔΟΣ", style: TextStyle(fontWeight: FontWeight.w900, color: Colors.white)),
+              ),
+            ],
+          ),
+        );
+        
+        if (shouldExit == true) {
+          SystemNavigator.pop();
+        }
+      },
+      child: Scaffold(
+        backgroundColor: const Color(0xFFE2E8F0),
+        appBar: isDesktop ? AppBar(
         title: Text("${provider.settings.companyName} (WEB)".toUpperCase(), style: const TextStyle(fontWeight: FontWeight.w900, letterSpacing: 2)),
         actions: [
           if (provider.isSyncing)
@@ -90,6 +129,7 @@ class _HomeScreenState extends State<HomeScreen> {
           ],
         ),
       ),
+    ),
     );
   }
 
@@ -152,9 +192,9 @@ class _HomeScreenState extends State<HomeScreen> {
                     const SizedBox(height: 24),
                     Row(
                       children: [
-                        Expanded(child: _PremiumNavCard(title: "ΔΙΑΧΕΙΡΙΣΗ ΕΡΓΩΝ", subtitle: "${provider.projects.length} Ενεργά Έργα", icon: Icons.business_center_rounded, color: const Color(0xFF4361EE), onClick: () => Navigator.push(context, MaterialPageRoute(builder: (context) => const ProjectListScreen())))),
+                        Expanded(child: _PremiumNavCard(title: "ΔΙΑΧΕΙΡΙΣΗ ΕΡΓΩΝ", subtitle: "${provider.projects.length} Ενεργά Έργα", icon: Icons.business_center_rounded, color: const Color(0xFF4CC9F0), onClick: () => Navigator.push(context, MaterialPageRoute(builder: (context) => const ProjectListScreen())))),
                         const SizedBox(width: 24),
-                        Expanded(child: _PremiumNavCard(title: "ΚΕΝΤΡΟ ΕΛΕΓΧΟΥ", subtitle: "Εταιρικά & Εργαλεία", icon: Icons.settings_suggest_rounded, color: const Color(0xFF7209B7), onClick: () => Navigator.push(context, MaterialPageRoute(builder: (context) => const CompanyHubScreen())))),
+                        Expanded(child: _PremiumNavCard(title: "ΚΕΝΤΡΟ ΕΛΕΓΧΟΥ", subtitle: "Εταιρικά & Εργαλεία", icon: Icons.settings_suggest_rounded, color: const Color(0xFF4CC9F0), onClick: () => Navigator.push(context, MaterialPageRoute(builder: (context) => const CompanyHubScreen())))),
                       ],
                     ),
                     const SizedBox(height: 24),
@@ -162,7 +202,7 @@ class _HomeScreenState extends State<HomeScreen> {
                       title: "AI ΒΟΗΘΟΣ MTC",
                       subtitle: "Ανάλυση δεδομένων & Έξυπνες προτάσεις",
                       icon: Icons.auto_awesome_rounded,
-                      color: const Color(0xFFFF9800),
+                      color: const Color(0xFF4CC9F0),
                       isFullWidth: true,
                       onClick: () => Navigator.push(context, MaterialPageRoute(builder: (context) => const AiAssistantScreen())),
                     ),
@@ -171,7 +211,7 @@ class _HomeScreenState extends State<HomeScreen> {
                       title: "ΨΗΦΙΑΚΟ PORTFOLIO",
                       subtitle: "Το 'Book' των έργων σας",
                       icon: Icons.photo_library_rounded,
-                      color: Colors.teal,
+                      color: const Color(0xFF4CC9F0),
                       isFullWidth: true,
                       onClick: () => Navigator.push(context, MaterialPageRoute(builder: (context) => const PortfolioScreen())),
                     ),
@@ -180,7 +220,7 @@ class _HomeScreenState extends State<HomeScreen> {
                       title: "CHECKLIST ΕΡΓΩΝ",
                       subtitle: "Συγκεντρωτική λίστα εργασιών",
                       icon: Icons.playlist_add_check_rounded,
-                      color: Colors.teal,
+                      color: const Color(0xFF4CC9F0),
                       isFullWidth: true,
                       onClick: () => Navigator.push(context, MaterialPageRoute(builder: (context) => const AllProjectChecklistsScreen())),
                     ),
@@ -189,7 +229,7 @@ class _HomeScreenState extends State<HomeScreen> {
                       title: "ΣΗΜΕΙΩΣΕΙΣ ΕΡΓΩΝ",
                       subtitle: "Συγκεντρωτικές σημειώσεις",
                       icon: Icons.assignment_rounded,
-                      color: const Color(0xFFFF9800),
+                      color: const Color(0xFF4CC9F0),
                       isFullWidth: true,
                       onClick: () => Navigator.push(context, MaterialPageRoute(builder: (context) => const AllProjectNotesScreen())),
                     ),
@@ -290,7 +330,7 @@ class _HomeScreenState extends State<HomeScreen> {
                   title: "ΔΙΑΧΕΙΡΙΣΗ ΕΡΓΩΝ",
                   subtitle: "${provider.projects.length} ΕΝΕΡΓΑ ΕΡΓΑ",
                   icon: Icons.business_center_rounded,
-                  color: const Color(0xFF4361EE),
+                  color: const Color(0xFF4CC9F0),
                   isFullWidth: true,
                   onClick: () => Navigator.push(context, PageRouteBuilder(
                     pageBuilder: (c, a1, a2) => const ProjectListScreen(),
@@ -302,7 +342,7 @@ class _HomeScreenState extends State<HomeScreen> {
                   title: "ΚΕΝΤΡΟ ΕΛΕΓΧΟΥ",
                   subtitle: "ΕΤΑΙΡΕΙΑ & ΕΡΓΑΛΕΙΑ",
                   icon: Icons.settings_suggest_rounded,
-                  color: const Color(0xFF7209B7),
+                  color: const Color(0xFF4CC9F0),
                   isFullWidth: true,
                   onClick: () => Navigator.push(context, PageRouteBuilder(
                     pageBuilder: (c, a1, a2) => const CompanyHubScreen(),
@@ -314,7 +354,7 @@ class _HomeScreenState extends State<HomeScreen> {
                   title: "AI ΒΟΗΘΟΣ MTC",
                   subtitle: "ΈΞΥΠΝΗ ΥΠΟΣΤΉΡΙΞΗ",
                   icon: Icons.auto_awesome_rounded,
-                  color: const Color(0xFFFF9800),
+                  color: const Color(0xFF4CC9F0),
                   isFullWidth: true,
                   onClick: () => Navigator.push(context, PageRouteBuilder(
                     pageBuilder: (c, a1, a2) => const AiAssistantScreen(),
@@ -326,7 +366,7 @@ class _HomeScreenState extends State<HomeScreen> {
                   title: "ΨΗΦΙΑΚΟ PORTFOLIO",
                   subtitle: "ΤΟ BOOK ΤΩΝ ΕΡΓΩΝ ΣΑΣ",
                   icon: Icons.photo_library_rounded,
-                  color: Colors.teal,
+                  color: const Color(0xFF4CC9F0),
                   isFullWidth: true,
                   onClick: () => Navigator.push(context, PageRouteBuilder(
                     pageBuilder: (c, a1, a2) => const PortfolioScreen(),
@@ -338,7 +378,7 @@ class _HomeScreenState extends State<HomeScreen> {
                   title: "CHECKLIST ΕΡΓΩΝ",
                   subtitle: "ΣΥΓΚΕΝΤΡΩΤΙΚΗ ΛΙΣΤΑ",
                   icon: Icons.playlist_add_check_rounded,
-                  color: Colors.teal,
+                  color: const Color(0xFF4CC9F0),
                   isFullWidth: true,
                   onClick: () => Navigator.push(context, PageRouteBuilder(
                     pageBuilder: (c, a1, a2) => const AllProjectChecklistsScreen(),
@@ -350,7 +390,7 @@ class _HomeScreenState extends State<HomeScreen> {
                   title: "ΣΗΜΕΙΩΣΕΙΣ ΕΡΓΩΝ",
                   subtitle: "ΟΛΕΣ ΟΙ ΣΗΜΕΙΩΣΕΙΣ",
                   icon: Icons.assignment_rounded,
-                  color: const Color(0xFFFF9800),
+                  color: const Color(0xFF4CC9F0),
                   isFullWidth: true,
                   onClick: () => Navigator.push(context, PageRouteBuilder(
                     pageBuilder: (c, a1, a2) => const AllProjectNotesScreen(),

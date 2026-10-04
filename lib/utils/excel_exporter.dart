@@ -50,29 +50,43 @@ class ExcelExporter {
     await _saveAndOpen(workbook, 'MTC_Financials_${projectName.replaceAll(' ', '_')}');
   }
 
-  static Future<void> exportPayroll(String title, List<AttendanceEntity> attendance, List<Expense> payments) async {
+  static Future<void> exportPayroll(String title, List<AttendanceEntity> attendance, List<Expense> payments, List<Project> projects) async {
     final Workbook workbook = Workbook();
     final Worksheet sheet = workbook.worksheets[0];
     sheet.name = 'ΠΑΡΟΥΣΙΟΛΟΓΙΟ';
     sheet.getRangeByName('A1').setText('ΕΡΓΑΤΗΣ');
     sheet.getRangeByName('B1').setText('ΜΕΡΕΣ ΕΡΓΑΣΙΑΣ');
-    sheet.getRangeByName('C1').setText('ΔΕΔΟΥΛΕΥΜΕΝΑ (€)');
-    sheet.getRangeByName('D1').setText('ΠΛΗΡΩΜΕΣ (€)');
-    sheet.getRangeByName('E1').setText('ΥΠΟΛΟΙΠΟ (€)');
+    sheet.getRangeByName('C1').setText('ΕΡΓΑ & ΕΡΓΑΣΙΕΣ');
+    sheet.getRangeByName('D1').setText('ΔΕΔΟΥΛΕΥΜΕΝΑ (€)');
+    sheet.getRangeByName('E1').setText('ΠΛΗΡΩΜΕΣ (€)');
+    sheet.getRangeByName('F1').setText('ΥΠΟΛΟΙΠΟ (€)');
 
     final workerNames = (attendance.map((e) => e.workerName).toList() + payments.map((e) => e.workerName).toList()).toSet().toList()..sort();
     int row = 2;
     int totalDays = 0;
     double totalEarned = 0, totalPaid = 0;
     for (var name in workerNames) {
-      final days = attendance.where((a) => a.workerName == name).length;
-      final earned = attendance.where((a) => a.workerName == name).fold(0.0, (sum, a) => sum + a.dailyRate + a.overtimeAmount);
+      final wAtt = attendance.where((a) => a.workerName == name).toList();
+      final days = wAtt.length;
+      final earned = wAtt.fold(0.0, (sum, a) => sum + a.dailyRate + a.overtimeAmount);
       final paid = payments.where((p) => p.workerName == name).fold(0.0, (sum, p) => sum + p.amount);
+      
+      final workCounts = <String, int>{};
+      for (var a in wAtt) {
+        final pName = projects.firstWhere((p) => p.id == a.projectId, orElse: () => Project(name: "ΓΕΝΙΚΟ", clientName: "", address: "")).name;
+        final cat = a.workCategory.isEmpty ? "Γενικά" : a.workCategory;
+        final key = "$pName: $cat";
+        workCounts[key] = (workCounts[key] ?? 0) + 1;
+      }
+      final workSummary = workCounts.entries.map((e) => "${e.key} (${e.value} μέρες)").join("\n");
+
       sheet.getRangeByIndex(row, 1).setText(name.toUpperCase());
       sheet.getRangeByIndex(row, 2).setNumber(days.toDouble());
-      sheet.getRangeByIndex(row, 3).setNumber(earned);
-      sheet.getRangeByIndex(row, 4).setNumber(paid);
-      sheet.getRangeByIndex(row, 5).setNumber(earned - paid);
+      sheet.getRangeByIndex(row, 3).setText(workSummary);
+      sheet.getRangeByIndex(row, 3).cellStyle.wrapText = true;
+      sheet.getRangeByIndex(row, 4).setNumber(earned);
+      sheet.getRangeByIndex(row, 5).setNumber(paid);
+      sheet.getRangeByIndex(row, 6).setNumber(earned - paid);
       totalDays += days;
       totalEarned += earned;
       totalPaid += paid;
@@ -80,9 +94,10 @@ class ExcelExporter {
     }
     sheet.getRangeByIndex(row, 1).setText('ΣΥΝΟΛΑ');
     sheet.getRangeByIndex(row, 2).setNumber(totalDays.toDouble());
-    sheet.getRangeByIndex(row, 3).setNumber(totalEarned);
-    sheet.getRangeByIndex(row, 4).setNumber(totalPaid);
-    sheet.getRangeByIndex(row, 5).setNumber(totalEarned - totalPaid);
+    sheet.getRangeByIndex(row, 3).setText('');
+    sheet.getRangeByIndex(row, 4).setNumber(totalEarned);
+    sheet.getRangeByIndex(row, 5).setNumber(totalPaid);
+    sheet.getRangeByIndex(row, 6).setNumber(totalEarned - totalPaid);
     await _saveAndOpen(workbook, 'MTC_Payroll_${title.replaceAll(' ', '_')}');
   }
 
