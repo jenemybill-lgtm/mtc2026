@@ -256,7 +256,7 @@ class _WeeklyPayrollScreenState extends State<WeeklyPayrollScreen> {
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               Container(
-                color: Colors.white,
+                color: const Color(0xFFF8FAFC),
                 child: Row(
                   children: [
                     SizedBox(width: workerWidth, child: const Padding(padding: EdgeInsets.symmetric(horizontal: 20, vertical: 16), child: Text("ΕΡΓΑΤΗΣ", style: TextStyle(fontWeight: FontWeight.w900, fontSize: 10, color: Colors.blueGrey, letterSpacing: 1)))),
@@ -277,11 +277,12 @@ class _WeeklyPayrollScreenState extends State<WeeklyPayrollScreen> {
                   ],
                 ),
               ),
-              ...workers.map((worker) => _WorkerRowPremium(
-                worker: worker,
+              ...workers.asMap().entries.map((entry) => _WorkerRowPremium(
+                worker: entry.value,
+                isEvenRow: entry.key % 2 == 0,
                 days: periodDays,
-                attendance: attendance.where((a) => a.workerName == worker).toList(),
-                payments: payments.where((p) => p.workerName == worker).toList(),
+                attendance: attendance.where((a) => a.workerName == entry.value).toList(),
+                payments: payments.where((p) => p.workerName == entry.value).toList(),
                 provider: provider,
                 projectId: widget.projectId,
                 endOfPeriod: end,
@@ -429,6 +430,7 @@ class _WorkerRowPremium extends StatelessWidget {
   final DateTime endOfPeriod;
   final double workerWidth, dayWidth, balanceWidth;
   final VoidCallback onRefresh;
+  final bool isEvenRow;
 
   const _WorkerRowPremium({
     required this.worker, 
@@ -442,15 +444,17 @@ class _WorkerRowPremium extends StatelessWidget {
     required this.dayWidth, 
     required this.balanceWidth,
     required this.onRefresh,
+    required this.isEvenRow,
   });
 
   @override
   Widget build(BuildContext context) {
     final totalEarned = attendance.fold(0.0, (sum, a) => sum + a.dailyRate + a.overtimeAmount);
     final totalPaid = payments.fold(0.0, (sum, p) => sum + p.amount);
+    final rowBgColor = isEvenRow ? Colors.white : const Color(0xFFF8FAFC);
 
     return Container(
-      decoration: BoxDecoration(border: Border(bottom: BorderSide(color: Colors.black.withValues(alpha: 0.05)))),
+      decoration: BoxDecoration(border: Border(bottom: BorderSide(color: Colors.black.withValues(alpha: 0.05))), color: rowBgColor),
       child: Row(
         children: [
           InkWell(
@@ -459,7 +463,7 @@ class _WorkerRowPremium extends StatelessWidget {
               width: workerWidth,
               height: 64,
               padding: const EdgeInsets.symmetric(horizontal: 12),
-              color: Colors.white,
+              color: Colors.transparent,
               child: Row(
                 children: [
                   Expanded(
