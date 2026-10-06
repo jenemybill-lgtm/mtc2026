@@ -98,7 +98,7 @@ class MaterialsManagementScreen extends StatelessWidget {
                     title: "ΑΠΟΘΗΚΗ",
                     subtitle: "Κεντρική Αποθήκη Υλικών & Εξοπλισμού",
                     icon: Icons.warehouse_rounded,
-                    color: const Color(0xFF3A0CA3),
+                    color: const Color(0xFF4CC9F0),
                     onClick: () => Navigator.push(
                       context,
                       MaterialPageRoute(
@@ -110,7 +110,7 @@ class MaterialsManagementScreen extends StatelessWidget {
                     title: "ΒΑΝ / ΑΜΑΞΙ",
                     subtitle: "Εξοπλισμός, Εργαλεία & Υλικά στο Βάν",
                     icon: Icons.local_shipping_rounded,
-                    color: const Color(0xFF2563EB),
+                    color: const Color(0xFF4CC9F0),
                     onClick: () => Navigator.push(
                       context,
                       MaterialPageRoute(
@@ -122,7 +122,7 @@ class MaterialsManagementScreen extends StatelessWidget {
                     title: "ΔΙΑΧΕΙΡΙΣΗ ΒΑΝ",
                     subtitle: "Έξοδα, Service, Ασφάλειες & ΚΤΕΟ Οχημάτων",
                     icon: Icons.directions_car_rounded,
-                    color: const Color(0xFF10B981),
+                    color: const Color(0xFF4CC9F0),
                     onClick: () => Navigator.push(
                       context,
                       MaterialPageRoute(builder: (context) => const VehicleLogScreen()),
@@ -132,7 +132,7 @@ class MaterialsManagementScreen extends StatelessWidget {
                     title: "ΣΥΝΟΛΟ ΕΡΓΑΛΕΙΩΝ",
                     subtitle: "Πλήρης Κατάλογος Εταιρικών Εργαλείων",
                     icon: Icons.home_repair_service_rounded,
-                    color: const Color(0xFF7209B7),
+                    color: const Color(0xFF4CC9F0),
                     onClick: () => Navigator.push(
                       context,
                       MaterialPageRoute(
@@ -144,7 +144,7 @@ class MaterialsManagementScreen extends StatelessWidget {
                     title: "ΣΥΝΕΡΓΕΙΟ ΕΠΙΣΚΕΥΩΝ",
                     subtitle: "Εργαλεία σε Συντήρηση / Επισκευή",
                     icon: Icons.build_rounded,
-                    color: const Color(0xFFF72585),
+                    color: const Color(0xFF4CC9F0),
                     onClick: () => Navigator.push(
                       context,
                       MaterialPageRoute(
