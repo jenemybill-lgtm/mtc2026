@@ -99,7 +99,7 @@ class JobsManagementScreen extends StatelessWidget {
                     title: "ΚΕΝΤΡΙΚΟ ΤΑΜΕΙΟ",
                     subtitle: "Μισθοδοσία, Εκκαθαρίσεις & Ταμείο Εταιρείας",
                     icon: Icons.account_balance_wallet_rounded,
-                    color: const Color(0xFF4CC9F0),
+                    color: const Color(0xFF4361EE),
                     onClick: () => Navigator.push(
                       context,
                       MaterialPageRoute(builder: (context) => const GlobalPayrollScreen()),
@@ -109,7 +109,7 @@ class JobsManagementScreen extends StatelessWidget {
                     title: "ΠΡΟΤΥΠΑ ΤΙΜΩΝ",
                     subtitle: "Τιμοκατάλογος & Πρότυπα Τιμών Εργασιών",
                     icon: Icons.style_rounded,
-                    color: const Color(0xFF4CC9F0),
+                    color: const Color(0xFF4361EE),
                     onClick: () => Navigator.push(
                       context,
                       MaterialPageRoute(builder: (context) => const ManagePricesScreen()),
@@ -119,7 +119,7 @@ class JobsManagementScreen extends StatelessWidget {
                     title: "ΑΡΧΕΙΟ ΑΓΟΡΩΝ",
                     subtitle: "Ιστορικό Αγορών Υλικών & Τιμολογίων",
                     icon: Icons.archive_rounded,
-                    color: const Color(0xFF4CC9F0),
+                    color: const Color(0xFF4361EE),
                     onClick: () => Navigator.push(
                       context,
                       MaterialPageRoute(builder: (context) => const MarketArchiveScreen()),
@@ -129,7 +129,7 @@ class JobsManagementScreen extends StatelessWidget {
                     title: "ΣΥΝΤΑΓΕΣ ΕΡΓΩΝ",
                     subtitle: "Έτοιμες Συνταγές, Αναλύσεις & Υπολογισμοί",
                     icon: Icons.auto_fix_high_rounded,
-                    color: const Color(0xFF4CC9F0),
+                    color: const Color(0xFF4361EE),
                     onClick: () => Navigator.push(
                       context,
                       MaterialPageRoute(builder: (context) => const JobRecipesScreen()),

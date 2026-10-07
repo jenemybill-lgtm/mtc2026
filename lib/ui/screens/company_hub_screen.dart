@@ -96,7 +96,7 @@ class _CompanyHubScreenState extends State<CompanyHubScreen> {
           label: "ΑΝΘΡΩΠΙΝΟ ΔΥΝΑΜΙΚΟ",
           subtitle: "Συνεργάτες, Παρουσιολόγιο, Πελάτες & Υπεύθυνοι Έργων",
           icon: Icons.badge_rounded,
-          color: const Color(0xFF4CC9F0),
+          color: const Color(0xFF4361EE),
           onClick: () => Navigator.push(context, MaterialPageRoute(builder: (context) => const HumanResourcesScreen())),
           isDesktop: isDesktop,
         ),
@@ -105,7 +105,7 @@ class _CompanyHubScreenState extends State<CompanyHubScreen> {
           label: "ΔΙΑΧΕΙΡΙΣΗ ΥΛΙΚΟΥ",
           subtitle: "Αποθήκη, Βαν, Εργαλεία & Οχήματα",
           icon: Icons.inventory_2_rounded,
-          color: const Color(0xFF4CC9F0),
+          color: const Color(0xFF4361EE),
           onClick: () => Navigator.push(context, MaterialPageRoute(builder: (context) => const MaterialsManagementScreen())),
           isDesktop: isDesktop,
         ),
@@ -114,7 +114,7 @@ class _CompanyHubScreenState extends State<CompanyHubScreen> {
           label: "ΔΙΑΧΕΙΡΙΣΗ ΕΡΓΑΣΙΩΝ",
           subtitle: "Ταμείο, Τιμοκατάλογος, Αγορές & Συνταγές",
           icon: Icons.engineering_rounded,
-          color: const Color(0xFF4CC9F0),
+          color: const Color(0xFF4361EE),
           onClick: () => Navigator.push(context, MaterialPageRoute(builder: (context) => const JobsManagementScreen())),
           isDesktop: isDesktop,
         ),
@@ -123,7 +123,7 @@ class _CompanyHubScreenState extends State<CompanyHubScreen> {
           label: "ΗΜΕΡΟΛΟΓΙΟ",
           subtitle: "Πρόγραμμα, Παραδόσεις & Ραντεβού",
           icon: Icons.date_range_rounded,
-          color: const Color(0xFF4CC9F0),
+          color: const Color(0xFF4361EE),
           onClick: () => Navigator.push(context, MaterialPageRoute(builder: (context) => const GlobalCalendarScreen())),
           isDesktop: isDesktop,
         ),
@@ -132,7 +132,7 @@ class _CompanyHubScreenState extends State<CompanyHubScreen> {
           label: "ΟΙΚΟΝΟΜΙΚΑ ΕΤΑΙΡΕΙΑΣ",
           subtitle: "Πάγια Έξοδα, Ισολογισμός & ΦΠΑ",
           icon: Icons.monetization_on_rounded,
-          color: const Color(0xFF4CC9F0),
+          color: const Color(0xFF4361EE),
           onClick: () => Navigator.push(context, MaterialPageRoute(builder: (context) => const CompanyExpensesScreen())),
           isDesktop: isDesktop,
         ),
@@ -465,24 +465,24 @@ class _CompanyHubScreenState extends State<CompanyHubScreen> {
 
   Widget _buildMaterialsGrid(bool isDesktop) {
     final hubs = [
-      _HomeHub(label: "ΑΠΟΘΗΚΗ", icon: Icons.warehouse_rounded, id: "LOCATION_WAREHOUSE", color: const Color(0xFF4CC9F0)),
-      _HomeHub(label: "ΒΑΝ / ΑΜΑΞΙ", icon: Icons.local_shipping_rounded, id: "LOCATION_VAN", color: const Color(0xFF4CC9F0)),
-      _HomeHub(label: "ΔΙΑΧΕΙΡΙΣΗ ΒΑΝ", icon: Icons.directions_car_rounded, id: "VEHICLE_LOG", color: const Color(0xFF4CC9F0)),
-      _HomeHub(label: "ΣΥΝΟΛΟ ΕΡΓΑΛΕΙΩΝ", icon: Icons.home_repair_service_rounded, id: "TOTAL_TOOLS_PICKER", color: const Color(0xFF4CC9F0)),
-      _HomeHub(label: "ΣΥΝΕΡΓΕΙΟ", icon: Icons.build_rounded, id: "REPAIR_TOOLS", color: const Color(0xFF4CC9F0)),
+      _HomeHub(label: "ΑΠΟΘΗΚΗ", icon: Icons.warehouse_rounded, id: "LOCATION_WAREHOUSE", color: const Color(0xFF4361EE)),
+      _HomeHub(label: "ΒΑΝ / ΑΜΑΞΙ", icon: Icons.local_shipping_rounded, id: "LOCATION_VAN", color: const Color(0xFF4361EE)),
+      _HomeHub(label: "ΔΙΑΧΕΙΡΙΣΗ ΒΑΝ", icon: Icons.directions_car_rounded, id: "VEHICLE_LOG", color: const Color(0xFF4361EE)),
+      _HomeHub(label: "ΣΥΝΟΛΟ ΕΡΓΑΛΕΙΩΝ", icon: Icons.home_repair_service_rounded, id: "TOTAL_TOOLS_PICKER", color: const Color(0xFF4361EE)),
+      _HomeHub(label: "ΣΥΝΕΡΓΕΙΟ", icon: Icons.build_rounded, id: "REPAIR_TOOLS", color: const Color(0xFF4361EE)),
     ];
     return _HubGrid(hubs: hubs, isDesktop: isDesktop);
   }
 
   Widget _buildJobsGrid(bool isDesktop) {
     final hubs = [
-      _HomeHub(label: "ΑΝΘΡΩΠΙΝΟ ΔΥΝΑΜΙΚΟ", icon: Icons.badge_rounded, id: "HUMAN_RESOURCES", color: const Color(0xFF4CC9F0)),
-      _HomeHub(label: "ΣΥΝΕΡΓΑΤΕΣ", icon: Icons.groups_rounded, id: "PARTNERS", color: const Color(0xFF4CC9F0)),
-      _HomeHub(label: "ΚΕΝΤΡΙΚΟ ΤΑΜΕΙΟ", icon: Icons.account_balance_wallet_rounded, id: "GLOBAL_PAYROLL", color: const Color(0xFF4CC9F0)),
-      _HomeHub(label: "ΠΑΡΟΥΣΙΟΛΟΓΙΟ", icon: Icons.price_check_rounded, id: "WEEKLY_PAYROLL", color: const Color(0xFF4CC9F0)),
-      _HomeHub(label: "ΠΡΟΤΥΠΑ ΤΙΜΩΝ", icon: Icons.style_rounded, id: "MANAGE_PRICES", color: const Color(0xFF4CC9F0)),
-      _HomeHub(label: "ΑΡΧΕΙΟ ΑΓΟΡΩΝ", icon: Icons.archive_rounded, id: "MARKET_ARCHIVE", color: const Color(0xFF4CC9F0)),
-      _HomeHub(label: "ΣΥΝΤΑΓΕΣ ΕΡΓΩΝ", icon: Icons.auto_fix_high_rounded, id: "JOB_RECIPES", color: const Color(0xFF4CC9F0)),
+      _HomeHub(label: "ΑΝΘΡΩΠΙΝΟ ΔΥΝΑΜΙΚΟ", icon: Icons.badge_rounded, id: "HUMAN_RESOURCES", color: const Color(0xFF4361EE)),
+      _HomeHub(label: "ΣΥΝΕΡΓΑΤΕΣ", icon: Icons.groups_rounded, id: "PARTNERS", color: const Color(0xFF4361EE)),
+      _HomeHub(label: "ΚΕΝΤΡΙΚΟ ΤΑΜΕΙΟ", icon: Icons.account_balance_wallet_rounded, id: "GLOBAL_PAYROLL", color: const Color(0xFF4361EE)),
+      _HomeHub(label: "ΠΑΡΟΥΣΙΟΛΟΓΙΟ", icon: Icons.price_check_rounded, id: "WEEKLY_PAYROLL", color: const Color(0xFF4361EE)),
+      _HomeHub(label: "ΠΡΟΤΥΠΑ ΤΙΜΩΝ", icon: Icons.style_rounded, id: "MANAGE_PRICES", color: const Color(0xFF4361EE)),
+      _HomeHub(label: "ΑΡΧΕΙΟ ΑΓΟΡΩΝ", icon: Icons.archive_rounded, id: "MARKET_ARCHIVE", color: const Color(0xFF4361EE)),
+      _HomeHub(label: "ΣΥΝΤΑΓΕΣ ΕΡΓΩΝ", icon: Icons.auto_fix_high_rounded, id: "JOB_RECIPES", color: const Color(0xFF4361EE)),
     ];
     return _HubGrid(hubs: hubs, isDesktop: isDesktop);
   }
