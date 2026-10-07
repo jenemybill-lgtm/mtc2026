@@ -204,64 +204,58 @@ class _ClientCard extends StatelessWidget {
     return Container(
       decoration: BoxDecoration(
         color: Colors.white,
-        borderRadius: BorderRadius.circular(20),
+        borderRadius: BorderRadius.circular(16),
+        border: Border.all(color: Colors.black.withValues(alpha: 0.05), width: 1.0),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withValues(alpha: 0.05),
-            blurRadius: 15,
-            offset: const Offset(0, 5),
+            color: Colors.black.withValues(alpha: 0.03),
+            blurRadius: 8,
+            offset: const Offset(0, 2),
           ),
         ],
       ),
       child: Material(
         color: Colors.transparent,
-        borderRadius: BorderRadius.circular(20),
+        borderRadius: BorderRadius.circular(16),
         child: InkWell(
           onTap: onClick,
           onLongPress: onLongClick,
-          borderRadius: BorderRadius.circular(20),
+          borderRadius: BorderRadius.circular(16),
           child: Stack(
             children: [
               // Accent Line
               Positioned(
                 left: 0,
-                top: 20,
-                bottom: 20,
+                top: 0,
+                bottom: 0,
                 child: Container(
-                  width: 4,
+                  width: 3,
                   decoration: BoxDecoration(
                     color: color,
                     borderRadius: const BorderRadius.only(
-                      topRight: Radius.circular(4),
-                      bottomRight: Radius.circular(4),
+                      topLeft: Radius.circular(16),
+                      bottomLeft: Radius.circular(16),
                     ),
                   ),
                 ),
               ),
               Padding(
-                padding: const EdgeInsets.fromLTRB(20, 16, 16, 16),
+                padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
                 child: Row(
                   children: [
                     Container(
-                      width: 52, height: 52,
+                      width: 44, height: 44,
                       decoration: BoxDecoration(
-                        gradient: LinearGradient(colors: [color, color.withValues(alpha: 0.7)]),
-                        shape: BoxShape.circle,
-                        boxShadow: [
-                          BoxShadow(
-                            color: color.withValues(alpha: 0.4), 
-                            blurRadius: 12, 
-                            offset: const Offset(0, 4)
-                          )
-                        ],
+                        color: color.withValues(alpha: 0.1),
+                        borderRadius: BorderRadius.circular(12),
                       ),
                       alignment: Alignment.center,
                       child: Text(
                         client.name.isNotEmpty ? client.name[0].toUpperCase() : "?",
-                        style: const TextStyle(fontWeight: FontWeight.w900, color: Colors.white, fontSize: 20),
+                        style: const TextStyle(fontWeight: FontWeight.w900, color: color, fontSize: 18),
                       ),
                     ),
-                    const SizedBox(width: 20),
+                    const SizedBox(width: 16),
                     Expanded(
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,

@@ -172,76 +172,70 @@ class _WorkerCardPremium extends StatelessWidget {
     
     return Container(
       decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(20),
+        color: color.withValues(alpha: 0.05), // Απαλό μπλε γέμισμα αντί για λευκό
+        borderRadius: BorderRadius.circular(16),
+        border: Border.all(color: color.withValues(alpha: 0.15), width: 1.0), // Ελαφρώς πιο έντονο περίγραμμα λόγω γεμίσματος
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withValues(alpha: 0.05),
-            blurRadius: 15,
-            offset: const Offset(0, 5),
+            color: Colors.black.withValues(alpha: 0.02), // Πιο διακριτική σκιά
+            blurRadius: 4, 
+            offset: const Offset(0, 2), 
           ),
         ],
       ),
       child: Material(
         color: Colors.transparent,
-        borderRadius: BorderRadius.circular(20),
+        borderRadius: BorderRadius.circular(16),
         child: InkWell(
           onTap: onTap,
-          borderRadius: BorderRadius.circular(20),
+          borderRadius: BorderRadius.circular(16),
           child: Stack(
             children: [
               // Accent Line
               Positioned(
                 left: 0,
-                top: 20,
-                bottom: 20,
+                top: 0,
+                bottom: 0,
                 child: Container(
-                  width: 4,
+                  width: 3, 
                   decoration: BoxDecoration(
                     color: color,
                     borderRadius: const BorderRadius.only(
-                      topRight: Radius.circular(4),
-                      bottomRight: Radius.circular(4),
+                      topLeft: Radius.circular(16),
+                      bottomLeft: Radius.circular(16),
                     ),
                   ),
                 ),
               ),
               Padding(
-                padding: const EdgeInsets.fromLTRB(20, 16, 16, 16),
+                padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8), // Πολύ μικρότερο ύψος! (από 16/12 σε 12/8)
                 child: Row(
                   children: [
                     Container(
-                      width: 52, height: 52,
+                      width: 40, height: 40, // Ακόμα πιο μικρό avatar (από 44 σε 40)
                       decoration: BoxDecoration(
-                        gradient: LinearGradient(colors: [color, color.withValues(alpha: 0.7)]),
-                        shape: BoxShape.circle,
-                        boxShadow: [
-                          BoxShadow(
-                            color: color.withValues(alpha: 0.4), 
-                            blurRadius: 12, 
-                            offset: const Offset(0, 4)
-                          )
-                        ],
+                        color: Colors.white.withValues(alpha: 0.5), // Λευκό ημιδιάφανο φόντο για αντίθεση
+                        borderRadius: BorderRadius.circular(10),
                       ),
-                      child: const Icon(Icons.person_rounded, color: Colors.white, size: 26),
+                      child: const Icon(Icons.person_rounded, color: color, size: 20),
                     ),
-                    const SizedBox(width: 20),
+                    const SizedBox(width: 12),
                     Expanded(
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         mainAxisAlignment: MainAxisAlignment.center,
                         children: [
-                          Text(partner.name.toUpperCase(), style: const TextStyle(fontWeight: FontWeight.w900, fontSize: 13, color: Color(0xFF1E293B)), maxLines: 1, overflow: TextOverflow.ellipsis),
-                          const SizedBox(height: 4),
+                          Text(partner.name.toUpperCase(), style: const TextStyle(fontWeight: FontWeight.w900, fontSize: 12, color: Color(0xFF1E293B)), maxLines: 1, overflow: TextOverflow.ellipsis),
+                          const SizedBox(height: 2), // Πολύ μικρό κενό
                           Row(
                             children: [
-                              const Icon(Icons.euro_rounded, size: 12, color: Color(0xFF38B000)),
-                              const SizedBox(width: 4),
-                              Text("${partner.baseRate.toStringAsFixed(0)} €", style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 11, color: Color(0xFF38B000))),
-                              const SizedBox(width: 12),
-                              const Icon(Icons.phone_android_rounded, size: 12, color: Colors.blueGrey),
-                              const SizedBox(width: 4),
-                              Text(partner.phone, style: const TextStyle(fontSize: 11, color: Colors.blueGrey)),
+                              const Icon(Icons.euro_rounded, size: 10, color: Color(0xFF38B000)),
+                              const SizedBox(width: 2),
+                              Text("${partner.baseRate.toStringAsFixed(0)} €", style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 10, color: Color(0xFF38B000))),
+                              const SizedBox(width: 8),
+                              const Icon(Icons.phone_android_rounded, size: 10, color: Colors.blueGrey),
+                              const SizedBox(width: 2),
+                              Expanded(child: Text(partner.phone, style: const TextStyle(fontSize: 10, color: Colors.blueGrey), maxLines: 1, overflow: TextOverflow.ellipsis)),
                             ],
                           ),
                         ],
