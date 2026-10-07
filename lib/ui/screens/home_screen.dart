@@ -171,7 +171,7 @@ class _HomeScreenState extends State<HomeScreen> {
                       title: "ΨΗΦΙΑΚΟ PORTFOLIO",
                       subtitle: "Το 'Book' των έργων σας",
                       icon: Icons.photo_library_rounded,
-                      color: Colors.teal,
+                      color: const Color(0xFF4361EE),
                       isFullWidth: true,
                       onClick: () => Navigator.push(context, MaterialPageRoute(builder: (context) => const PortfolioScreen())),
                     ),
@@ -180,7 +180,7 @@ class _HomeScreenState extends State<HomeScreen> {
                       title: "CHECKLIST ΕΡΓΩΝ",
                       subtitle: "Συγκεντρωτική λίστα εργασιών",
                       icon: Icons.playlist_add_check_rounded,
-                      color: Colors.teal,
+                      color: const Color(0xFF4361EE),
                       isFullWidth: true,
                       onClick: () => Navigator.push(context, MaterialPageRoute(builder: (context) => const AllProjectChecklistsScreen())),
                     ),
@@ -302,7 +302,7 @@ class _HomeScreenState extends State<HomeScreen> {
                   title: "ΚΕΝΤΡΟ ΕΛΕΓΧΟΥ",
                   subtitle: "ΕΤΑΙΡΕΙΑ & ΕΡΓΑΛΕΙΑ",
                   icon: Icons.settings_suggest_rounded,
-                  color: const Color(0xFF7209B7),
+                  color: const Color(0xFF4361EE),
                   isFullWidth: true,
                   onClick: () => Navigator.push(context, PageRouteBuilder(
                     pageBuilder: (c, a1, a2) => const CompanyHubScreen(),
@@ -314,7 +314,7 @@ class _HomeScreenState extends State<HomeScreen> {
                   title: "AI ΒΟΗΘΟΣ MTC",
                   subtitle: "ΈΞΥΠΝΗ ΥΠΟΣΤΉΡΙΞΗ",
                   icon: Icons.auto_awesome_rounded,
-                  color: const Color(0xFFFF9800),
+                  color: const Color(0xFF4361EE),
                   isFullWidth: true,
                   onClick: () => Navigator.push(context, PageRouteBuilder(
                     pageBuilder: (c, a1, a2) => const AiAssistantScreen(),
@@ -326,7 +326,7 @@ class _HomeScreenState extends State<HomeScreen> {
                   title: "ΨΗΦΙΑΚΟ PORTFOLIO",
                   subtitle: "ΤΟ BOOK ΤΩΝ ΕΡΓΩΝ ΣΑΣ",
                   icon: Icons.photo_library_rounded,
-                  color: Colors.teal,
+                  color: const Color(0xFF4361EE),
                   isFullWidth: true,
                   onClick: () => Navigator.push(context, PageRouteBuilder(
                     pageBuilder: (c, a1, a2) => const PortfolioScreen(),
@@ -350,7 +350,7 @@ class _HomeScreenState extends State<HomeScreen> {
                   title: "ΣΗΜΕΙΩΣΕΙΣ ΕΡΓΩΝ",
                   subtitle: "ΟΛΕΣ ΟΙ ΣΗΜΕΙΩΣΕΙΣ",
                   icon: Icons.assignment_rounded,
-                  color: const Color(0xFFFF9800),
+                  color: const Color(0xFF4361EE),
                   isFullWidth: true,
                   onClick: () => Navigator.push(context, PageRouteBuilder(
                     pageBuilder: (c, a1, a2) => const AllProjectNotesScreen(),
