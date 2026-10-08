@@ -77,9 +77,9 @@ class _ClientsScreenState extends State<ClientsScreen> {
                         padding: const EdgeInsets.symmetric(horizontal: 24),
                         gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
                           crossAxisCount: 3,
-                          mainAxisSpacing: 16,
+                          mainAxisSpacing: 12,
                           crossAxisSpacing: 16,
-                          childAspectRatio: 3,
+                          mainAxisExtent: 70, // Σταθερό πολύ μικρό ύψος για PC
                         ),
                         itemCount: filteredClients.length,
                         itemBuilder: (context, index) => _ClientCard(

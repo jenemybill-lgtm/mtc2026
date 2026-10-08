@@ -86,9 +86,9 @@ class _PartnersScreenState extends State<PartnersScreen> {
                     physics: const NeverScrollableScrollPhysics(),
                     gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
                       crossAxisCount: isDesktop ? 3 : 1,
-                      mainAxisSpacing: 16,
+                      mainAxisSpacing: 12,
                       crossAxisSpacing: 16,
-                      childAspectRatio: isDesktop ? 2.5 : 3.8,
+                      mainAxisExtent: 70, // Σταθερό πολύ μικρό ύψος για PC & Κινητό
                     ),
                     itemCount: tradePartners.length,
                     itemBuilder: (context, i) => _WorkerCardPremium(
