@@ -234,9 +234,10 @@ class _HomeScreenState extends State<HomeScreen> {
                         child: PremiumHeader(title: "ΕΙΔΟΠΟΙΗΣΕΙΣ", icon: Icons.notifications_active_rounded, color: Colors.orange),
                       ),
                       provider.alerts.isEmpty
-                        ? const Padding(
-                            padding: EdgeInsets.symmetric(horizontal: 28, vertical: 12),
-                            child: Center(child: Text("Δεν υπάρχουν νέες ειδοποιήσεις", style: TextStyle(color: Colors.grey, fontSize: 11, fontStyle: FontStyle.italic))),
+                        ? const PremiumEmptyState(
+                            title: "ΚΑΜΙΑ ΕΙΔΟΠΟΙΗΣΗ",
+                            subtitle: "Όλα βαίνουν καλώς!\nΔεν έχετε καμία εκκρεμότητα.",
+                            icon: Icons.notifications_off_rounded,
                           )
                         : ListView.separated(
                             shrinkWrap: true,

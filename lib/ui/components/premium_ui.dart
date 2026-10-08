@@ -540,3 +540,104 @@ class PremiumButton extends StatelessWidget {
     );
   }
 }
+
+class PremiumEmptyState extends StatefulWidget {
+  final String title;
+  final String subtitle;
+  final IconData icon;
+
+  const PremiumEmptyState({
+    super.key,
+    required this.title,
+    required this.subtitle,
+    required this.icon,
+  });
+
+  @override
+  State<PremiumEmptyState> createState() => _PremiumEmptyStateState();
+}
+
+class _PremiumEmptyStateState extends State<PremiumEmptyState> with SingleTickerProviderStateMixin {
+  late AnimationController _controller;
+  late Animation<double> _animation;
+
+  @override
+  void initState() {
+    super.initState();
+    _controller = AnimationController(
+      vsync: this,
+      duration: const Duration(seconds: 2),
+    )..repeat(reverse: true);
+    
+    _animation = Tween<double>(begin: -5, end: 5).animate(
+      CurvedAnimation(parent: _controller, curve: Curves.easeInOutSine),
+    );
+  }
+
+  @override
+  void dispose() {
+    _controller.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Center(
+      child: Padding(
+        padding: const EdgeInsets.all(32.0),
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            AnimatedBuilder(
+              animation: _animation,
+              builder: (context, child) {
+                return Transform.translate(
+                  offset: Offset(0, _animation.value),
+                  child: child,
+                );
+              },
+              child: Container(
+                width: 96,
+                height: 96,
+                decoration: BoxDecoration(
+                  color: Colors.blue.withValues(alpha: 0.05),
+                  shape: BoxShape.circle,
+                  boxShadow: [
+                    BoxShadow(
+                      color: Colors.blue.withValues(alpha: 0.05),
+                      blurRadius: 20,
+                      spreadRadius: 10,
+                    ),
+                  ],
+                ),
+                child: Icon(widget.icon, size: 48, color: Colors.blueGrey.withValues(alpha: 0.4)),
+              ),
+            ),
+            const SizedBox(height: 24),
+            Text(
+              widget.title,
+              textAlign: TextAlign.center,
+              style: const TextStyle(
+                fontSize: 16,
+                fontWeight: FontWeight.w900,
+                color: Color(0xFF1E293B),
+                letterSpacing: 0.5,
+              ),
+            ),
+            const SizedBox(height: 8),
+            Text(
+              widget.subtitle,
+              textAlign: TextAlign.center,
+              style: const TextStyle(
+                fontSize: 13,
+                color: Colors.blueGrey,
+                fontWeight: FontWeight.w500,
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}

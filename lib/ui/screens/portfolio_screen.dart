@@ -46,15 +46,10 @@ class _PortfolioScreenState extends State<PortfolioScreen> {
                     : allItems.where((i) => i.category == _selectedCategory).toList();
 
                 if (items.isEmpty) {
-                  return Center(
-                    child: Column(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: [
-                        Icon(Icons.photo_library_outlined, size: 64, color: Colors.blue.withValues(alpha: 0.1)),
-                        const SizedBox(height: 16),
-                        const Text("Καμία φωτογραφία σε αυτή την κατηγορία", style: TextStyle(color: Colors.grey, fontWeight: FontWeight.bold)),
-                      ],
-                    ),
+                  return const PremiumEmptyState(
+                    title: "ΑΔΕΙΟ PORTFOLIO",
+                    subtitle: "Δεν βρέθηκαν φωτογραφίες σε αυτή την κατηγορία.\nΠατήστε 'ΠΡΟΣΘΗΚΗ ΦΩΤΟ' για να ξεκινήσετε.",
+                    icon: Icons.photo_library_rounded,
                   );
                 }
 
