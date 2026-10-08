@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:intl/intl.dart';
 import 'package:fl_chart/fl_chart.dart';
+import 'package:toastification/toastification.dart';
 import 'package:glassmorphism_ui/glassmorphism_ui.dart';
 import 'package:mtc2026/providers/project_provider.dart';
 import 'package:mtc2026/models/project_models.dart';
@@ -1375,12 +1376,24 @@ class _HomeScreenState extends State<HomeScreen> {
     final errorMsg = await provider.manualUploadToCloud(includePhotos: false);
     if (context.mounted) {
       final success = errorMsg == null;
-      ScaffoldMessenger.of(context).showSnackBar(SnackBar(
-        content: Text(success ? "Τα δεδομένα ανέβηκαν επιτυχώς στο Cloud!" : errorMsg),
-        backgroundColor: success ? Colors.green : Colors.red,
-        behavior: SnackBarBehavior.floating,
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-      ));
+      toastification.show(
+        context: context,
+        type: success ? ToastificationType.success : ToastificationType.error,
+        style: ToastificationStyle.flatColored,
+        title: Text(success ? "Επιτυχής Συγχρονισμός" : "Σφάλμα Συγχρονισμού", style: const TextStyle(fontWeight: FontWeight.w900)),
+        description: Text(success ? "Τα δεδομένα σας ανέβηκαν με ασφάλεια στο Cloud." : errorMsg),
+        alignment: Alignment.topCenter,
+        autoCloseDuration: const Duration(seconds: 4),
+        animationBuilder: (context, animation, alignment, child) {
+          return SlideTransition(
+            position: Tween<Offset>(begin: const Offset(0, -1), end: const Offset(0, 0)).animate(CurvedAnimation(parent: animation, curve: Curves.easeOutBack)),
+            child: child,
+          );
+        },
+        borderRadius: BorderRadius.circular(20),
+        padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 16),
+        margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+      );
     }
   }
 
@@ -1389,12 +1402,24 @@ class _HomeScreenState extends State<HomeScreen> {
     final errorMsg = await provider.manualDownloadFromCloud();
     if (context.mounted) {
       final success = errorMsg == null;
-      ScaffoldMessenger.of(context).showSnackBar(SnackBar(
-        content: Text(success ? "Τα δεδομένα λήφθηκαν επιτυχώς από το Cloud!" : errorMsg),
-        backgroundColor: success ? Colors.green : Colors.red,
-        behavior: SnackBarBehavior.floating,
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-      ));
+      toastification.show(
+        context: context,
+        type: success ? ToastificationType.success : ToastificationType.error,
+        style: ToastificationStyle.flatColored,
+        title: Text(success ? "Λήψη Δεδομένων" : "Σφάλμα Λήψης", style: const TextStyle(fontWeight: FontWeight.w900)),
+        description: Text(success ? "Τα δεδομένα λήφθηκαν επιτυχώς από το Cloud." : errorMsg),
+        alignment: Alignment.topCenter,
+        autoCloseDuration: const Duration(seconds: 4),
+        animationBuilder: (context, animation, alignment, child) {
+          return SlideTransition(
+            position: Tween<Offset>(begin: const Offset(0, -1), end: const Offset(0, 0)).animate(CurvedAnimation(parent: animation, curve: Curves.easeOutBack)),
+            child: child,
+          );
+        },
+        borderRadius: BorderRadius.circular(20),
+        padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 16),
+        margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+      );
     }
   }
 
