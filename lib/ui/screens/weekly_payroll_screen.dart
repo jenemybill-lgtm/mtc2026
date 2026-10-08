@@ -250,123 +250,49 @@ class _WeeklyPayrollScreenState extends State<WeeklyPayrollScreen> {
           boxShadow: [BoxShadow(color: Colors.black.withValues(alpha: 0.03), blurRadius: 20)],
         ),
         clipBehavior: Clip.antiAlias,
-        child: Row(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            // Sticky Worker Column
-            Container(
-              width: workerWidth,
-              decoration: BoxDecoration(
-                border: Border(right: BorderSide(color: Colors.black.withValues(alpha: 0.05))),
-                color: Colors.white,
-              ),
-              child: Column(
-                children: [
-                  Container(
-                    height: 50,
-                    color: const Color(0xFFF8FAFC),
-                    alignment: Alignment.centerLeft,
-                    padding: const EdgeInsets.symmetric(horizontal: 20),
-                    child: const Text("ΕΡΓΑΤΗΣ", style: TextStyle(fontWeight: FontWeight.w900, fontSize: 10, color: Colors.blueGrey, letterSpacing: 1)),
-                  ),
-                  ...workers.asMap().entries.map((entry) {
-                    final isEven = entry.key % 2 == 0;
-                    return InkWell(
-                      onTap: () {
-                        // Εμφάνιση Modal Πληρωμής
-                        final amountController = TextEditingController();
-                        showDialog(
-                          context: context,
-                          builder: (context) => AlertDialog(
-                            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(32)),
-                            title: PremiumHeader(title: "ΠΛΗΡΩΜΗ", subtitle: entry.value.toUpperCase(), icon: Icons.payments_rounded),
-                            content: TextField(controller: amountController, decoration: const InputDecoration(labelText: "Ποσό (€)", prefixIcon: Icon(Icons.euro_rounded)), keyboardType: TextInputType.number),
-                            actions: [
-                              TextButton(onPressed: () => Navigator.pop(context), child: const Text("ΑΚΥΡΟ", style: TextStyle(fontWeight: FontWeight.w900))),
-                              ElevatedButton(onPressed: () async {
-                                final amount = double.tryParse(amountController.text) ?? 0.0;
-                                if (amount > 0) {
-                                  await provider.addExpense(widget.projectId ?? 0, Expense(date: DateTime.now().millisecondsSinceEpoch, description: "ΠΛΗΡΩΜΗ ΕΝΑΝΤΙ", workerName: entry.value, amount: amount, expenseType: "PAYMENT", projectId: widget.projectId));
-                                  if (context.mounted) Navigator.pop(context);
-                                  setState(() {});
-                                }
-                              }, child: const Text("ΚΑΤΑΧΩΡΗΣΗ", style: TextStyle(fontWeight: FontWeight.w900))),
-                            ],
-                          ),
-                        );
-                      },
-                      child: Container(
-                        height: 64,
-                        color: isEven ? Colors.white : const Color(0xFFF8FAFC),
-                        padding: const EdgeInsets.symmetric(horizontal: 12),
-                        decoration: BoxDecoration(border: Border(bottom: BorderSide(color: Colors.black.withValues(alpha: 0.05)))),
-                        child: Row(
-                          children: [
-                            Expanded(
-                              child: FittedBox(
-                                fit: BoxFit.scaleDown,
-                                alignment: Alignment.centerLeft,
-                                child: Text(entry.value.toUpperCase(), style: const TextStyle(fontWeight: FontWeight.w900, fontSize: 10, color: Color(0xFF1E293B))),
-                              ),
-                            ),
-                            const SizedBox(width: 4),
-                            const Icon(Icons.add_card_rounded, size: 14, color: Colors.blue),
-                          ],
-                        ),
-                      ),
-                    );
-                  }),
-                ],
-              ),
-            ),
-            // Scrollable Content
-            Expanded(
-              child: SingleChildScrollView(
-                scrollDirection: Axis.horizontal,
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
+        child: SingleChildScrollView(
+          scrollDirection: Axis.horizontal,
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Container(
+                color: const Color(0xFFF8FAFC),
+                child: Row(
                   children: [
-                    Container(
-                      color: const Color(0xFFF8FAFC),
-                      child: Row(
+                    SizedBox(width: workerWidth, child: const Padding(padding: EdgeInsets.symmetric(horizontal: 20, vertical: 16), child: Text("ΕΡΓΑΤΗΣ", style: TextStyle(fontWeight: FontWeight.w900, fontSize: 10, color: Colors.blueGrey, letterSpacing: 1)))),
+                    ...periodDays.map((day) => Container(
+                      width: dayWidth,
+                      height: 50,
+                      alignment: Alignment.center,
+                      decoration: BoxDecoration(border: Border(left: BorderSide(color: Colors.black.withValues(alpha: 0.05)))),
+                      child: Column(
+                        mainAxisAlignment: MainAxisAlignment.center,
                         children: [
-                          ...periodDays.map((day) => Container(
-                            width: dayWidth,
-                            height: 50,
-                            alignment: Alignment.center,
-                            decoration: BoxDecoration(border: Border(left: BorderSide(color: Colors.black.withValues(alpha: 0.05)))),
-                            child: Column(
-                              mainAxisAlignment: MainAxisAlignment.center,
-                              children: [
-                                Text(DateFormat('EEE', 'el').format(day).toUpperCase(), style: TextStyle(fontSize: 8, fontWeight: FontWeight.w900, color: (day.weekday >= 6) ? Colors.red : Colors.grey)),
-                                Text(DateFormat('dd').format(day), style: const TextStyle(fontSize: 11, fontWeight: FontWeight.w900, color: Color(0xFF1E293B))),
-                              ],
-                            ),
-                          )),
-                          SizedBox(width: balanceWidth, child: const Center(child: Text("ΥΠΟΛΟΙΠΟ", style: TextStyle(fontWeight: FontWeight.w900, fontSize: 10, color: Colors.blueGrey, letterSpacing: 1)))),
+                          Text(DateFormat('EEE', 'el').format(day).toUpperCase(), style: TextStyle(fontSize: 8, fontWeight: FontWeight.w900, color: (day.weekday >= 6) ? Colors.red : Colors.grey)),
+                          Text(DateFormat('dd').format(day), style: const TextStyle(fontSize: 11, fontWeight: FontWeight.w900, color: Color(0xFF1E293B))),
                         ],
                       ),
-                    ),
-                    ...workers.asMap().entries.map((entry) => _WorkerRowPremium(
-                      worker: entry.value,
-                      showWorkerName: false,
-                      isEvenRow: entry.key % 2 == 0,
-                      days: periodDays,
-                      attendance: attendance.where((a) => a.workerName == entry.value).toList(),
-                      payments: payments.where((p) => p.workerName == entry.value).toList(),
-                      provider: provider,
-                      projectId: widget.projectId,
-                      endOfPeriod: end,
-                      workerWidth: workerWidth,
-                      dayWidth: dayWidth,
-                      balanceWidth: balanceWidth,
-                      onRefresh: () => setState(() {}),
                     )),
+                    SizedBox(width: balanceWidth, child: const Center(child: Text("ΥΠΟΛΟΙΠΟ", style: TextStyle(fontWeight: FontWeight.w900, fontSize: 10, color: Colors.blueGrey, letterSpacing: 1)))),
                   ],
                 ),
               ),
-            ),
-          ],
+              ...workers.asMap().entries.map((entry) => _WorkerRowPremium(
+                worker: entry.value,
+                isEvenRow: entry.key % 2 == 0,
+                days: periodDays,
+                attendance: attendance.where((a) => a.workerName == entry.value).toList(),
+                payments: payments.where((p) => p.workerName == entry.value).toList(),
+                provider: provider,
+                projectId: widget.projectId,
+                endOfPeriod: end,
+                workerWidth: workerWidth,
+                dayWidth: dayWidth,
+                balanceWidth: balanceWidth,
+                onRefresh: () => setState(() {}),
+              )),
+            ],
+          ),
         ),
       ),
     );
@@ -505,7 +431,6 @@ class _WorkerRowPremium extends StatelessWidget {
   final double workerWidth, dayWidth, balanceWidth;
   final VoidCallback onRefresh;
   final bool isEvenRow;
-  final bool showWorkerName;
 
   const _WorkerRowPremium({
     required this.worker, 
@@ -520,7 +445,6 @@ class _WorkerRowPremium extends StatelessWidget {
     required this.balanceWidth,
     required this.onRefresh,
     required this.isEvenRow,
-    this.showWorkerName = true,
   });
 
   @override
@@ -533,29 +457,28 @@ class _WorkerRowPremium extends StatelessWidget {
       decoration: BoxDecoration(border: Border(bottom: BorderSide(color: Colors.black.withValues(alpha: 0.05))), color: rowBgColor),
       child: Row(
         children: [
-          if (showWorkerName)
-            InkWell(
-              onTap: () => _showPaymentDialog(context),
-              child: Container(
-                width: workerWidth,
-                height: 64,
-                padding: const EdgeInsets.symmetric(horizontal: 12),
-                color: Colors.transparent,
-                child: Row(
-                  children: [
-                    Expanded(
-                      child: FittedBox(
-                        fit: BoxFit.scaleDown,
-                        alignment: Alignment.centerLeft,
-                        child: Text(worker.toUpperCase(), style: const TextStyle(fontWeight: FontWeight.w900, fontSize: 10, color: Color(0xFF1E293B))),
-                      ),
+          InkWell(
+            onTap: () => _showPaymentDialog(context),
+            child: Container(
+              width: workerWidth,
+              height: 64,
+              padding: const EdgeInsets.symmetric(horizontal: 12),
+              color: Colors.transparent,
+              child: Row(
+                children: [
+                  Expanded(
+                    child: FittedBox(
+                      fit: BoxFit.scaleDown,
+                      alignment: Alignment.centerLeft,
+                      child: Text(worker.toUpperCase(), style: const TextStyle(fontWeight: FontWeight.w900, fontSize: 10, color: Color(0xFF1E293B))),
                     ),
-                    const SizedBox(width: 4),
-                    const Icon(Icons.add_card_rounded, size: 14, color: Colors.blue),
-                  ],
-                ),
+                  ),
+                  const SizedBox(width: 4),
+                  const Icon(Icons.add_card_rounded, size: 14, color: Colors.blue),
+                ],
               ),
             ),
+          ),
           ...days.map((day) {
             final dayAtt = attendance.where((a) => _isSameDay(DateTime.fromMillisecondsSinceEpoch(a.date), day)).toList();
             final dayPayments = payments.where((p) => _isSameDay(DateTime.fromMillisecondsSinceEpoch(p.date), day)).toList();
@@ -848,13 +771,13 @@ class _ProjectCategoryTotalsSectionPremium extends StatelessWidget {
                   child: Container(
                     decoration: BoxDecoration(
                       color: Colors.white,
-                      borderRadius: BorderRadius.circular(16),
-                      border: Border.all(color: Colors.black.withValues(alpha: 0.05), width: 1.0),
+                      borderRadius: BorderRadius.circular(24),
+                      border: Border.all(color: Colors.blue.withValues(alpha: 0.15), width: 1.5),
                       boxShadow: [
                         BoxShadow(
-                          color: Colors.black.withValues(alpha: 0.02),
-                          blurRadius: 8,
-                          offset: const Offset(0, 2),
+                          color: Colors.black.withValues(alpha: 0.03),
+                          blurRadius: 15,
+                          offset: const Offset(0, 4),
                         ),
                       ],
                     ),

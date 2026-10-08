@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:google_fonts/google_fonts.dart';
 
 class AppTheme {
   static const Color primaryBlue = Color(0xFF4361EE); 
@@ -11,6 +12,7 @@ class AppTheme {
 
   static ThemeData lightTheme = ThemeData(
     useMaterial3: true,
+    fontFamily: GoogleFonts.poppins().fontFamily, // Εφαρμογή της Poppins παντού!
     colorScheme: ColorScheme.fromSeed(
       seedColor: primaryBlue,
       primary: primaryBlue,
@@ -18,13 +20,13 @@ class AppTheme {
       surface: surfaceSoft,
       brightness: Brightness.light,
     ),
-    appBarTheme: const AppBarTheme(
+    appBarTheme: AppBarTheme(
       centerTitle: false,
       elevation: 0,
       backgroundColor: surfaceSoft,
       foregroundColor: primaryNavy,
-      titleTextStyle: TextStyle(fontWeight: FontWeight.w900, fontSize: 16, color: primaryNavy, letterSpacing: -0.2),
-      iconTheme: IconThemeData(color: primaryNavy),
+      titleTextStyle: GoogleFonts.poppins(fontWeight: FontWeight.w900, fontSize: 16, color: primaryNavy, letterSpacing: -0.2),
+      iconTheme: const IconThemeData(color: primaryNavy),
     ),
     dialogTheme: DialogThemeData(
       backgroundColor: surfaceSoft,
@@ -45,7 +47,7 @@ class AppTheme {
       elevation: 4,
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
       extendedPadding: const EdgeInsets.symmetric(horizontal: 24, vertical: 16),
-      extendedTextStyle: const TextStyle(fontWeight: FontWeight.w900, letterSpacing: 0.5),
+      extendedTextStyle: GoogleFonts.poppins(fontWeight: FontWeight.w900, letterSpacing: 0.5),
     ),
     inputDecorationTheme: InputDecorationTheme(
       filled: true,
@@ -54,7 +56,7 @@ class AppTheme {
       border: OutlineInputBorder(borderRadius: BorderRadius.circular(16), borderSide: BorderSide(color: Colors.black.withValues(alpha: 0.12))),
       enabledBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(16), borderSide: BorderSide(color: Colors.black.withValues(alpha: 0.1))),
       focusedBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(16), borderSide: const BorderSide(color: primaryBlue, width: 2.0)),
-      labelStyle: const TextStyle(fontSize: 12, fontWeight: FontWeight.w700, color: Color(0xFF475569)),
+      labelStyle: GoogleFonts.poppins(fontSize: 12, fontWeight: FontWeight.w700, color: const Color(0xFF475569)),
     ),
     elevatedButtonTheme: ElevatedButtonThemeData(
       style: ElevatedButton.styleFrom(
@@ -64,7 +66,7 @@ class AppTheme {
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
         backgroundColor: primaryBlue,
         foregroundColor: Colors.white,
-        textStyle: const TextStyle(fontWeight: FontWeight.w900, fontSize: 12, letterSpacing: 0.5),
+        textStyle: GoogleFonts.poppins(fontWeight: FontWeight.w900, fontSize: 12, letterSpacing: 0.5),
       ),
     ),
     scaffoldBackgroundColor: backgroundLight,
@@ -76,13 +78,15 @@ class AppTheme {
 
   static ThemeData darkTheme = ThemeData(
     useMaterial3: true,
+    fontFamily: GoogleFonts.poppins().fontFamily,
     colorScheme: ColorScheme.fromSeed(
       seedColor: primaryBlue,
       brightness: Brightness.dark,
     ),
-    appBarTheme: const AppBarTheme(
+    appBarTheme: AppBarTheme(
       centerTitle: false,
       elevation: 0,
+      titleTextStyle: GoogleFonts.poppins(fontWeight: FontWeight.w900, fontSize: 16, letterSpacing: -0.2),
     ),
     cardTheme: CardThemeData(
       elevation: 0,
