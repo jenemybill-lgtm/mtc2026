@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:intl/intl.dart';
 import 'package:fl_chart/fl_chart.dart';
+import 'package:glassmorphism_ui/glassmorphism_ui.dart';
 import 'package:mtc2026/providers/project_provider.dart';
 import 'package:mtc2026/models/project_models.dart';
 import 'package:mtc2026/database/database_helper.dart';
@@ -67,15 +68,26 @@ class _HomeScreenState extends State<HomeScreen> {
         ],
       ) : null,
       body: _buildBody(context, provider, isDesktop),
-      bottomNavigationBar: isDesktop ? null : Container(
-        decoration: BoxDecoration(
-          border: Border(top: BorderSide(color: Colors.black.withValues(alpha: 0.05))),
+      extendBody: true, // Επιτρέπει στο περιεχόμενο να πηγαίνει κάτω από το θολό Glass Bar
+      bottomNavigationBar: isDesktop ? null : GlassContainer(
+        blur: 15,
+        color: Colors.white.withValues(alpha: 0.7),
+        gradient: LinearGradient(
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+          colors: [
+            Colors.white.withValues(alpha: 0.8),
+            Colors.white.withValues(alpha: 0.6),
+          ],
         ),
+        border: Border.fromBorderSide(BorderSide(color: Colors.white.withValues(alpha: 0.5), width: 1)),
+        shadowStrength: 4,
+        borderRadius: const BorderRadius.vertical(top: Radius.circular(24)),
         child: NavigationBar(
-          height: 64,
+          height: 68,
           elevation: 0,
-          backgroundColor: Colors.white,
-          indicatorColor: const Color(0xFF4361EE).withValues(alpha: 0.1),
+          backgroundColor: Colors.transparent,
+          indicatorColor: const Color(0xFF4361EE).withValues(alpha: 0.15),
           selectedIndex: 0,
           onDestinationSelected: (index) {
             if (index == 1) Navigator.push(context, MaterialPageRoute(builder: (context) => const ProjectListScreen()));
@@ -83,10 +95,10 @@ class _HomeScreenState extends State<HomeScreen> {
             if (index == 3) Navigator.push(context, MaterialPageRoute(builder: (context) => const SettingsScreen()));
           },
           destinations: const [
-            NavigationDestination(icon: Icon(Icons.home_outlined, size: 22), selectedIcon: Icon(Icons.home_rounded, color: Color(0xFF4361EE)), label: "Αρχική"),
-            NavigationDestination(icon: Icon(Icons.business_center_outlined, size: 22), selectedIcon: Icon(Icons.business_center_rounded, color: Color(0xFF4361EE)), label: "Έργα"),
-            NavigationDestination(icon: Icon(Icons.settings_suggest_outlined, size: 22), selectedIcon: Icon(Icons.settings_suggest_rounded, color: Color(0xFF4361EE)), label: "Εταιρεία"),
-            NavigationDestination(icon: Icon(Icons.settings_outlined, size: 22), selectedIcon: Icon(Icons.settings_rounded, color: Color(0xFF4361EE)), label: "Ρυθμίσεις"),
+            NavigationDestination(icon: Icon(Icons.home_outlined, size: 24), selectedIcon: Icon(Icons.home_rounded, color: Color(0xFF4361EE)), label: "Αρχική"),
+            NavigationDestination(icon: Icon(Icons.business_center_outlined, size: 24), selectedIcon: Icon(Icons.business_center_rounded, color: Color(0xFF4361EE)), label: "Έργα"),
+            NavigationDestination(icon: Icon(Icons.location_city_outlined, size: 24), selectedIcon: Icon(Icons.location_city_rounded, color: Color(0xFF4361EE)), label: "Εταιρεία"),
+            NavigationDestination(icon: Icon(Icons.settings_outlined, size: 24), selectedIcon: Icon(Icons.settings_rounded, color: Color(0xFF4361EE)), label: "Ρυθμίσεις"),
           ],
         ),
       ),

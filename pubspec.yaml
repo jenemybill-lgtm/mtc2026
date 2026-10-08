@@ -61,7 +61,7 @@ dependencies:
   window_manager: ^0.5.2
   file_selector: ^1.1.0
   lottie: ^3.6.1
-
+  glassmorphism_ui: ^0.3.0
 dev_dependencies:
   flutter_test:
     sdk: flutter
