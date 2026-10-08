@@ -115,6 +115,16 @@ class _MyAppState extends State<MyApp> with WindowListener {
             onPressed: () => Navigator.of(ctx).pop(false), 
             child: const Text("ΑΚΥΡΩΣΗ", style: TextStyle(fontWeight: FontWeight.bold, color: Colors.blueGrey))
           ),
+          ElevatedButton.icon(
+            onPressed: () async {
+              // Κάνουμε upload κατευθείαν από εδώ
+              await Provider.of<ProjectProvider>(context, listen: false).manualUploadToCloud(includePhotos: false);
+              if (ctx.mounted) Navigator.of(ctx).pop(true);
+            }, 
+            icon: const Icon(Icons.cloud_upload_rounded),
+            label: const Text("UPLOAD & ΕΞΟΔΟΣ", style: TextStyle(fontWeight: FontWeight.w900)),
+            style: ElevatedButton.styleFrom(backgroundColor: const Color(0xFF16A34A)),
+          ),
           ElevatedButton(
             onPressed: () => Navigator.of(ctx).pop(true), 
             style: ElevatedButton.styleFrom(backgroundColor: Colors.red),

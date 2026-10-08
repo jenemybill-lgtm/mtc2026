@@ -242,7 +242,7 @@ class _CalendarSheetDialogState extends State<CalendarSheetDialog> {
               padding: const EdgeInsets.symmetric(vertical: 20, horizontal: 20),
               decoration: const BoxDecoration(
                 gradient: LinearGradient(
-                  colors: [Color(0xFF2563EB), Color(0xFF1D4ED8)],
+                  colors: [Color(0xFF4361EE), Color(0xFF3B59DA)],
                   begin: Alignment.topLeft,
                   end: Alignment.bottomRight,
                 ),
