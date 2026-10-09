@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:http/http.dart' as http;
 import 'package:mtc2026/providers/project_provider.dart';
+import 'package:mtc2026/database/database_helper.dart';
 import 'package:mtc2026/utils/responsive.dart';
 
 class AiAssistantScreen extends StatefulWidget {
@@ -120,26 +121,60 @@ class _AiAssistantScreenState extends State<AiAssistantScreen> {
     try {
       final stats = provider.dashboardStats;
       final analytical = await provider.getCompanyAnalyticalFinancials();
-      final projectCount = provider.projects.length;
-      final activeProjects = provider.projects.where((p) => !p.isCompleted).map((p) => p.name).take(10).join(", ");
-      final pendingTasks = provider.tasks.where((t) => !t.isCompleted).length;
-      final alertCount = provider.alerts.length;
-      final clientCount = provider.clients.length;
-      final partnerCount = provider.partners.length;
+      final syncData = await DatabaseHelper().getAllDataForSync(includePhotos: false);
+      
+      final projectsList = (syncData['projects'] as List? ?? []).map((p) => "${p['name']} (Πελάτης: ${p['clientName']}, Διεύθυνση: ${p['address']}, Κατάσταση: ${p['isCompleted'] == 1 ? 'Ολοκληρωμένο' : 'Ενεργό'})").join("; ");
+      
+      final partnersList = (syncData['partners'] as List? ?? []).map((p) => "${p['name']} (Ειδικότητα: ${p['trade'] ?? 'Εργάτης'}, Ημερομίσθιο: ${p['baseRate'] ?? 0}€, Τηλ: ${p['phone']})").join("; ");
+      
+      final clientsList = (syncData['clients'] as List? ?? []).map((c) => "${c['name']} (Κατάσταση: ${c['status']}, Τηλ: ${c['phone']})").join("; ");
+      
+      final toolsList = (syncData['tools'] as List? ?? []).map((t) {
+        final loc = t['locationType'] == 'WAREHOUSE' ? 'ΑΠΟΘΗΚΗ' : (t['locationType'] == 'VAN' ? 'ΒΑΝ' : (t['locationType'] == 'REPAIR' ? 'ΣΥΝΕΡΓΕΙΟ/ΕΠΙΣΚΕΥΗ' : (t['customLocationName'] ?? 'ΕΡΓΟ')));
+        return "${t['name']} (Ποσότητα: ${t['quantity']}, Κατηγορία: ${t['category']}, Τοποθεσία: $loc)";
+      }).join("; ");
+
+      final attendanceList = (syncData['attendance'] as List? ?? []).take(60).map((a) {
+        final pName = (syncData['projects'] as List? ?? []).firstWhere((p) => p['id'] == a['projectId'], orElse: () => {'name': 'Γενικό'})['name'];
+        final dt = DateTime.fromMillisecondsSinceEpoch(a['date'] ?? 0);
+        return "${a['workerName']} -> Έργο: $pName, Ημερομηνία: ${dt.day}/${dt.month}/${dt.year}, Μεροκάματο: ${a['dailyRate']}€, Υπερωρία: ${a['overtimeAmount']}€, Εργασία: ${a['workCategory']}";
+      }).join("\n");
+
+      final tasksList = (syncData['tasks'] as List? ?? []).where((t) => t['isCompleted'] != 1).take(25).map((t) {
+        final dt = DateTime.fromMillisecondsSinceEpoch(t['date'] ?? 0);
+        return "- ${t['description']} (Ημερομηνία: ${dt.day}/${dt.month}/${dt.year})";
+      }).join("\n");
       
       final systemPrompt = """
-Είσαι ο βοηθός διαχείρισης της τεχνικής εταιρείας MTC (Μόσχος Βασίλειος). 
-Δεδομένα εφαρμογής:
-- Έργα: $projectCount συνολικά, Ενεργά: $activeProjects
-- Οικονομικά (Προσφορές): ${analytical['totalQuotes']?.toStringAsFixed(2)}€
-- Οικονομικά (Εισπράξεις): ${analytical['actualIncome']?.toStringAsFixed(2)}€
-- Έξοδα: Εργατικά ${analytical['labor']?.toStringAsFixed(2)}€, Υλικά ${analytical['materials']?.toStringAsFixed(2)}€, Πάγια ${analytical['fixed']?.toStringAsFixed(2)}€
-- ΦΠΑ: Εισπραχθέν ${analytical['vatCollected']?.toStringAsFixed(2)}€, Πληρωθέν ${analytical['vatPaid']?.toStringAsFixed(2)}€
-- Υπόλοιπο (Ταμείο): ${(stats['income']! - stats['expense']!).toStringAsFixed(2)}€
-- Επιχειρησιακά: $pendingTasks εκκρεμείς εργασίες, $alertCount ειδοποιήσεις συστήματος
-- Σχέσεις: $clientCount πελάτες, $partnerCount συνεργάτες
+Είσαι ο έξυπνος AI βοηθός διαχείρισης της τεχνικής εταιρείας MTC (Μόσχος Βασίλειος). 
+Έχεις ΠΛΗΡΗ πρόσβαση σε όλα τα ζωντανά δεδομένα της εφαρμογής:
 
-Απάντησε σύντομα στα ελληνικά.
+1. ΕΡΓΑ:
+$projectsList
+
+2. ΣΥΝΕΡΓΑΤΕΣ & ΕΡΓΑΤΕΣ:
+$partnersList
+
+3. ΕΡΓΑΛΕΙΑ & ΕΞΟΠΛΙΣΜΟΣ (Τοποθεσίες & Ποσότητες):
+$toolsList
+
+4. ΠΕΛΑΤΕΣ:
+$clientsList
+
+5. ΠΑΡΟΥΣΙΟΛΟΓΙΟ & ΗΜΕΡΟΜΙΣΘΙΑ (Πρόσφατες καταγραφές):
+$attendanceList
+
+6. ΕΚΚΡΕΜΕΙΣ ΕΡΓΑΣΙΕΣ / ΗΜΕΡΟΛΟΓΙΟ:
+$tasksList
+
+7. ΟΙΚΟΝΟΜΙΚΑ ΣΥΝΟΛΑ:
+- Εισπράξεις: ${analytical['actualIncome']?.toStringAsFixed(2)}€
+- Έξοδα: Εργατικά ${analytical['labor']?.toStringAsFixed(2)}€, Υλικά ${analytical['materials']?.toStringAsFixed(2)}€, Πάγια ${analytical['fixed']?.toStringAsFixed(2)}€
+- Υπόλοιπο Ταμείου: ${(stats['income']! - stats['expense']!).toStringAsFixed(2)}€
+
+ΟΔΗΓΙΕΣ:
+- Απάντησε με ακρίβεια, φιλικό και επαγγελματικό ύφος στα ελληνικά.
+- Χρησιμοποίησε τα παραπάνω δεδομένα για να απαντάς σε ερωτήσεις σχετικά με το πού βρίσκεται οποιοδήποτε εργαλείο, ποιοι εργάτες δούλεψαν, ποια έργα είναι ενεργά, τι οφείλεται κτλ.
 """;
 
       if (apiKey.startsWith("sk-ant-")) {
