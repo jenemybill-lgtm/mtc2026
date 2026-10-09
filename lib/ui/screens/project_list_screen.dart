@@ -153,106 +153,154 @@ class _ProjectList extends StatelessWidget {
     final isDesktop = Responsive.isDesktop(context);
     
     if (projects.isEmpty) {
-      return Center(
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            Container(
-              padding: const EdgeInsets.all(32),
-              decoration: BoxDecoration(color: Colors.blue.withValues(alpha: 0.05), shape: BoxShape.circle),
-              child: Icon(Icons.business_center_rounded, size: 64, color: Colors.blueGrey.withValues(alpha: 0.2)),
-            ),
-            const SizedBox(height: 24),
-            const Text("Δεν βρέθηκαν έργα", style: TextStyle(fontWeight: FontWeight.w900, color: Color(0xFF1E293B), fontSize: 16)),
-          ],
-        ),
+      return const PremiumEmptyState(
+        title: "ΔΕΝ ΒΡΕΘΗΚΑΝ ΕΡΓΑ",
+        subtitle: "Δεν υπάρχει κανένα καταχωρημένο έργο σε αυτή την κατηγορία.",
+        icon: Icons.business_center_rounded,
       );
+    }
+
+    // Group projects by client
+    final Map<String, List<Project>> groupedByClient = {};
+    for (var p in projects) {
+      final key = p.clientName.trim().isEmpty ? "ΧΩΡΙΣ ΠΕΛΑΤΗ" : p.clientName.trim().toUpperCase();
+      groupedByClient.putIfAbsent(key, () => []).add(p);
     }
 
     return ListView(
       padding: const EdgeInsets.all(24),
       children: [
-          Padding(
-            padding: const EdgeInsets.only(bottom: 32),
-            child: Container(
-              decoration: BoxDecoration(
-                gradient: const LinearGradient(
-                  colors: [Color(0xFF1E293B), Color(0xFF334155)],
-                  begin: Alignment.topLeft,
-                  end: Alignment.bottomRight,
+        Padding(
+          padding: const EdgeInsets.only(bottom: 24),
+          child: Container(
+            decoration: BoxDecoration(
+              gradient: const LinearGradient(
+                colors: [Color(0xFF1E293B), Color(0xFF334155)],
+                begin: Alignment.topLeft,
+                end: Alignment.bottomRight,
+              ),
+              borderRadius: BorderRadius.circular(28),
+              boxShadow: [
+                BoxShadow(color: const Color(0xFF1E293B).withValues(alpha: 0.2), blurRadius: 20, offset: const Offset(0, 8)),
+              ],
+            ),
+            padding: const EdgeInsets.all(20),
+            child: Row(
+              children: [
+                Container(
+                  padding: const EdgeInsets.all(12),
+                  decoration: BoxDecoration(
+                    color: Colors.white.withValues(alpha: 0.15),
+                    borderRadius: BorderRadius.circular(16),
+                  ),
+                  child: const Icon(Icons.analytics_rounded, color: Colors.white, size: 24),
                 ),
-                borderRadius: BorderRadius.circular(32),
-                boxShadow: [
-                  BoxShadow(color: const Color(0xFF1E293B).withValues(alpha: 0.2), blurRadius: 20, offset: const Offset(0, 8)),
-                ],
-              ),
-              padding: const EdgeInsets.all(24),
-              child: Row(
-                children: [
-                  Container(
-                    padding: const EdgeInsets.all(12),
-                    decoration: BoxDecoration(
-                      color: Colors.white.withValues(alpha: 0.15),
-                      borderRadius: BorderRadius.circular(16),
-                    ),
-                    child: const Icon(Icons.analytics_rounded, color: Colors.white, size: 24),
+                const SizedBox(width: 20),
+                const Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text("ΣΥΝΟΛΙΚΗ ΕΙΚΟΝΑ", style: TextStyle(fontSize: 9, fontWeight: FontWeight.w900, color: Colors.white60, letterSpacing: 1.5)),
+                    SizedBox(height: 4),
+                    Text("ΧΑΡΤΟΦΥΛΑΚΙΟ ΕΡΓΩΝ", style: TextStyle(fontSize: 15, fontWeight: FontWeight.w900, color: Colors.white, letterSpacing: 0.5)),
+                  ],
+                ),
+                const Spacer(),
+                Container(
+                  width: 48,
+                  height: 48,
+                  decoration: BoxDecoration(
+                    color: Colors.white.withValues(alpha: 0.2),
+                    borderRadius: BorderRadius.circular(14),
+                    border: Border.all(color: Colors.white.withValues(alpha: 0.1)),
                   ),
-                  const SizedBox(width: 20),
-                  const Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text("ΣΥΝΟΛΙΚΗ ΕΙΚΟΝΑ", style: TextStyle(fontSize: 9, fontWeight: FontWeight.w900, color: Colors.white60, letterSpacing: 1.5)),
-                      SizedBox(height: 4),
-                      Text("ΧΑΡΤΟΦΥΛΑΚΙΟ ΕΡΓΩΝ", style: TextStyle(fontSize: 15, fontWeight: FontWeight.w900, color: Colors.white, letterSpacing: 0.5)),
-                    ],
+                  alignment: Alignment.center,
+                  child: Text(
+                    "${projects.length}", 
+                    style: const TextStyle(color: Colors.white, fontWeight: FontWeight.w900, fontSize: 18)
                   ),
-                  const Spacer(),
-                  Container(
-                    width: 50,
-                    height: 50,
-                    decoration: BoxDecoration(
-                      color: Colors.white.withValues(alpha: 0.2),
-                      borderRadius: BorderRadius.circular(14),
-                      border: Border.all(color: Colors.white.withValues(alpha: 0.1)),
-                    ),
-                    alignment: Alignment.center,
-                    child: Text(
-                      "${projects.length}", 
-                      style: const TextStyle(color: Colors.white, fontWeight: FontWeight.w900, fontSize: 20)
-                    ),
-                  ),
-                ],
-              ),
+                ),
+              ],
             ),
           ),
-        GridView.builder(
-          shrinkWrap: true,
-          physics: const NeverScrollableScrollPhysics(),
-          gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
-            crossAxisCount: isDesktop ? 5 : 2,
-            crossAxisSpacing: 12,
-            mainAxisSpacing: 12,
-            mainAxisExtent: isDesktop ? 135 : 145,
-          ),
-          itemCount: projects.length,
-          itemBuilder: (context, index) {
-            final project = projects[index];
-            final color = project.status == 2
-                ? Colors.blueGrey
-                : project.status == 0
-                    ? Colors.orangeAccent
-                    : projectPalette[index % projectPalette.length];
-            
-            return ProjectCardPremium(
-              project: project,
-              accentColor: color,
-              onClick: () {
-                Navigator.push(context, MaterialPageRoute(builder: (context) => ProjectMainScreen(project: project)));
-              },
-              onLongClick: () => _showManageDialog(context, project, tabIndex),
-            );
-          },
         ),
+
+        // Grouped Sections
+        ...groupedByClient.entries.map((entry) {
+          final clientName = entry.key;
+          final clientProjects = entry.value;
+
+          return Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Padding(
+                padding: const EdgeInsets.symmetric(vertical: 12),
+                child: Row(
+                  children: [
+                    Container(
+                      padding: const EdgeInsets.all(6),
+                      decoration: BoxDecoration(
+                        color: const Color(0xFF4361EE).withValues(alpha: 0.1),
+                        borderRadius: BorderRadius.circular(8),
+                      ),
+                      child: const Icon(Icons.person_pin_rounded, color: Color(0xFF4361EE), size: 18),
+                    ),
+                    const SizedBox(width: 10),
+                    Text(
+                      clientName,
+                      style: const TextStyle(
+                        fontWeight: FontWeight.w900,
+                        fontSize: 13,
+                        color: Color(0xFF1E293B),
+                        letterSpacing: 0.5,
+                      ),
+                    ),
+                    const SizedBox(width: 8),
+                    Container(
+                      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
+                      decoration: BoxDecoration(
+                        color: Colors.blueGrey.withValues(alpha: 0.1),
+                        borderRadius: BorderRadius.circular(12),
+                      ),
+                      child: Text(
+                        "${clientProjects.length} ${clientProjects.length == 1 ? 'Έργο' : 'Έργα'}",
+                        style: const TextStyle(fontSize: 10, fontWeight: FontWeight.bold, color: Colors.blueGrey),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+              GridView.builder(
+                shrinkWrap: true,
+                physics: const NeverScrollableScrollPhysics(),
+                gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+                  crossAxisCount: isDesktop ? 5 : 2,
+                  crossAxisSpacing: 12,
+                  mainAxisSpacing: 12,
+                  mainAxisExtent: isDesktop ? 135 : 145,
+                ),
+                itemCount: clientProjects.length,
+                itemBuilder: (context, index) {
+                  final project = clientProjects[index];
+                  final color = project.status == 2
+                      ? Colors.blueGrey
+                      : project.status == 0
+                          ? Colors.orangeAccent
+                          : projectPalette[index % projectPalette.length];
+                  
+                  return ProjectCardPremium(
+                    project: project,
+                    accentColor: color,
+                    onClick: () {
+                      Navigator.push(context, MaterialPageRoute(builder: (context) => ProjectMainScreen(project: project)));
+                    },
+                    onLongClick: () => _showManageDialog(context, project, tabIndex),
+                  );
+                },
+              ),
+              const SizedBox(height: 16),
+            ],
+          );
+        }),
       ],
     );
   }

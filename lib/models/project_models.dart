@@ -482,6 +482,7 @@ class QuoteItem {
   final bool showVatToClient;
   final bool showPriceToClient;
   final bool showInQuote;
+  final bool isExtra;
 
   QuoteItem({
     this.id = "",
@@ -500,6 +501,7 @@ class QuoteItem {
     this.showVatToClient = false,
     this.showPriceToClient = true,
     this.showInQuote = true,
+    this.isExtra = false,
   });
 
   double get cost {
@@ -548,6 +550,7 @@ class QuoteItem {
       'showVatToClient': showVatToClient ? 1 : 0,
       'showPriceToClient': showPriceToClient ? 1 : 0,
       'showInQuote': showInQuote ? 1 : 0,
+      'isExtra': isExtra ? 1 : 0,
     };
   }
 
@@ -569,6 +572,7 @@ class QuoteItem {
       showVatToClient: map['showVatToClient'] == 1,
       showPriceToClient: map['showPriceToClient'] == null ? true : map['showPriceToClient'] == 1,
       showInQuote: map['showInQuote'] == null ? true : map['showInQuote'] == 1,
+      isExtra: map['isExtra'] == 1,
     );
   }
 }

@@ -80,9 +80,10 @@ class PdfGenerator {
                     headerStyle: pw.TextStyle(fontSize: 9, fontWeight: pw.FontWeight.bold),
                     cellStyle: const pw.TextStyle(fontSize: 8),
                     data: catItems.where((item) => item.showInQuote).map((item) {
+                      final baseDesc = item.isExtra ? '[ΕΞΤΡΑ ΕΡΓΑΣΙΑ] ${item.description}' : item.description;
                       final fullDescription = item.internalNote.trim().isNotEmpty 
-                          ? '${item.description}\n${item.internalNote}'
-                          : item.description;
+                          ? '$baseDesc\n${item.internalNote}'
+                          : baseDesc;
 
                       if (showItemPrices) {
                         return [

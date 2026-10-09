@@ -585,11 +585,28 @@ class _QuoteItemCard extends StatelessWidget {
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          Text(
-                            item.description.toUpperCase(),
-                            style: const TextStyle(fontWeight: FontWeight.w900, fontSize: 13, letterSpacing: 0.5, color: Color(0xFF1E293B)),
-                            maxLines: 2,
-                            overflow: TextOverflow.ellipsis,
+                          Row(
+                            children: [
+                              if (item.isExtra) ...[
+                                Container(
+                                  padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                                  margin: const EdgeInsets.only(right: 6),
+                                  decoration: BoxDecoration(
+                                    color: Colors.orange,
+                                    borderRadius: BorderRadius.circular(6),
+                                  ),
+                                  child: const Text("ΕΞΤΡΑ", style: TextStyle(color: Colors.white, fontWeight: FontWeight.w900, fontSize: 8)),
+                                ),
+                              ],
+                              Expanded(
+                                child: Text(
+                                  item.description.toUpperCase(),
+                                  style: const TextStyle(fontWeight: FontWeight.w900, fontSize: 13, letterSpacing: 0.5, color: Color(0xFF1E293B)),
+                                  maxLines: 2,
+                                  overflow: TextOverflow.ellipsis,
+                                ),
+                              ),
+                            ],
                           ),
                           if (item.subCategory.isNotEmpty)
                             Padding(
@@ -701,6 +718,7 @@ class _AddEditQuoteItemDialogState extends State<_AddEditQuoteItemDialog> {
   late bool _useCustomMargin;
   late TextEditingController _customMarginController;
   late bool _showInQuote;
+  late bool _isExtra;
 
   @override
   void initState() {
@@ -716,6 +734,7 @@ class _AddEditQuoteItemDialogState extends State<_AddEditQuoteItemDialog> {
     _useCustomMargin = widget.initialItem?.useCustomMargin ?? false;
     _customMarginController = TextEditingController(text: widget.initialItem?.customProfitMargin.toString() ?? "20.0");
     _showInQuote = widget.initialItem?.showInQuote ?? true;
+    _isExtra = widget.initialItem?.isExtra ?? false;
   }
 
   @override
@@ -843,6 +862,28 @@ class _AddEditQuoteItemDialogState extends State<_AddEditQuoteItemDialog> {
                       contentPadding: EdgeInsets.zero,
                       activeColor: color,
                     ),
+                    const SizedBox(height: 12),
+                    Container(
+                      decoration: BoxDecoration(
+                        color: Colors.orange.withValues(alpha: 0.08),
+                        borderRadius: BorderRadius.circular(16),
+                        border: Border.all(color: Colors.orange.withValues(alpha: 0.3)),
+                      ),
+                      child: CheckboxListTile(
+                        title: const Row(
+                          children: [
+                            Icon(Icons.stars_rounded, color: Colors.orange, size: 18),
+                            SizedBox(width: 8),
+                            Text("ΕΞΤΡΑ ΕΡΓΑΣΙΑ (Εκτός αρχικής προσφοράς)", style: TextStyle(fontSize: 11, fontWeight: FontWeight.w900, color: Colors.orange)),
+                          ],
+                        ),
+                        subtitle: const Text("Θα επισημανθεί ξεκάθαρα ως 'ΕΞΤΡΑ' στην προσφορά και στο PDF", style: TextStyle(fontSize: 9, color: Colors.blueGrey, fontWeight: FontWeight.bold)),
+                        value: _isExtra,
+                        onChanged: (v) => setState(() => _isExtra = v!),
+                        contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
+                        activeColor: Colors.orange,
+                      ),
+                    ),
                   ],
                 ),
               ),
@@ -875,6 +916,7 @@ class _AddEditQuoteItemDialogState extends State<_AddEditQuoteItemDialog> {
                             useCustomMargin: _useCustomMargin,
                             customProfitMargin: double.tryParse(_customMarginController.text) ?? 20.0,
                             showInQuote: _showInQuote,
+                            isExtra: _isExtra,
                           );
                           if (widget.initialItem == null) {
                             Provider.of<ProjectProvider>(context, listen: false).addQuoteItem(widget.projectId, item);
