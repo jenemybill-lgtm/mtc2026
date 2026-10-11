@@ -48,29 +48,46 @@ class _WeeklyPayrollScreenState extends State<WeeklyPayrollScreen> {
           ],
         ),
         actions: [
-          IconButton(
-            icon: const Icon(Icons.alt_route_rounded, color: Color(0xFF4361EE)), 
+          _buildAppBarActionButton(
+            icon: Icons.alt_route_rounded,
+            color: const Color(0xFF4361EE),
             tooltip: "Προγραμματισμός Αποστολών (Πού θα πάνε αύριο)",
+            label: isDesktop ? "ΠΟΥ ΠΑΝΕ ΑΥΡΙΟ" : null,
             onPressed: () => Navigator.push(context, MaterialPageRoute(builder: (context) => const WorkerDispatchScreen())),
           ),
-          IconButton(
-            icon: const Icon(Icons.date_range_rounded, color: Colors.orange), 
+          _buildAppBarActionButton(
+            icon: Icons.date_range_rounded,
+            color: Colors.orange,
             tooltip: "Μαζική Καταχώρηση Εβδομάδας",
-            onPressed: () => _showAddWeeklyAttendance(context)
+            label: isDesktop ? "ΜΑΖΙΚΗ" : null,
+            onPressed: () => _showAddWeeklyAttendance(context),
           ),
-          IconButton(icon: const Icon(Icons.post_add_rounded, color: Colors.blue), onPressed: () => _showAddAttendance(context)),
-          IconButton(
-            icon: Icon(_isMonthly ? Icons.view_week_rounded : Icons.calendar_month_rounded),
+          _buildAppBarActionButton(
+            icon: Icons.post_add_rounded,
+            color: const Color(0xFF2563EB),
+            tooltip: "Καταχώρηση Μεροκάματου",
+            label: isDesktop ? "ΝΕΟ ΜΕΡΟΚΑΜΑΤΟ" : null,
+            onPressed: () => _showAddAttendance(context),
+          ),
+          _buildAppBarActionButton(
+            icon: _isMonthly ? Icons.view_week_rounded : Icons.calendar_month_rounded,
+            color: const Color(0xFF475569),
+            tooltip: _isMonthly ? "Εβδομαδιαία Προβολή" : "Μηνιαία Προβολή",
+            label: isDesktop ? (_isMonthly ? "ΕΒΔΟΜΑΔΑ" : "ΜΗΝΑΣ") : null,
             onPressed: () => setState(() => _isMonthly = !_isMonthly),
           ),
-          IconButton(
-            icon: const Icon(Icons.picture_as_pdf_rounded, color: Colors.redAccent),
+          _buildAppBarActionButton(
+            icon: Icons.picture_as_pdf_rounded,
+            color: Colors.redAccent,
             tooltip: "Εξαγωγή PDF",
+            label: isDesktop ? "PDF" : null,
             onPressed: () => _generatePdf(context, startOfPeriod, endOfPeriod),
           ),
-          IconButton(
-            icon: const Icon(Icons.file_download_rounded, color: Colors.green),
+          _buildAppBarActionButton(
+            icon: Icons.file_download_rounded,
+            color: const Color(0xFF10B981),
             tooltip: "Εξαγωγή Excel",
+            label: isDesktop ? "EXCEL" : null,
             onPressed: () => _exportExcel(context, startOfPeriod, endOfPeriod),
           ),
           const SizedBox(width: 8),
@@ -357,6 +374,42 @@ class _WeeklyPayrollScreenState extends State<WeeklyPayrollScreen> {
         projects: provider.projects,
         initialProjectId: widget.projectId,
         onConfirm: (record) => provider.addAttendance(record).then((_) => setState(() {})),
+      ),
+    );
+  }
+
+  Widget _buildAppBarActionButton({
+    required IconData icon,
+    required Color color,
+    required String tooltip,
+    required VoidCallback onPressed,
+    String? label,
+  }) {
+    return Tooltip(
+      message: tooltip,
+      child: Container(
+        margin: const EdgeInsets.symmetric(horizontal: 2, vertical: 8),
+        child: Material(
+          color: color.withValues(alpha: 0.12),
+          borderRadius: BorderRadius.circular(12),
+          child: InkWell(
+            onTap: onPressed,
+            borderRadius: BorderRadius.circular(12),
+            child: Padding(
+              padding: EdgeInsets.symmetric(horizontal: label != null ? 12 : 8, vertical: 6),
+              child: Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Icon(icon, color: color, size: 18),
+                  if (label != null) ...[
+                    const SizedBox(width: 6),
+                    Text(label, style: TextStyle(color: color, fontWeight: FontWeight.w900, fontSize: 10, letterSpacing: 0.5)),
+                  ],
+                ],
+              ),
+            ),
+          ),
+        ),
       ),
     );
   }
