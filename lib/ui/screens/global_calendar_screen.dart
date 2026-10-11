@@ -996,76 +996,116 @@ class _MobileTaskCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final color = task.isCompleted ? const Color(0xFF10B981) : const Color(0xFF2563EB);
+    final primaryColor = const Color(0xFF4361EE);
+    final completedColor = const Color(0xFF10B981);
     final timeStr = DateFormat('HH:mm').format(DateTime.fromMillisecondsSinceEpoch(task.date));
 
     return Container(
       decoration: BoxDecoration(
-        color: color.withValues(alpha: 0.05),
+        color: Colors.white,
         borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: color.withValues(alpha: 0.2), width: 1.2),
+        border: Border.all(color: Colors.black.withValues(alpha: 0.06), width: 1.0),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withValues(alpha: 0.03),
+            blurRadius: 10,
+            offset: const Offset(0, 3),
+          ),
+        ],
       ),
       child: Material(
         color: Colors.transparent,
+        borderRadius: BorderRadius.circular(16),
         child: InkWell(
           onTap: onEdit,
           borderRadius: BorderRadius.circular(16),
-          child: Padding(
-            padding: const EdgeInsets.all(14),
-            child: Row(
+          child: ClipRRect(
+            borderRadius: BorderRadius.circular(16),
+            child: Stack(
               children: [
-                Transform.scale(
-                  scale: 1.1,
-                  child: Checkbox(
-                    value: task.isCompleted,
-                    activeColor: const Color(0xFF10B981),
-                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(6)),
-                    onChanged: (val) => onToggle(val ?? false),
+                // Left Accent Bar
+                Positioned(
+                  left: 0,
+                  top: 0,
+                  bottom: 0,
+                  child: Container(
+                    width: 4,
+                    color: task.isCompleted ? completedColor : primaryColor,
                   ),
                 ),
-                const SizedBox(width: 8),
-                Expanded(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
+                Padding(
+                  padding: const EdgeInsets.fromLTRB(16, 12, 12, 12),
+                  child: Row(
                     children: [
-                      Text(
-                        task.description,
-                        style: TextStyle(
-                          fontSize: 14,
-                          fontWeight: FontWeight.bold,
-                          color: task.isCompleted ? Colors.grey : const Color(0xFF1E293B),
-                          decoration: task.isCompleted ? TextDecoration.lineThrough : null,
+                      // Custom Circular Checkbox Button
+                      GestureDetector(
+                        onTap: () => onToggle(!task.isCompleted),
+                        child: AnimatedContainer(
+                          duration: const Duration(milliseconds: 200),
+                          width: 24,
+                          height: 24,
+                          decoration: BoxDecoration(
+                            shape: BoxShape.circle,
+                            color: task.isCompleted ? completedColor : Colors.transparent,
+                            border: Border.all(
+                              color: task.isCompleted ? completedColor : const Color(0xFF94A3B8),
+                              width: 2,
+                            ),
+                          ),
+                          child: task.isCompleted
+                              ? const Icon(Icons.check_rounded, size: 15, color: Colors.white)
+                              : null,
                         ),
                       ),
-                      const SizedBox(height: 6),
-                      Row(
-                        children: [
-                          Icon(Icons.access_time_filled_rounded, size: 12, color: color),
-                          const SizedBox(width: 4),
-                          Text(
-                            timeStr,
-                            style: TextStyle(fontSize: 11, fontWeight: FontWeight.bold, color: color),
-                          ),
-                          const SizedBox(width: 10),
-                          Container(
-                            padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
-                            decoration: BoxDecoration(
-                              color: color.withValues(alpha: 0.1),
-                              borderRadius: BorderRadius.circular(6),
+                      const SizedBox(width: 14),
+                      Expanded(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(
+                              task.description,
+                              style: TextStyle(
+                                fontSize: 13,
+                                fontWeight: FontWeight.w800,
+                                color: task.isCompleted ? const Color(0xFF94A3B8) : const Color(0xFF1E293B),
+                                decoration: task.isCompleted ? TextDecoration.lineThrough : null,
+                              ),
                             ),
-                            child: Text(
-                              projectName.toUpperCase(),
-                              style: TextStyle(fontSize: 8, fontWeight: FontWeight.w900, color: color, letterSpacing: 0.5),
+                            const SizedBox(height: 6),
+                            Row(
+                              children: [
+                                Icon(Icons.schedule_rounded, size: 12, color: primaryColor),
+                                const SizedBox(width: 4),
+                                Text(
+                                  timeStr,
+                                  style: TextStyle(fontSize: 11, fontWeight: FontWeight.bold, color: primaryColor),
+                                ),
+                                const SizedBox(width: 10),
+                                Container(
+                                  padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
+                                  decoration: BoxDecoration(
+                                    color: primaryColor.withValues(alpha: 0.08),
+                                    borderRadius: BorderRadius.circular(8),
+                                  ),
+                                  child: Text(
+                                    projectName.toUpperCase(),
+                                    style: TextStyle(fontSize: 8, fontWeight: FontWeight.w900, color: primaryColor, letterSpacing: 0.5),
+                                  ),
+                                ),
+                              ],
                             ),
-                          ),
-                        ],
+                          ],
+                        ),
+                      ),
+                      IconButton(
+                        icon: Icon(Icons.delete_outline_rounded, color: Colors.redAccent.withValues(alpha: 0.7), size: 18),
+                        onPressed: onDelete,
+                        visualDensity: VisualDensity.compact,
+                        padding: EdgeInsets.zero,
+                        constraints: const BoxConstraints(),
                       ),
                     ],
                   ),
-                ),
-                IconButton(
-                  icon: const Icon(Icons.delete_outline_rounded, color: Colors.redAccent, size: 20),
-                  onPressed: onDelete,
                 ),
               ],
             ),
