@@ -30,10 +30,8 @@ void main() async {
     windowManager.waitUntilReadyToShow(windowOptions, () async {
       await windowManager.show();
       await windowManager.focus();
-      // Set prevent close only in release mode to avoid locking the IDE process during development
-      if (kReleaseMode) {
-        await windowManager.setPreventClose(true);
-      }
+      // Always intercept window close to confirm Upload
+      await windowManager.setPreventClose(true);
     });
   }
 

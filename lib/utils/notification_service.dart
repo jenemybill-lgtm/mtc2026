@@ -15,6 +15,9 @@ class NotificationService {
     if (kIsWeb) return;
 
     tz.initializeTimeZones();
+    try {
+      tz.setLocalLocation(tz.getLocation('Europe/Athens'));
+    } catch (_) {}
 
     const AndroidInitializationSettings initializationSettingsAndroid = AndroidInitializationSettings('ic_launcher');
     
