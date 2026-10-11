@@ -1772,6 +1772,68 @@ class DatabaseHelper {
     return result.map((e) => Task.fromMap(e)).toList();
   }
 
+  // Worker Dispatches (Προγραμματισμός Αποστολής Εργατών)
+  Future<List<WorkerDispatch>> getWorkerDispatches(int dateTimestamp) async {
+    if (kIsWeb) {
+      return (_webMemory['worker_dispatches'] ?? [])
+          .map((e) => WorkerDispatch.fromMap(e))
+          .toList();
+    }
+    Database? db = await database;
+    try {
+      await db!.execute('''
+        CREATE TABLE IF NOT EXISTS worker_dispatches (
+          id INTEGER PRIMARY KEY AUTOINCREMENT,
+          workerName TEXT,
+          workerPhone TEXT,
+          projectId INTEGER,
+          date INTEGER,
+          timeStr TEXT,
+          taskDescription TEXT,
+          status TEXT DEFAULT 'PENDING',
+          FOREIGN KEY (projectId) REFERENCES projects (id) ON DELETE CASCADE
+        )
+      ''');
+    } catch (_) {}
+    
+    var result = await db!.query(
+      'worker_dispatches',
+      where: 'date = ?',
+      whereArgs: [dateTimestamp],
+      orderBy: 'id DESC',
+    );
+    return result.map((e) => WorkerDispatch.fromMap(e)).toList();
+  }
+
+  Future<int> insertWorkerDispatch(WorkerDispatch dispatch) async {
+    if (kIsWeb) {
+      return _webInsert('worker_dispatches', dispatch.toMap());
+    }
+    Database? db = await database;
+    return await db!.insert('worker_dispatches', dispatch.toMap());
+  }
+
+  Future<int> updateWorkerDispatch(WorkerDispatch dispatch) async {
+    if (kIsWeb) {
+      return _webUpdate('worker_dispatches', dispatch.toMap(), dispatch.id);
+    }
+    Database? db = await database;
+    return await db!.update(
+      'worker_dispatches',
+      dispatch.toMap(),
+      where: 'id = ?',
+      whereArgs: [dispatch.id],
+    );
+  }
+
+  Future<int> deleteWorkerDispatch(int id) async {
+    if (kIsWeb) {
+      return _webDelete('worker_dispatches', id);
+    }
+    Database? db = await database;
+    return await db!.delete('worker_dispatches', where: 'id = ?', whereArgs: [id]);
+  }
+
   Future<int> insertTask(Task task) async {
     if (kIsWeb) {
       return _webInsert('tasks', task.toMap());
@@ -2303,6 +2365,7 @@ class DatabaseHelper {
       'project_documents',
       'global_settings',
       'managers',
+      'worker_dispatches',
     ];
     for (var table in tables) {
       backup[table] = await db!.query(table);
@@ -2739,6 +2802,7 @@ class DatabaseHelper {
       'project_documents',
       'global_settings',
       'managers',
+      'worker_dispatches',
     ];
 
     for (var table in tables) {

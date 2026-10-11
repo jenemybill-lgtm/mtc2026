@@ -1587,3 +1587,73 @@ class Manager {
     );
   }
 }
+
+class WorkerDispatch {
+  final int id;
+  final String workerName;
+  final String workerPhone;
+  final int projectId;
+  final int date; // MillisecondsSinceEpoch
+  final String timeStr; // e.g. "07:30"
+  final String taskDescription;
+  final String status; // "PENDING", "CONFIRMED", "CANCELLED"
+
+  WorkerDispatch({
+    this.id = 0,
+    required this.workerName,
+    required this.workerPhone,
+    required this.projectId,
+    required this.date,
+    this.timeStr = "07:30",
+    this.taskDescription = "",
+    this.status = "PENDING",
+  });
+
+  Map<String, dynamic> toMap() {
+    return {
+      if (id != 0) 'id': id,
+      'workerName': workerName,
+      'workerPhone': workerPhone,
+      'projectId': projectId,
+      'date': date,
+      'timeStr': timeStr,
+      'taskDescription': taskDescription,
+      'status': status,
+    };
+  }
+
+  factory WorkerDispatch.fromMap(Map<String, dynamic> map) {
+    return WorkerDispatch(
+      id: map['id'] ?? 0,
+      workerName: map['workerName'] ?? "",
+      workerPhone: map['workerPhone'] ?? "",
+      projectId: map['projectId'] ?? 0,
+      date: map['date'] ?? 0,
+      timeStr: map['timeStr'] ?? "07:30",
+      taskDescription: map['taskDescription'] ?? "",
+      status: map['status'] ?? "PENDING",
+    );
+  }
+
+  WorkerDispatch copyWith({
+    int? id,
+    String? workerName,
+    String? workerPhone,
+    int? projectId,
+    int? date,
+    String? timeStr,
+    String? taskDescription,
+    String? status,
+  }) {
+    return WorkerDispatch(
+      id: id ?? this.id,
+      workerName: workerName ?? this.workerName,
+      workerPhone: workerPhone ?? this.workerPhone,
+      projectId: projectId ?? this.projectId,
+      date: date ?? this.date,
+      timeStr: timeStr ?? this.timeStr,
+      taskDescription: taskDescription ?? this.taskDescription,
+      status: status ?? this.status,
+    );
+  }
+}

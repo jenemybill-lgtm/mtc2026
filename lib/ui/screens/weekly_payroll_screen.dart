@@ -6,6 +6,7 @@ import 'package:mtc2026/providers/project_provider.dart';
 import 'package:mtc2026/utils/pdf_generator.dart';
 import 'package:mtc2026/utils/responsive.dart';
 import 'package:mtc2026/utils/excel_exporter.dart';
+import 'package:mtc2026/ui/screens/worker_dispatch_screen.dart';
 import 'package:mtc2026/ui/components/attendance_dialogs.dart';
 import 'package:mtc2026/ui/components/premium_ui.dart';
 
@@ -47,6 +48,11 @@ class _WeeklyPayrollScreenState extends State<WeeklyPayrollScreen> {
           ],
         ),
         actions: [
+          IconButton(
+            icon: const Icon(Icons.alt_route_rounded, color: Color(0xFF4361EE)), 
+            tooltip: "Προγραμματισμός Αποστολών (Πού θα πάνε αύριο)",
+            onPressed: () => Navigator.push(context, MaterialPageRoute(builder: (context) => const WorkerDispatchScreen())),
+          ),
           IconButton(
             icon: const Icon(Icons.date_range_rounded, color: Colors.orange), 
             tooltip: "Μαζική Καταχώρηση Εβδομάδας",

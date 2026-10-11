@@ -868,6 +868,51 @@ class ProjectProvider with ChangeNotifier {
     await _autoSync('attendance');
   }
 
+  // --- WORKER DISPATCHES (Προγραμματισμός Αποστολών) ---
+  Future<List<WorkerDispatch>> getWorkerDispatches(DateTime date) async {
+    final startOfDay = DateTime(date.year, date.month, date.day).millisecondsSinceEpoch;
+    return await DatabaseHelper().getWorkerDispatches(startOfDay);
+  }
+
+  Future<void> addWorkerDispatch(WorkerDispatch d) async {
+    await DatabaseHelper().insertWorkerDispatch(d);
+    notifyListeners();
+    await _autoSync('worker_dispatches');
+  }
+
+  Future<void> updateWorkerDispatch(WorkerDispatch d) async {
+    await DatabaseHelper().updateWorkerDispatch(d);
+    notifyListeners();
+    await _autoSync('worker_dispatches');
+  }
+
+  Future<void> confirmWorkerDispatch(WorkerDispatch d, double dailyRate) async {
+    // 1. Δημιουργία επίσημης εγγραφής στο Παρουσιολόγιο
+    final attendanceRecord = AttendanceEntity(
+      workerName: d.workerName,
+      projectId: d.projectId,
+      date: d.date,
+      dailyRate: dailyRate,
+      overtimeAmount: 0.0,
+      workCategory: d.taskDescription.isNotEmpty ? d.taskDescription : "Γενικά",
+    );
+    await DatabaseHelper().insertAttendance(attendanceRecord);
+
+    // 2. Ενημέρωση κατάστασης σε CONFIRMED
+    final updatedDispatch = d.copyWith(status: "CONFIRMED");
+    await DatabaseHelper().updateWorkerDispatch(updatedDispatch);
+
+    await calculateDashboardStats();
+    notifyListeners();
+    await _autoSync();
+  }
+
+  Future<void> deleteWorkerDispatch(int id) async {
+    await DatabaseHelper().deleteWorkerDispatch(id);
+    notifyListeners();
+    await _autoSync('worker_dispatches');
+  }
+
   Future<List<AttendanceEntity>> getAttendance(int? pid, int? s, int? e) async =>
       await DatabaseHelper().getAttendance(pid, s, e);
 
