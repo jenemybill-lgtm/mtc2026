@@ -6,6 +6,8 @@ import 'package:mtc2026/models/project_models.dart';
 import 'package:mtc2026/providers/project_provider.dart';
 import 'package:mtc2026/ui/components/premium_ui.dart';
 
+import 'package:mtc2026/utils/watermark_service.dart';
+
 class PortfolioScreen extends StatefulWidget {
   const PortfolioScreen({super.key});
 
@@ -110,8 +112,16 @@ class _PortfolioScreenState extends State<PortfolioScreen> {
     if (category == null) return;
 
     final provider = Provider.of<ProjectProvider>(context, listen: false);
+    
+    // Apply automatic MTC Watermark stamp!
+    final watermarkedPath = await WatermarkService.addWatermark(
+      imagePath: image.path,
+      watermarkText: category,
+      companyName: provider.settings.companyName.isNotEmpty ? provider.settings.companyName : "MTC 2026",
+    );
+
     await provider.addPortfolioItem(PortfolioItem(
-      uri: image.path,
+      uri: watermarkedPath,
       category: category,
     ));
     setState(() {});

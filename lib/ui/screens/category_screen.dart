@@ -169,7 +169,8 @@ class _CategoryScreenState extends State<CategoryScreen> {
               if (widget.category == AppDestinations.CARPENTRY) _calcBtn("Υπολογιστής", Icons.kitchen_rounded, CarpentryCalculator(onResult: _handleCalcResult), catColor),
               if (widget.category == AppDestinations.ENGINEERING) _calcBtn("Υπολογιστής", Icons.design_services_rounded, EngineeringCalculator(onResult: _handleCalcResult), catColor),
               _actionBtn("ΠΡΟΤΥΠΑ", Icons.style_rounded, _showPriceTemplatesSheet, const Color(0xFF4CC9F0)),
-              _actionBtn("ΣΥΝΤΑΓΕΣ (RECIPES)", Icons.auto_fix_high_rounded, _showRecipesSheet, const Color(0xFF4CC9F0)),
+              _actionBtn("ΣΥΝΤΑΓΕΣ", Icons.auto_fix_high_rounded, _showRecipesSheet, const Color(0xFF4CC9F0)),
+              _actionBtn("ΣΤΟΧΟΣ ΚΕΡΔΟΥΣ", Icons.monetization_on_rounded, _showTargetProfitDialog, const Color(0xFF16A34A)),
             ],
           ),
         ),
@@ -384,6 +385,79 @@ class _CategoryScreenState extends State<CategoryScreen> {
             ),
           ),
         ),
+      ),
+    );
+  }
+
+  void _showTargetProfitDialog() {
+    final provider = Provider.of<ProjectProvider>(context, listen: false);
+    final items = provider.currentProjectQuoteItems.where((i) => i.category == widget.category).toList();
+    if (items.isEmpty) {
+      ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text("Δεν υπάρχουν εργασίες σε αυτή την κατηγορία.")));
+      return;
+    }
+
+    final totalCost = items.fold(0.0, (sum, i) => sum + i.cost);
+    final profitController = TextEditingController();
+
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(28)),
+        title: const PremiumHeader(title: "ΣΤΟΧΟΣ ΚΕΡΔΟΥΣ", icon: Icons.monetization_on_rounded, color: Color(0xFF16A34A)),
+        content: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text("Συνολικό Κόστος Αγοράς Υλικών/Εργασιών: ${totalCost.toStringAsFixed(2)} €", style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 12, color: Colors.blueGrey)),
+            const SizedBox(height: 16),
+            TextField(
+              controller: profitController,
+              decoration: const InputDecoration(
+                labelText: "Επιθυμητό Καθαρό Κέρδος (€)",
+                hintText: "π.χ. 2500",
+                prefixIcon: Icon(Icons.savings_rounded, color: Color(0xFF16A34A)),
+              ),
+              keyboardType: TextInputType.number,
+            ),
+            const SizedBox(height: 8),
+            const Text("Το ποσοστό κέρδους θα υπολογιστεί και θα μοιραστεί αυτόματα στις εργασίες της κατηγορίας.", style: TextStyle(fontSize: 10, color: Colors.blueGrey, fontStyle: FontStyle.italic)),
+          ],
+        ),
+        actions: [
+          TextButton(onPressed: () => Navigator.pop(context), child: const Text("ΑΚΥΡΟ", style: TextStyle(fontWeight: FontWeight.w900))),
+          ElevatedButton(
+            onPressed: () async {
+              final targetProfit = double.tryParse(profitController.text) ?? 0.0;
+              if (targetProfit > 0 && totalCost > 0) {
+                final requiredMarginPct = (targetProfit / totalCost) * 100;
+                for (var item in items) {
+                  final updated = QuoteItem(
+                    id: item.id,
+                    category: item.category,
+                    subCategory: item.subCategory,
+                    description: item.description,
+                    unit: item.unit,
+                    quantity: item.quantity,
+                    unitPrice: item.unitPrice,
+                    hasVat: item.hasVat,
+                    isVatInclusive: item.isVatInclusive,
+                    showVatToClient: item.showVatToClient,
+                    useCustomMargin: true,
+                    customProfitMargin: requiredMarginPct,
+                    showInQuote: item.showInQuote,
+                    isExtra: item.isExtra,
+                  );
+                  await provider.updateQuoteItem(widget.projectId, updated);
+                }
+                if (context.mounted) Navigator.pop(context);
+                setState(() {});
+              }
+            },
+            style: ElevatedButton.styleFrom(backgroundColor: const Color(0xFF16A34A)),
+            child: const Text("ΕΦΑΡΜΟΓΗ", style: TextStyle(fontWeight: FontWeight.w900)),
+          ),
+        ],
       ),
     );
   }
