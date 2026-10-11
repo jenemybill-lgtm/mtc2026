@@ -1,9 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:intl/intl.dart';
+import 'package:image_picker/image_picker.dart';
 import 'package:mtc2026/models/project_models.dart';
 import 'package:mtc2026/providers/project_provider.dart';
 import 'package:mtc2026/utils/pdf_generator.dart';
+import 'package:mtc2026/utils/ai_invoice_scanner.dart';
 import 'package:mtc2026/ui/components/premium_ui.dart';
 import 'package:mtc2026/ui/screens/financial_charts_screen.dart';
 
@@ -45,6 +47,15 @@ class _CompanyExpensesScreenState extends State<CompanyExpensesScreen> with Sing
           style: TextStyle(fontWeight: FontWeight.w900, fontSize: 16, letterSpacing: 1)
         ),
         actions: [
+          _buildActionButton(
+            context,
+            label: "ΣΑΡΩΣΗ AI",
+            icon: Icons.document_scanner_rounded,
+            color: const Color(0xFF4361EE),
+            onTap: () => _scanInvoiceWithAi(context, provider),
+            isDesktop: isDesktop,
+          ),
+          const SizedBox(width: 8),
           _buildActionButton(
             context,
             label: "ΕΤΗΣΙΑ ΑΝΑΦΟΡΑ",
@@ -216,6 +227,96 @@ class _CompanyExpensesScreenState extends State<CompanyExpensesScreen> with Sing
             },
             style: ElevatedButton.styleFrom(backgroundColor: Colors.blue, foregroundColor: Colors.white),
             child: const Text("ΕΚΔΟΣΗ PDF"),
+          ),
+        ],
+      ),
+    );
+  }
+
+  void _scanInvoiceWithAi(BuildContext context, ProjectProvider provider) async {
+    final apiKey = provider.settings.aiApiKey.isEmpty ? provider.settings.aiApiUrl : provider.settings.aiApiKey;
+
+    if (apiKey.trim().isEmpty) {
+      ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text("⚠️ Δεν έχει οριστεί AI API Key στις Ρυθμίσεις.")));
+      return;
+    }
+
+    final picker = ImagePicker();
+    final image = await picker.pickImage(source: ImageSource.camera);
+    if (image == null) return;
+
+    if (!context.mounted) return;
+
+    showDialog(
+      context: context,
+      barrierDismissible: false,
+      builder: (ctx) => const AlertDialog(
+        content: Padding(
+          padding: EdgeInsets.all(20.0),
+          child: Row(
+            children: [
+              CircularProgressIndicator(),
+              SizedBox(width: 20),
+              Expanded(child: Text("Ο AI Βοηθός αναλύει το τιμολόγιο...", style: TextStyle(fontWeight: FontWeight.bold, fontSize: 13))),
+            ],
+          ),
+        ),
+      ),
+    );
+
+    final scanned = await AiInvoiceScannerService.scanInvoiceImage(
+      imagePath: image.path,
+      apiKey: apiKey,
+    );
+
+    if (context.mounted) Navigator.pop(context); // Close loading dialog
+
+    if (scanned == null) {
+      if (context.mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text("❌ Αποτυχία αυτόματης αναγνώρισης τιμολογίου.")));
+      }
+      return;
+    }
+
+    if (!context.mounted) return;
+
+    final descC = TextEditingController(text: scanned.description);
+    final merchantC = TextEditingController(text: scanned.merchant);
+    final amountC = TextEditingController(text: scanned.totalAmount.toStringAsFixed(2));
+
+    showDialog(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(32)),
+        title: const PremiumHeader(title: "ΑΥΤΟΜΑΤΗ ΣΑΡΩΣΗ ΤΙΜΟΛΟΓΙΟΥ", icon: Icons.auto_awesome_rounded, color: Color(0xFF4361EE)),
+        content: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            TextField(controller: merchantC, decoration: const InputDecoration(labelText: "Προμηθευτής / Κατάστημα", prefixIcon: Icon(Icons.store_rounded))),
+            const SizedBox(height: 12),
+            TextField(controller: descC, decoration: const InputDecoration(labelText: "Περιγραφή", prefixIcon: Icon(Icons.description_rounded))),
+            const SizedBox(height: 12),
+            TextField(controller: amountC, decoration: const InputDecoration(labelText: "Συνολικό Ποσό (€)", prefixIcon: Icon(Icons.euro_rounded)), keyboardType: TextInputType.number),
+          ],
+        ),
+        actions: [
+          TextButton(onPressed: () => Navigator.pop(ctx), child: const Text("ΑΚΥΡΟ", style: TextStyle(fontWeight: FontWeight.w900))),
+          ElevatedButton(
+            onPressed: () async {
+              final amt = double.tryParse(amountC.text) ?? scanned.totalAmount;
+              final companyExpense = CompanyExpenseEntity(
+                date: scanned.date.millisecondsSinceEpoch,
+                category: "ΛΕΙΤΟΥΡΓΙΚΑ / ΠΑΓΙΑ",
+                description: "${descC.text} [${merchantC.text}]",
+                amount: amt,
+                hasVat: true,
+              );
+              await provider.addCompanyExpense(companyExpense);
+              if (ctx.mounted) Navigator.pop(ctx);
+              setState(() {});
+            },
+            style: ElevatedButton.styleFrom(backgroundColor: const Color(0xFF4361EE)),
+            child: const Text("ΚΑΤΑΧΩΡΗΣΗ ΣΤΑ ΠΑΓΙΑ", style: TextStyle(fontWeight: FontWeight.w900)),
           ),
         ],
       ),

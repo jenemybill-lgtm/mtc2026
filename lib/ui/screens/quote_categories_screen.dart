@@ -64,10 +64,18 @@ class _QuoteCategoriesScreenState extends State<QuoteCategoriesScreen> {
                           Row(
                             children: [
                               IconButton.filledTonal(
+                                onPressed: () => _showGlobalTargetProfitDialog(context, provider),
+                                icon: const Icon(Icons.monetization_on_rounded),
+                                tooltip: "Ολικός Στόχος Κέρδους Προσφοράς",
+                                style: IconButton.styleFrom(backgroundColor: const Color(0xFF16A34A).withValues(alpha: 0.1), foregroundColor: const Color(0xFF16A34A)),
+                              ),
+                              const SizedBox(width: 8),
+                              IconButton.filledTonal(
                                 onPressed: () {
                                   Navigator.push(context, MaterialPageRoute(builder: (context) => SummaryScreen(project: widget.project)));
                                 },
                                 icon: const Icon(Icons.analytics_outlined),
+                                tooltip: "Ανακεφαλαίωση Προσφοράς",
                                 style: IconButton.styleFrom(backgroundColor: Colors.blue.withValues(alpha: 0.1), foregroundColor: Colors.blue),
                               ),
                               const SizedBox(width: 12),
@@ -178,6 +186,77 @@ class _QuoteCategoriesScreenState extends State<QuoteCategoriesScreen> {
           ),
         );
       },
+    );
+  }
+  void _showGlobalTargetProfitDialog(BuildContext context, ProjectProvider provider) {
+    final items = provider.currentProjectQuoteItems;
+    if (items.isEmpty) {
+      ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text("Δεν υπάρχουν εργασίες στην προσφορά.")));
+      return;
+    }
+
+    final totalCost = items.fold(0.0, (sum, i) => sum + i.cost);
+    final profitController = TextEditingController();
+
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(28)),
+        title: const PremiumHeader(title: "ΟΛΙΚΟΣ ΣΤΟΧΟΣ ΚΕΡΔΟΥΣ ΠΡΟΣΦΟΡΑΣ", icon: Icons.monetization_on_rounded, color: Color(0xFF16A34A)),
+        content: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text("Συνολικό Κόστος Όλων των Εργασιών/Υλικών: ${totalCost.toStringAsFixed(2)} €", style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 12, color: Colors.blueGrey)),
+            const SizedBox(height: 16),
+            TextField(
+              controller: profitController,
+              decoration: const InputDecoration(
+                labelText: "Επιθυμητό Συνολικό Κέρδος (€)",
+                hintText: "π.χ. 5000",
+                prefixIcon: Icon(Icons.savings_rounded, color: Color(0xFF16A34A)),
+              ),
+              keyboardType: TextInputType.number,
+            ),
+            const SizedBox(height: 8),
+            const Text("Το ποσοστό κέρδους θα υπολογιστεί και θα εφαρμοστεί αυτόματα σε ΟΛΕΣ τις κατηγορίες της προσφοράς.", style: TextStyle(fontSize: 10, color: Colors.blueGrey, fontStyle: FontStyle.italic)),
+          ],
+        ),
+        actions: [
+          TextButton(onPressed: () => Navigator.pop(context), child: const Text("ΑΚΥΡΟ", style: TextStyle(fontWeight: FontWeight.w900))),
+          ElevatedButton(
+            onPressed: () async {
+              final targetProfit = double.tryParse(profitController.text) ?? 0.0;
+              if (targetProfit > 0 && totalCost > 0) {
+                final requiredMarginPct = (targetProfit / totalCost) * 100;
+                for (var item in items) {
+                  final updated = QuoteItem(
+                    id: item.id,
+                    category: item.category,
+                    subCategory: item.subCategory,
+                    description: item.description,
+                    unit: item.unit,
+                    quantity: item.quantity,
+                    unitPrice: item.unitPrice,
+                    hasVat: item.hasVat,
+                    isVatInclusive: item.isVatInclusive,
+                    showVatToClient: item.showVatToClient,
+                    useCustomMargin: true,
+                    customProfitMargin: requiredMarginPct,
+                    showInQuote: item.showInQuote,
+                    isExtra: item.isExtra,
+                  );
+                  await provider.updateQuoteItem(widget.project.id, updated);
+                }
+                if (context.mounted) Navigator.pop(context);
+                setState(() {});
+              }
+            },
+            style: ElevatedButton.styleFrom(backgroundColor: const Color(0xFF16A34A)),
+            child: const Text("ΕΦΑΡΜΟΓΗ ΣΕ ΟΛΑ", style: TextStyle(fontWeight: FontWeight.w900)),
+          ),
+        ],
+      ),
     );
   }
 }
