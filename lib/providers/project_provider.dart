@@ -654,45 +654,71 @@ class ProjectProvider with ChangeNotifier {
       reminderTime: t.reminderTime,
       reminderType: t.reminderType,
     );
-    await _scheduleTaskNotification(newTask);
-    await fetchProjects();
-    await _autoSync('tasks');
+    
+    // Ενημέρωση τοπικής μνήμης & ακαριαίο refresh του UI!
+    _tasks.add(newTask);
+    notifyListeners();
+
+    _scheduleTaskNotification(newTask);
+    _autoSync('tasks');
   }
 
   Future<void> updateTask(Task t) async {
     await DatabaseHelper().updateTask(t);
-    await _scheduleTaskNotification(t);
-    await fetchProjects();
-    await _autoSync('tasks');
+    
+    // Ενημέρωση τοπικής μνήμης & ακαριαίο refresh του UI!
+    final index = _tasks.indexWhere((item) => item.id == t.id);
+    if (index != -1) {
+      _tasks[index] = t;
+    } else {
+      _tasks.add(t);
+    }
+    notifyListeners();
+
+    _scheduleTaskNotification(t);
+    _autoSync('tasks');
   }
 
   Future<void> deleteTask(int id) async {
     await DatabaseHelper().deleteTask(id);
-    await NotificationService().cancelNotification(id);
-    await fetchProjects();
-    await _autoSync('tasks');
+    
+    // Ενημέρωση τοπικής μνήμης & ακαριαίο refresh του UI!
+    _tasks.removeWhere((item) => item.id == id);
+    notifyListeners();
+
+    try {
+      await NotificationService().cancelNotification(id);
+    } catch (_) {}
+    _autoSync('tasks');
   }
 
   Future<void> _scheduleTaskNotification(Task t) async {
     if (kIsWeb) return;
     
-    // Always cancel existing one first
-    await NotificationService().cancelNotification(t.id);
+    try {
+      // Always cancel existing one first
+      await NotificationService().cancelNotification(t.id);
 
-    if (t.isCompleted || t.reminderTime == null) return;
+      if (t.isCompleted || t.reminderTime == null) return;
 
-    final taskDate = DateTime.fromMillisecondsSinceEpoch(t.date);
-    final scheduledDate = taskDate.subtract(Duration(minutes: t.reminderTime!));
+      final taskDate = DateTime.fromMillisecondsSinceEpoch(t.date);
+      final scheduledDate = taskDate.subtract(Duration(minutes: t.reminderTime!));
 
-    if (scheduledDate.isAfter(DateTime.now())) {
-      final project = _projects.firstWhere((p) => p.id == t.projectId, orElse: () => Project(name: "MTC", clientName: "", address: ""));
-      
-      await NotificationService().scheduleNotification(
-        id: t.id,
-        title: "Υπενθύμιση Εργασίας: ${project.name}",
-        body: t.description,
-        scheduledDate: scheduledDate,
-      );
+      if (scheduledDate.isAfter(DateTime.now())) {
+        final project = _projects.firstWhere(
+          (p) => p.id == t.projectId, 
+          orElse: () => Project(name: "MTC", clientName: "", address: "")
+        );
+        
+        await NotificationService().scheduleNotification(
+          id: t.id,
+          title: "Υπενθύμιση Εργασίας: ${project.name}",
+          body: t.description,
+          scheduledDate: scheduledDate,
+        );
+      }
+    } catch (e) {
+      debugPrint("Notification Scheduling Exception (handled silently): $e");
     }
   }
 
