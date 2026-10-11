@@ -54,8 +54,9 @@ class _ProjectEconomicsScreenState extends State<ProjectEconomicsScreen> with Si
           ],
         ),
         actions: [
-          IconButton(
-            icon: const Icon(Icons.picture_as_pdf_rounded, color: Colors.redAccent),
+          _buildAppBarActionButton(
+            icon: Icons.picture_as_pdf_rounded,
+            color: Colors.redAccent,
             tooltip: "Εξαγωγή PDF",
             onPressed: () => PdfGenerator.generateAndShareProjectFinancials(
               projectName: widget.project.name,
@@ -64,13 +65,15 @@ class _ProjectEconomicsScreenState extends State<ProjectEconomicsScreen> with Si
               settings: provider.settings,
             ),
           ),
-          IconButton(
-            icon: const Icon(Icons.file_download_rounded, color: Colors.green),
+          _buildAppBarActionButton(
+            icon: Icons.file_download_rounded,
+            color: const Color(0xFF10B981),
             tooltip: "Εξαγωγή Excel",
             onPressed: () => ExcelExporter.exportProjectFinancials(widget.project.name, provider.currentProjectExpenses, provider.currentProjectIncomes),
           ),
-          IconButton(
-            icon: const Icon(Icons.analytics_rounded, color: Colors.blue),
+          _buildAppBarActionButton(
+            icon: Icons.analytics_rounded,
+            color: const Color(0xFF4361EE),
             tooltip: "Ανάλυση ROI",
             onPressed: () async {
               final roi = await provider.calculateProjectROIData(widget.project.id);
@@ -115,6 +118,32 @@ class _ProjectEconomicsScreenState extends State<ProjectEconomicsScreen> with Si
           _TaskTab(project: widget.project, tasks: provider.tasks.where((t) => t.projectId == widget.project.id).toList()),
           PartnersTab(project: widget.project),
         ],
+      ),
+    );
+  }
+
+  Widget _buildAppBarActionButton({
+    required IconData icon,
+    required Color color,
+    required String tooltip,
+    required VoidCallback onPressed,
+  }) {
+    return Tooltip(
+      message: tooltip,
+      child: Container(
+        margin: const EdgeInsets.symmetric(horizontal: 2, vertical: 8),
+        child: Material(
+          color: color.withValues(alpha: 0.12),
+          borderRadius: BorderRadius.circular(12),
+          child: InkWell(
+            onTap: onPressed,
+            borderRadius: BorderRadius.circular(12),
+            child: Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+              child: Icon(icon, color: color, size: 18),
+            ),
+          ),
+        ),
       ),
     );
   }

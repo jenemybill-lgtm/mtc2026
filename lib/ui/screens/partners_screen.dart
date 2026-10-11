@@ -28,13 +28,15 @@ class _PartnersScreenState extends State<PartnersScreen> {
       appBar: AppBar(
         title: const Text("ΔΙΑΧΕΙΡΙΣΗ ΕΡΓΑΤΩΝ", style: TextStyle(fontWeight: FontWeight.w900, fontSize: 14)),
         actions: [
-          IconButton(
-            icon: const Icon(Icons.picture_as_pdf_rounded, color: Colors.redAccent),
+          _buildAppBarActionButton(
+            icon: Icons.picture_as_pdf_rounded,
+            color: Colors.redAccent,
             tooltip: "Εξαγωγή PDF",
             onPressed: () => PdfGenerator.generateAndSharePartnerList(partners: partners, settings: projectProvider.settings),
           ),
-          IconButton(
-            icon: const Icon(Icons.file_download_rounded, color: Colors.green),
+          _buildAppBarActionButton(
+            icon: Icons.file_download_rounded,
+            color: const Color(0xFF10B981),
             tooltip: "Εξαγωγή Excel",
             onPressed: () => ExcelExporter.exportPartners(partners),
           ),
@@ -119,6 +121,32 @@ class _PartnersScreenState extends State<PartnersScreen> {
   void _callPartner(String phone) async {
     final uri = Uri.parse("tel:$phone");
     if (await canLaunchUrl(uri)) await launchUrl(uri);
+  }
+
+  Widget _buildAppBarActionButton({
+    required IconData icon,
+    required Color color,
+    required String tooltip,
+    required VoidCallback onPressed,
+  }) {
+    return Tooltip(
+      message: tooltip,
+      child: Container(
+        margin: const EdgeInsets.symmetric(horizontal: 2, vertical: 8),
+        child: Material(
+          color: color.withValues(alpha: 0.12),
+          borderRadius: BorderRadius.circular(12),
+          child: InkWell(
+            onTap: onPressed,
+            borderRadius: BorderRadius.circular(12),
+            child: Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+              child: Icon(icon, color: color, size: 18),
+            ),
+          ),
+        ),
+      ),
+    );
   }
 
   void _showPartnerDialog(BuildContext context, {Partner? partner}) {

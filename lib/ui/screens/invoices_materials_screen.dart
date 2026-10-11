@@ -31,21 +31,24 @@ class InvoicesMaterialsScreen extends StatelessWidget {
       appBar: AppBar(
         title: const Text("ΤΙΜΟΛΟΓΙΑ & ΥΛΙΚΑ", style: TextStyle(fontWeight: FontWeight.w900, fontSize: 14)),
         actions: [
-          IconButton(
-            icon: const Icon(Icons.center_focus_strong_rounded, color: Color(0xFF4361EE)),
+          _buildAppBarActionButton(
+            icon: Icons.center_focus_strong_rounded,
+            color: const Color(0xFF4361EE),
             tooltip: "Σάρωση Τιμολογίου με AI",
             onPressed: () => _scanInvoiceWithAi(context),
           ),
-          IconButton(
-            icon: const Icon(Icons.picture_as_pdf_rounded, color: Colors.redAccent),
+          _buildAppBarActionButton(
+            icon: Icons.picture_as_pdf_rounded,
+            color: Colors.redAccent,
             tooltip: "Εξαγωγή PDF",
             onPressed: () {
               final provider = Provider.of<ProjectProvider>(context, listen: false);
               PdfGenerator.generateAndShareInvoiceList(invoices: invoices, settings: provider.settings);
             },
           ),
-          IconButton(
-            icon: const Icon(Icons.file_download_rounded, color: Colors.green),
+          _buildAppBarActionButton(
+            icon: Icons.file_download_rounded,
+            color: const Color(0xFF10B981),
             tooltip: "Εξαγωγή Excel",
             onPressed: () => ExcelExporter.exportInvoices(invoices),
           ),
@@ -82,6 +85,32 @@ class InvoicesMaterialsScreen extends StatelessWidget {
                 );
               },
             ),
+    );
+  }
+
+  Widget _buildAppBarActionButton({
+    required IconData icon,
+    required Color color,
+    required String tooltip,
+    required VoidCallback onPressed,
+  }) {
+    return Tooltip(
+      message: tooltip,
+      child: Container(
+        margin: const EdgeInsets.symmetric(horizontal: 2, vertical: 8),
+        child: Material(
+          color: color.withValues(alpha: 0.12),
+          borderRadius: BorderRadius.circular(12),
+          child: InkWell(
+            onTap: onPressed,
+            borderRadius: BorderRadius.circular(12),
+            child: Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+              child: Icon(icon, color: color, size: 18),
+            ),
+          ),
+        ),
+      ),
     );
   }
 
