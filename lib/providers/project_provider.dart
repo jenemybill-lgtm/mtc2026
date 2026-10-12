@@ -334,9 +334,18 @@ class ProjectProvider with ChangeNotifier {
         final decodedData = jsonDecode(response.body);
         Map<String, dynamic> responseData;
 
-        // Check if server sent compressed data
-        if (decodedData['compressedData'] != null) {
-          final gzipBytes = base64Decode(decodedData['compressedData']);
+        // Check if server sent compressed data (either at root level or nested inside 'data')
+        String? b64Gzip;
+        if (decodedData is Map<String, dynamic>) {
+          if (decodedData['compressedData'] != null) {
+            b64Gzip = decodedData['compressedData'].toString();
+          } else if (decodedData['data'] is Map && decodedData['data']['compressedData'] != null) {
+            b64Gzip = decodedData['data']['compressedData'].toString();
+          }
+        }
+
+        if (b64Gzip != null) {
+          final gzipBytes = base64Decode(b64Gzip);
           final bytes = GZipDecoder().decodeBytes(gzipBytes);
           final jsonString = utf8.decode(bytes);
           responseData = jsonDecode(jsonString);
