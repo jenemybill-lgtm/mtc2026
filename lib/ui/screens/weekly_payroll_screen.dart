@@ -22,6 +22,13 @@ class WeeklyPayrollScreen extends StatefulWidget {
 class _WeeklyPayrollScreenState extends State<WeeklyPayrollScreen> {
   DateTime _calendarDate = DateTime.now().subtract(Duration(days: DateTime.now().weekday - 1)); // Monday
   bool _isMonthly = false;
+  final ScrollController _horizontalScrollController = ScrollController();
+
+  @override
+  void dispose() {
+    _horizontalScrollController.dispose();
+    super.dispose();
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -273,12 +280,23 @@ class _WeeklyPayrollScreenState extends State<WeeklyPayrollScreen> {
           boxShadow: [BoxShadow(color: Colors.black.withValues(alpha: 0.03), blurRadius: 20)],
         ),
         clipBehavior: Clip.antiAlias,
-        child: SingleChildScrollView(
-          scrollDirection: Axis.horizontal,
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Container(
+        child: RawScrollbar(
+          controller: _horizontalScrollController,
+          thumbVisibility: true,
+          trackVisibility: true,
+          thickness: 10.0,
+          radius: const Radius.circular(6),
+          thumbColor: const Color(0xFF4361EE),
+          trackColor: const Color(0xFFE2E8F0),
+          trackBorderColor: Colors.transparent,
+          scrollbarOrientation: ScrollbarOrientation.bottom,
+          child: SingleChildScrollView(
+            controller: _horizontalScrollController,
+            scrollDirection: Axis.horizontal,
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Container(
                 color: const Color(0xFFF8FAFC),
                 child: Row(
                   children: [
@@ -318,8 +336,9 @@ class _WeeklyPayrollScreenState extends State<WeeklyPayrollScreen> {
           ),
         ),
       ),
-    );
-  }
+    ),
+  );
+}
 
   Widget _buildWeeklySummaryBarPremium(List<AttendanceEntity> attendance, List<Expense> payments) {
     final totalEarned = attendance.fold(0.0, (sum, a) => sum + a.dailyRate + a.overtimeAmount);
