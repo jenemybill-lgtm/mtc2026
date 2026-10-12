@@ -723,20 +723,56 @@ class ProjectProvider with ChangeNotifier {
   }
 
   Future<void> addQuoteItem(int pid, QuoteItem item) async {
-    await DatabaseHelper().insertQuoteItem(pid, item);
-    await fetchProjectData(pid);
+    final newId = await DatabaseHelper().insertQuoteItem(pid, item);
+    final newItem = QuoteItem(
+      id: newId.toString(),
+      category: item.category,
+      subCategory: item.subCategory,
+      description: item.description,
+      unit: item.unit,
+      quantity: item.quantity,
+      unitPrice: item.unitPrice,
+      categoryProfitMargin: item.categoryProfitMargin,
+      useCustomMargin: item.useCustomMargin,
+      customProfitMargin: item.customProfitMargin,
+      internalNote: item.internalNote,
+      hasVat: item.hasVat,
+      isVatInclusive: item.isVatInclusive,
+      showVatToClient: item.showVatToClient,
+      showPriceToClient: item.showPriceToClient,
+      showInQuote: item.showInQuote,
+      isExtra: item.isExtra,
+    );
+
+    // Ακαριαία ενημέρωση τοπικής μνήμης & φρεσκάρισμα UI!
+    _currentProjectQuoteItems.add(newItem);
+    notifyListeners();
+
     await _autoSync('quote_items');
   }
 
   Future<void> updateQuoteItem(int pid, QuoteItem item) async {
     await DatabaseHelper().updateQuoteItem(pid, item);
-    await fetchProjectData(pid);
+
+    // Ακαριαία ενημέρωση τοπικής μνήμης & φρεσκάρισμα UI!
+    final index = _currentProjectQuoteItems.indexWhere((i) => i.id == item.id);
+    if (index != -1) {
+      _currentProjectQuoteItems[index] = item;
+    } else {
+      _currentProjectQuoteItems.add(item);
+    }
+    notifyListeners();
+
     await _autoSync('quote_items');
   }
 
   Future<void> deleteQuoteItem(int pid, int id) async {
     await DatabaseHelper().deleteQuoteItem(id);
-    await fetchProjectData(pid);
+
+    // Ακαριαία ενημέρωση τοπικής μνήμης & φρεσκάρισμα UI!
+    _currentProjectQuoteItems.removeWhere((i) => i.id == id.toString());
+    notifyListeners();
+
     await _autoSync('quote_items');
   }
 
