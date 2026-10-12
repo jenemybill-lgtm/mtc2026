@@ -140,7 +140,20 @@ class DatabaseHelper {
     await _ensureMarketArchiveSchema(db);
     await _ensurePartnerAiColumn(db);
     await _ensureCompanyExpenseCategory(db);
+    await _ensureQuoteItemExtraColumn(db);
     return db;
+  }
+
+  Future<void> _ensureQuoteItemExtraColumn(Database db) async {
+    final tableInfo = await db.rawQuery("PRAGMA table_info(quote_items)");
+    final existingColumns = tableInfo.map((row) => row['name'] as String).toSet();
+    if (!existingColumns.contains('isExtra')) {
+      try {
+        await db.execute("ALTER TABLE quote_items ADD COLUMN isExtra INTEGER DEFAULT 0");
+      } catch (e) {
+        print("Schema update error isExtra: $e");
+      }
+    }
   }
 
   Future<void> _ensureCompanyExpenseCategory(Database db) async {
