@@ -294,10 +294,10 @@ class _WeeklyPayrollScreenState extends State<WeeklyPayrollScreen> {
                 children: [
                   Container(
                     height: 50,
-                    color: const Color(0xFFF1F5F9),
                     alignment: Alignment.centerLeft,
                     padding: const EdgeInsets.symmetric(horizontal: 14),
                     decoration: const BoxDecoration(
+                      color: Color(0xFFF1F5F9),
                       border: Border(bottom: BorderSide(color: Color(0xFFCBD5E1), width: 1.5)),
                     ),
                     child: const Text("ΕΡΓΑΤΗΣ", style: TextStyle(fontWeight: FontWeight.w900, fontSize: 10, color: Color(0xFF475569), letterSpacing: 1)),
@@ -330,10 +330,10 @@ class _WeeklyPayrollScreenState extends State<WeeklyPayrollScreen> {
                       },
                       child: Container(
                         height: 64,
-                        color: isEven ? Colors.white : const Color(0xFFF8FAFC),
                         padding: const EdgeInsets.symmetric(horizontal: 10),
-                        decoration: const BoxDecoration(
-                          border: Border(bottom: BorderSide(color: Color(0xFFCBD5E1), width: 1.2)),
+                        decoration: BoxDecoration(
+                          color: isEven ? Colors.white : const Color(0xFFF8FAFC),
+                          border: const Border(bottom: BorderSide(color: Color(0xFFCBD5E1), width: 1.2)),
                         ),
                         child: Row(
                           children: [
