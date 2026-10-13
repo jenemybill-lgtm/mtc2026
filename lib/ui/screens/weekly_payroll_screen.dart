@@ -624,7 +624,8 @@ class _WorkerRowPremium extends StatelessWidget {
     final rowBgColor = isEvenRow ? Colors.white : const Color(0xFFF8FAFC);
 
     return Container(
-      decoration: BoxDecoration(border: Border(bottom: BorderSide(color: const Color(0xFFCBD5E1), width: 1.2)), color: rowBgColor),
+      height: 64,
+      decoration: BoxDecoration(border: const Border(bottom: BorderSide(color: Color(0xFFCBD5E1), width: 1.2)), color: rowBgColor),
       child: Row(
         children: [
           if (showWorkerName)
