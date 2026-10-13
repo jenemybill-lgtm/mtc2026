@@ -266,9 +266,9 @@ class _WeeklyPayrollScreenState extends State<WeeklyPayrollScreen> {
     final periodDays = List.generate(daysCount, (i) => start.add(Duration(days: i)));
     final isDesktop = Responsive.isDesktop(context);
     
-    final workerWidth = isDesktop ? 180.0 : 100.0;
-    final dayWidth = isDesktop ? 100.0 : 64.0;
-    final balanceWidth = isDesktop ? 140.0 : 90.0;
+    final workerWidth = isDesktop ? 180.0 : 105.0;
+    final dayWidth = isDesktop ? 100.0 : 68.0;
+    final balanceWidth = isDesktop ? 140.0 : 95.0;
 
     return Center(
       child: Container(
@@ -276,69 +276,159 @@ class _WeeklyPayrollScreenState extends State<WeeklyPayrollScreen> {
         decoration: BoxDecoration(
           color: Colors.white,
           borderRadius: BorderRadius.circular(24),
-          border: Border.all(color: Colors.black.withValues(alpha: 0.08)),
-          boxShadow: [BoxShadow(color: Colors.black.withValues(alpha: 0.03), blurRadius: 20)],
+          border: Border.all(color: const Color(0xFFCBD5E1), width: 1.5),
+          boxShadow: [BoxShadow(color: Colors.black.withValues(alpha: 0.04), blurRadius: 20)],
         ),
         clipBehavior: Clip.antiAlias,
-        child: RawScrollbar(
-          controller: _horizontalScrollController,
-          thumbVisibility: true,
-          trackVisibility: true,
-          thickness: 10.0,
-          radius: const Radius.circular(6),
-          thumbColor: const Color(0xFF4361EE),
-          trackColor: const Color(0xFFE2E8F0),
-          trackBorderColor: Colors.transparent,
-          scrollbarOrientation: ScrollbarOrientation.bottom,
-          child: SingleChildScrollView(
-            controller: _horizontalScrollController,
-            scrollDirection: Axis.horizontal,
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Container(
-                color: const Color(0xFFF8FAFC),
-                child: Row(
-                  children: [
-                    SizedBox(width: workerWidth, child: const Padding(padding: EdgeInsets.symmetric(horizontal: 20, vertical: 16), child: Text("ΕΡΓΑΤΗΣ", style: TextStyle(fontWeight: FontWeight.w900, fontSize: 10, color: Colors.blueGrey, letterSpacing: 1)))),
-                    ...periodDays.map((day) => Container(
-                      width: dayWidth,
-                      height: 50,
-                      alignment: Alignment.center,
-                      decoration: BoxDecoration(border: Border(left: BorderSide(color: Colors.black.withValues(alpha: 0.05)))),
-                      child: Column(
-                        mainAxisAlignment: MainAxisAlignment.center,
-                        children: [
-                          Text(DateFormat('EEE', 'el').format(day).toUpperCase(), style: TextStyle(fontSize: 8, fontWeight: FontWeight.w900, color: (day.weekday >= 6) ? Colors.red : Colors.grey)),
-                          Text(DateFormat('dd').format(day), style: const TextStyle(fontSize: 11, fontWeight: FontWeight.w900, color: Color(0xFF1E293B))),
-                        ],
+        child: Row(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            // Sticky Left Worker Column
+            Container(
+              width: workerWidth,
+              decoration: const BoxDecoration(
+                color: Colors.white,
+                border: Border(right: BorderSide(color: Color(0xFF94A3B8), width: 1.5)),
+              ),
+              child: Column(
+                children: [
+                  Container(
+                    height: 50,
+                    color: const Color(0xFFF1F5F9),
+                    alignment: Alignment.centerLeft,
+                    padding: const EdgeInsets.symmetric(horizontal: 14),
+                    decoration: const BoxDecoration(
+                      border: Border(bottom: BorderSide(color: Color(0xFFCBD5E1), width: 1.5)),
+                    ),
+                    child: const Text("ΕΡΓΑΤΗΣ", style: TextStyle(fontWeight: FontWeight.w900, fontSize: 10, color: Color(0xFF475569), letterSpacing: 1)),
+                  ),
+                  ...workers.asMap().entries.map((entry) {
+                    final isEven = entry.key % 2 == 0;
+                    return InkWell(
+                      onTap: () {
+                        // Payment Dialog
+                        final amountController = TextEditingController();
+                        showDialog(
+                          context: context,
+                          builder: (context) => AlertDialog(
+                            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(32)),
+                            title: PremiumHeader(title: "ΠΛΗΡΩΜΗ", subtitle: entry.value.toUpperCase(), icon: Icons.payments_rounded, color: const Color(0xFF10B981)),
+                            content: TextField(controller: amountController, decoration: const InputDecoration(labelText: "Ποσό (€)", prefixIcon: Icon(Icons.euro_rounded)), keyboardType: TextInputType.number),
+                            actions: [
+                              TextButton(onPressed: () => Navigator.pop(context), child: const Text("ΑΚΥΡΟ", style: TextStyle(fontWeight: FontWeight.w900))),
+                              ElevatedButton(onPressed: () async {
+                                final amount = double.tryParse(amountController.text) ?? 0.0;
+                                if (amount > 0) {
+                                  await provider.addExpense(widget.projectId ?? 0, Expense(date: DateTime.now().millisecondsSinceEpoch, description: "ΠΛΗΡΩΜΗ ΕΝΑΝΤΙ", workerName: entry.value, amount: amount, expenseType: "PAYMENT", projectId: widget.projectId));
+                                  if (context.mounted) Navigator.pop(context);
+                                  setState(() {});
+                                }
+                              }, style: ElevatedButton.styleFrom(backgroundColor: const Color(0xFF10B981)), child: const Text("ΚΑΤΑΧΩΡΗΣΗ", style: TextStyle(fontWeight: FontWeight.w900))),
+                            ],
+                          ),
+                        );
+                      },
+                      child: Container(
+                        height: 64,
+                        color: isEven ? Colors.white : const Color(0xFFF8FAFC),
+                        padding: const EdgeInsets.symmetric(horizontal: 10),
+                        decoration: const BoxDecoration(
+                          border: Border(bottom: BorderSide(color: Color(0xFFCBD5E1), width: 1.2)),
+                        ),
+                        child: Row(
+                          children: [
+                            Expanded(
+                              child: FittedBox(
+                                fit: BoxFit.scaleDown,
+                                alignment: Alignment.centerLeft,
+                                child: Text(entry.value.toUpperCase(), style: const TextStyle(fontWeight: FontWeight.w900, fontSize: 11, color: Color(0xFF0F172A))),
+                              ),
+                            ),
+                            const SizedBox(width: 4),
+                            Container(
+                              padding: const EdgeInsets.all(4),
+                              decoration: BoxDecoration(
+                                color: const Color(0xFF10B981).withValues(alpha: 0.12),
+                                borderRadius: BorderRadius.circular(6),
+                              ),
+                              child: const Icon(Icons.payments_rounded, size: 13, color: Color(0xFF10B981)),
+                            ),
+                          ],
+                        ),
                       ),
-                    )),
-                    SizedBox(width: balanceWidth, child: const Center(child: Text("ΥΠΟΛΟΙΠΟ", style: TextStyle(fontWeight: FontWeight.w900, fontSize: 10, color: Colors.blueGrey, letterSpacing: 1)))),
-                  ],
+                    );
+                  }),
+                ],
+              ),
+            ),
+
+            // Right Scrollable Days Grid
+            Expanded(
+              child: RawScrollbar(
+                controller: _horizontalScrollController,
+                thumbVisibility: true,
+                trackVisibility: true,
+                thickness: 10.0,
+                radius: const Radius.circular(6),
+                thumbColor: const Color(0xFF4361EE),
+                trackColor: const Color(0xFFE2E8F0),
+                trackBorderColor: Colors.transparent,
+                scrollbarOrientation: ScrollbarOrientation.bottom,
+                child: SingleChildScrollView(
+                  controller: _horizontalScrollController,
+                  scrollDirection: Axis.horizontal,
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Container(
+                        color: const Color(0xFFF1F5F9),
+                        decoration: const BoxDecoration(
+                          border: Border(bottom: BorderSide(color: Color(0xFFCBD5E1), width: 1.5)),
+                        ),
+                        child: Row(
+                          children: [
+                            ...periodDays.map((day) => Container(
+                              width: dayWidth,
+                              height: 50,
+                              alignment: Alignment.center,
+                              decoration: const BoxDecoration(border: Border(left: BorderSide(color: Color(0xFFE2E8F0)))),
+                              child: Column(
+                                mainAxisAlignment: MainAxisAlignment.center,
+                                children: [
+                                  Text(DateFormat('EEE', 'el').format(day).toUpperCase(), style: TextStyle(fontSize: 8, fontWeight: FontWeight.w900, color: (day.weekday >= 6) ? Colors.red : Colors.grey)),
+                                  Text(DateFormat('dd').format(day), style: const TextStyle(fontSize: 11, fontWeight: FontWeight.w900, color: Color(0xFF1E293B))),
+                                ],
+                              ),
+                            )),
+                            SizedBox(width: balanceWidth, child: const Center(child: Text("ΥΠΟΛΟΙΠΟ", style: TextStyle(fontWeight: FontWeight.w900, fontSize: 10, color: Color(0xFF475569), letterSpacing: 1)))),
+                          ],
+                        ),
+                      ),
+                      ...workers.asMap().entries.map((entry) => _WorkerRowPremium(
+                        worker: entry.value,
+                        showWorkerName: false,
+                        isEvenRow: entry.key % 2 == 0,
+                        days: periodDays,
+                        attendance: attendance.where((a) => a.workerName == entry.value).toList(),
+                        payments: payments.where((p) => p.workerName == entry.value).toList(),
+                        provider: provider,
+                        projectId: widget.projectId,
+                        endOfPeriod: end,
+                        workerWidth: workerWidth,
+                        dayWidth: dayWidth,
+                        balanceWidth: balanceWidth,
+                        onRefresh: () => setState(() {}),
+                      )),
+                    ],
+                  ),
                 ),
               ),
-              ...workers.asMap().entries.map((entry) => _WorkerRowPremium(
-                worker: entry.value,
-                isEvenRow: entry.key % 2 == 0,
-                days: periodDays,
-                attendance: attendance.where((a) => a.workerName == entry.value).toList(),
-                payments: payments.where((p) => p.workerName == entry.value).toList(),
-                provider: provider,
-                projectId: widget.projectId,
-                endOfPeriod: end,
-                workerWidth: workerWidth,
-                dayWidth: dayWidth,
-                balanceWidth: balanceWidth,
-                onRefresh: () => setState(() {}),
-              )),
-            ],
-          ),
+            ),
+          ],
         ),
       ),
-    ),
-  );
-}
+    );
+  }
 
   Widget _buildWeeklySummaryBarPremium(List<AttendanceEntity> attendance, List<Expense> payments) {
     final totalEarned = attendance.fold(0.0, (sum, a) => sum + a.dailyRate + a.overtimeAmount);
@@ -509,6 +599,7 @@ class _WorkerRowPremium extends StatelessWidget {
   final double workerWidth, dayWidth, balanceWidth;
   final VoidCallback onRefresh;
   final bool isEvenRow;
+  final bool showWorkerName;
 
   const _WorkerRowPremium({
     required this.worker, 
@@ -523,6 +614,7 @@ class _WorkerRowPremium extends StatelessWidget {
     required this.balanceWidth,
     required this.onRefresh,
     required this.isEvenRow,
+    this.showWorkerName = true,
   });
 
   @override
@@ -532,38 +624,46 @@ class _WorkerRowPremium extends StatelessWidget {
     final rowBgColor = isEvenRow ? Colors.white : const Color(0xFFF8FAFC);
 
     return Container(
-      decoration: BoxDecoration(border: Border(bottom: BorderSide(color: Colors.black.withValues(alpha: 0.05))), color: rowBgColor),
+      decoration: BoxDecoration(border: Border(bottom: BorderSide(color: const Color(0xFFCBD5E1), width: 1.2)), color: rowBgColor),
       child: Row(
         children: [
-          InkWell(
-            onTap: () => _showPaymentDialog(context),
-            child: Container(
-              width: workerWidth,
-              height: 64,
-              padding: const EdgeInsets.symmetric(horizontal: 12),
-              color: Colors.transparent,
-              child: Row(
-                children: [
-                  Expanded(
-                    child: FittedBox(
-                      fit: BoxFit.scaleDown,
-                      alignment: Alignment.centerLeft,
-                      child: Text(worker.toUpperCase(), style: const TextStyle(fontWeight: FontWeight.w900, fontSize: 10, color: Color(0xFF1E293B))),
+          if (showWorkerName)
+            InkWell(
+              onTap: () => _showPaymentDialog(context),
+              child: Container(
+                width: workerWidth,
+                height: 64,
+                padding: const EdgeInsets.symmetric(horizontal: 12),
+                color: Colors.transparent,
+                child: Row(
+                  children: [
+                    Expanded(
+                      child: FittedBox(
+                        fit: BoxFit.scaleDown,
+                        alignment: Alignment.centerLeft,
+                        child: Text(worker.toUpperCase(), style: const TextStyle(fontWeight: FontWeight.w900, fontSize: 10, color: Color(0xFF1E293B))),
+                      ),
                     ),
-                  ),
-                  const SizedBox(width: 4),
-                  const Icon(Icons.add_card_rounded, size: 14, color: Colors.blue),
-                ],
+                    const SizedBox(width: 4),
+                    Container(
+                      padding: const EdgeInsets.all(4),
+                      decoration: BoxDecoration(
+                        color: const Color(0xFF10B981).withValues(alpha: 0.12),
+                        borderRadius: BorderRadius.circular(6),
+                      ),
+                      child: const Icon(Icons.payments_rounded, size: 13, color: Color(0xFF10B981)),
+                    ),
+                  ],
+                ),
               ),
             ),
-          ),
           ...days.map((day) {
             final dayAtt = attendance.where((a) => _isSameDay(DateTime.fromMillisecondsSinceEpoch(a.date), day)).toList();
             final dayPayments = payments.where((p) => _isSameDay(DateTime.fromMillisecondsSinceEpoch(p.date), day)).toList();
             return Container(
               width: dayWidth,
               height: 64,
-              decoration: BoxDecoration(border: Border(left: BorderSide(color: Colors.black.withValues(alpha: 0.05)))),
+              decoration: const BoxDecoration(border: Border(left: BorderSide(color: Color(0xFFE2E8F0)))),
               child: SingleChildScrollView(
                 child: Column(
                   mainAxisAlignment: MainAxisAlignment.center,
