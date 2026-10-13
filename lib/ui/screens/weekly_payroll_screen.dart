@@ -381,8 +381,8 @@ class _WeeklyPayrollScreenState extends State<WeeklyPayrollScreen> {
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       Container(
-                        color: const Color(0xFFF1F5F9),
                         decoration: const BoxDecoration(
+                          color: Color(0xFFF1F5F9),
                           border: Border(bottom: BorderSide(color: Color(0xFFCBD5E1), width: 1.5)),
                         ),
                         child: Row(
