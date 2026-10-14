@@ -100,12 +100,15 @@ class _WeeklyPayrollScreenState extends State<WeeklyPayrollScreen> {
           const SizedBox(width: 8),
         ],
       ),
-      body: SingleChildScrollView(
-        child: Column(
-          children: [
-            _buildTotalDebtCardPremium(provider, endOfPeriod),
-            _buildPeriodNavigatorPremium(startOfPeriod, endOfPeriod),
-            FutureBuilder<List<AttendanceEntity>>(
+      body: Center(
+        child: Container(
+          constraints: BoxConstraints(maxWidth: Responsive.maxWidth(context)),
+          child: SingleChildScrollView(
+            child: Column(
+              children: [
+                _buildTotalDebtCardPremium(provider, endOfPeriod),
+                _buildPeriodNavigatorPremium(startOfPeriod, endOfPeriod),
+                FutureBuilder<List<AttendanceEntity>>(
               future: provider.getAttendanceInRange(startOfPeriod.millisecondsSinceEpoch, endOfPeriod.millisecondsSinceEpoch),
               builder: (context, attendanceSnapshot) {
                 return FutureBuilder<List<Expense>>(
@@ -148,8 +151,10 @@ class _WeeklyPayrollScreenState extends State<WeeklyPayrollScreen> {
           ],
         ),
       ),
-    );
-  }
+    ),
+  ),
+);
+}
 
   Widget _buildTotalDebtCardPremium(ProjectProvider provider, DateTime endOfPeriod) {
     return FutureBuilder<double>(
