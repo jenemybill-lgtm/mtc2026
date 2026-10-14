@@ -166,7 +166,17 @@ class _CategoryScreenState extends State<CategoryScreen> {
               if (widget.category == AppDestinations.EARTHWORKS) _calcBtn("Υπολογιστής", Icons.landslide_rounded, EarthworksCalculator(onResult: _handleCalcResult), catColor),
               if (widget.category == AppDestinations.WINDOWS) _calcBtn("Υπολογιστής", Icons.calculate_rounded, WindowCalculator(onResult: _handleCalcResult), catColor),
               if (widget.category == AppDestinations.DRYWALL) _calcBtn("Υλικά & Εργασία", Icons.square_rounded, DrywallCalculator(onResult: _handleCalcResult), catColor),
-              if (widget.category == AppDestinations.GENERAL || widget.category == AppDestinations.TILES) _calcBtn("Υλικά (Άμμος/Τσιμ.)", Icons.home_work_rounded, MortarCalculator(category: widget.category.name, onResult: _handleCalcResult), catColor),
+              if (widget.category == AppDestinations.GENERAL || widget.category == AppDestinations.TILES) _calcBtn("Υλικά (Άμμος/Τσιμ.)", Icons.home_work_rounded, MortarCalculator(
+                category: widget.category.name, 
+                onResult: _handleCalcResult,
+                onAddMaterials: (items) async {
+                  final provider = Provider.of<ProjectProvider>(context, listen: false);
+                  for (var item in items) {
+                    await provider.addQuoteItem(widget.projectId, item);
+                  }
+                  setState(() {});
+                },
+              ), catColor),
               if (widget.category == AppDestinations.ELECTRICAL) _calcBtn("Υπολογιστής", Icons.bolt_rounded, ElectricalCalculator(onResult: _handleCalcResult), catColor),
               if (widget.category == AppDestinations.PLUMBING) _calcBtn("Υπολογιστής", Icons.water_drop_rounded, PlumbingCalculator(onResult: _handleCalcResult), catColor),
               if (widget.category == AppDestinations.PAINTING) _calcBtn("Υπολογιστής", Icons.brush_rounded, PaintingCalculator(onResult: _handleCalcResult), catColor),

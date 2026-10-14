@@ -2,14 +2,16 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:collection/collection.dart';
 import 'package:mtc2026/models/project_models.dart';
+import 'package:mtc2026/models/enums.dart';
 import 'package:mtc2026/providers/project_provider.dart';
 import 'package:mtc2026/ui/calculators/calculator_widgets.dart';
 
 class MortarCalculator extends StatefulWidget {
   final String category;
   final Function(String, String, String, String) onResult;
+  final Function(List<QuoteItem>)? onAddMaterials; // Νέο: CallbacK για προσθήκη πολλαπλών υλικών
 
-  const MortarCalculator({super.key, required this.category, required this.onResult});
+  const MortarCalculator({super.key, required this.category, required this.onResult, this.onAddMaterials});
 
   @override
   State<MortarCalculator> createState() => _MortarCalculatorState();
@@ -382,10 +384,73 @@ class _MortarCalculatorState extends State<MortarCalculator> {
                 }
                 if (glueQty > 0) detailNote += "\n- Κόλλα: $glueQty σακιά";
 
-                widget.onResult(_selectedType, q, grandTotal.toStringAsFixed(2), detailNote);
+                if (widget.onAddMaterials != null) {
+                  List<QuoteItem> itemsToExport = [];
+                  final multiplier = double.tryParse(q) ?? 1.0;
+                  
+                  if (sandQtyM3 > 0) {
+                    itemsToExport.add(QuoteItem(
+                      category: AppDestinations.values.firstWhere((e) => e.name == widget.category, orElse: () => AppDestinations.GENERAL),
+                      description: "Άμμος",
+                      unit: _sandUnit,
+                      quantity: (_sandUnit == "m³" ? (sandQtyM3 * multiplier) : (sandQtyBags * multiplier)).toStringAsFixed(2),
+                      unitPrice: sandPrice.toString(),
+                    ));
+                  }
+                  if (cementQty > 0) {
+                    itemsToExport.add(QuoteItem(
+                      category: AppDestinations.values.firstWhere((e) => e.name == widget.category, orElse: () => AppDestinations.GENERAL),
+                      description: "Τσιμέντο (Σακιά)",
+                      unit: "σακί",
+                      quantity: (cementQty * multiplier).toString(),
+                      unitPrice: cementPrice.toString(),
+                    ));
+                  }
+                  if (limeQty > 0) {
+                    itemsToExport.add(QuoteItem(
+                      category: AppDestinations.values.firstWhere((e) => e.name == widget.category, orElse: () => AppDestinations.GENERAL),
+                      description: "Ασβέστης",
+                      unit: _limeUnit,
+                      quantity: (_limeUnit == "σακί" ? (limeQty * multiplier) : (areaVal * multiplier)).toStringAsFixed(2),
+                      unitPrice: limePrice.toString(),
+                    ));
+                  }
+                  if (marbleDustQtyM3 > 0) {
+                    itemsToExport.add(QuoteItem(
+                      category: AppDestinations.values.firstWhere((e) => e.name == widget.category, orElse: () => AppDestinations.GENERAL),
+                      description: "Μαρμαρόσκονη",
+                      unit: _marbleUnit,
+                      quantity: (_marbleUnit == "m³" ? (marbleDustQtyM3 * multiplier) : (marbleDustQtyBags * multiplier)).toStringAsFixed(2),
+                      unitPrice: marblePrice.toString(),
+                    ));
+                  }
+                  if (glueQty > 0) {
+                    itemsToExport.add(QuoteItem(
+                      category: AppDestinations.values.firstWhere((e) => e.name == widget.category, orElse: () => AppDestinations.GENERAL),
+                      description: "Κόλλα Πλακιδίων (Σακιά)",
+                      unit: "σακί",
+                      quantity: (glueQty * multiplier).toString(),
+                      unitPrice: gluePrice.toString(),
+                    ));
+                  }
+                  
+                  // Add Labor
+                  itemsToExport.add(QuoteItem(
+                    category: AppDestinations.values.firstWhere((e) => e.name == widget.category, orElse: () => AppDestinations.GENERAL),
+                    description: "ΕΡΓΑΤΙΚΑ: $_selectedType",
+                    unit: "τ.μ.",
+                    quantity: (areaVal * multiplier).toStringAsFixed(2),
+                    unitPrice: laborPerSqm.toString(),
+                  ));
+
+                  widget.onAddMaterials!(itemsToExport);
+                } else {
+                  widget.onResult(_selectedType, q, grandTotal.toStringAsFixed(2), detailNote);
+                }
+                
                 Navigator.pop(context);
               } : null,
-              child: const Text("ΜΕΤΑΦΟΡΑ ΣΤΗΝ ΠΡΟΣΦΟΡΑ", style: TextStyle(fontWeight: FontWeight.w900, letterSpacing: 1)),
+              child: const Text("ΠΡΟΣΘΗΚΗ ΥΛΙΚΩΝ ΣΤΗΝ ΠΡΟΣΦΟΡΑ", style: TextStyle(fontWeight: FontWeight.w900, letterSpacing: 1)),
             ),
           ),
           const SizedBox(height: 40),
