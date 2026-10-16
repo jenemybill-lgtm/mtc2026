@@ -180,69 +180,32 @@ class _PartnersTabState extends State<PartnersTab> {
         Row(
           mainAxisAlignment: MainAxisAlignment.spaceBetween,
           children: [
-            const PremiumHeader(title: "ΣΥΝΕΡΓΑΤΕΣ ΕΡΓΟΥ", icon: Icons.groups_rounded, color: Color(0xFF10B981)),
-            ElevatedButton.icon(
+            const PremiumHeader(title: "ΣΥΝΕΡΓΑΤΕΣ ΕΡΓΟΥ", icon: Icons.groups_rounded, color: Colors.teal),
+            IconButton.filledTonal(
               onPressed: _showAddPartnerToProjectPicker, 
-              icon: const Icon(Icons.add_rounded, size: 18),
-              label: const Text("ΠΡΟΣΘΗΚΗ", style: TextStyle(fontWeight: FontWeight.w900, fontSize: 11)),
-              style: ElevatedButton.styleFrom(
-                backgroundColor: const Color(0xFF10B981),
-                foregroundColor: Colors.white,
-                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-              ),
+              icon: const Icon(Icons.add_rounded),
+              style: IconButton.styleFrom(backgroundColor: Colors.teal.withValues(alpha: 0.1), foregroundColor: Colors.teal),
             ),
           ],
         ),
         const SizedBox(height: 20),
         if (_projectPartners.isEmpty)
-           const PremiumEmptyState(
-             title: "ΔΕΝ ΥΠΑΡΧΟΥΝ ΣΥΝΕΡΓΑΤΕΣ",
-             subtitle: "Δεν έχετε αναθέσει ακόμα συνεργάτες σε αυτό το έργο.",
-             icon: Icons.group_off_rounded,
-           )
+           const Center(child: Padding(padding: EdgeInsets.all(32), child: Text("Κανένας συνεργάτης δεν έχει ανατεθεί στο έργο", style: TextStyle(color: Colors.grey, fontStyle: FontStyle.italic))))
         else
-          ..._projectPartners.map((p) => Container(
-            margin: const EdgeInsets.only(bottom: 12),
-            decoration: BoxDecoration(
-              color: Colors.white,
-              borderRadius: BorderRadius.circular(16),
-              border: Border.all(color: Colors.black.withValues(alpha: 0.05), width: 1.0),
-              boxShadow: [
-                BoxShadow(color: Colors.black.withValues(alpha: 0.03), blurRadius: 8, offset: const Offset(0, 2)),
-              ],
-            ),
-            child: Material(
-              color: Colors.transparent,
-              child: Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-                child: Row(
-                  children: [
-                    Container(
-                      width: 44, height: 44,
-                      decoration: BoxDecoration(color: const Color(0xFF10B981).withValues(alpha: 0.1), borderRadius: BorderRadius.circular(12)),
-                      child: const Icon(Icons.person_rounded, color: Color(0xFF10B981), size: 22),
-                    ),
-                    const SizedBox(width: 16),
-                    Expanded(
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Text(p.name.toUpperCase(), style: const TextStyle(fontWeight: FontWeight.w900, fontSize: 13, color: Color(0xFF1E293B))),
-                          const SizedBox(height: 2),
-                          Text(p.trade, style: const TextStyle(fontWeight: FontWeight.w700, fontSize: 11, color: Colors.blueGrey)),
-                        ],
-                      ),
-                    ),
-                    IconButton(
-                      icon: const Icon(Icons.person_remove_rounded, color: Colors.redAccent, size: 20),
-                      style: IconButton.styleFrom(backgroundColor: Colors.red.withValues(alpha: 0.08)),
-                      onPressed: () async {
-                        await Provider.of<ProjectProvider>(context, listen: false).removePartnerFromProject(widget.project.id, p.id);
-                        _loadPartners();
-                      },
-                    ),
-                  ],
-                ),
+          ..._projectPartners.map((p) => Card(
+            elevation: 0,
+            margin: const EdgeInsets.only(bottom: 8),
+            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16), side: BorderSide(color: Colors.teal.withValues(alpha: 0.2))),
+            child: ListTile(
+              leading: CircleAvatar(backgroundColor: Colors.teal.withValues(alpha: 0.1), child: const Icon(Icons.person, color: Colors.teal)),
+              title: Text(p.name, style: const TextStyle(fontWeight: FontWeight.bold)),
+              subtitle: Text(p.trade),
+              trailing: IconButton(
+                icon: const Icon(Icons.person_remove_rounded, color: Colors.red),
+                onPressed: () async {
+                  await Provider.of<ProjectProvider>(context, listen: false).removePartnerFromProject(widget.project.id, p.id);
+                  _loadPartners();
+                },
               ),
             ),
           )).toList(),
