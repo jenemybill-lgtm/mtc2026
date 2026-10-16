@@ -144,6 +144,8 @@ class AiInvoiceScannerService {
             final text = data['candidates'][0]['content']['parts'][0]['text'];
             return _parseJsonText(text);
           }
+        } else {
+           debugPrint("Gemini Error: ${response.statusCode} - ${response.body}");
         }
       }
     } catch (e) {
