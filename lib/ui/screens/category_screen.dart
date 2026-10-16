@@ -701,7 +701,7 @@ class _CategoryScreenState extends State<CategoryScreen> {
             actions: [
               TextButton(onPressed: () => Navigator.pop(ctx), child: const Text("ΑΚΥΡΟ", style: TextStyle(fontWeight: FontWeight.w900))),
               ElevatedButton(
-                onPressed: () {
+                onPressed: () async {
                   final item = QuoteItem(
                     category: widget.category,
                     description: desc,
@@ -711,8 +711,9 @@ class _CategoryScreenState extends State<CategoryScreen> {
                     internalNote: note,
                     isExtra: isExtra,
                   );
-                  Provider.of<ProjectProvider>(context, listen: false).addQuoteItem(widget.projectId, item);
-                  Navigator.pop(ctx);
+                  await Provider.of<ProjectProvider>(context, listen: false).addQuoteItem(widget.projectId, item);
+                  if (ctx.mounted) Navigator.pop(ctx);
+                  setState(() {});
                 },
                 style: ElevatedButton.styleFrom(backgroundColor: const Color(0xFF4361EE)),
                 child: const Text("ΠΡΟΣΘΗΚΗ", style: TextStyle(fontWeight: FontWeight.w900)),
