@@ -169,12 +169,73 @@ class _CategoryScreenState extends State<CategoryScreen> {
               if (widget.category == AppDestinations.GENERAL || widget.category == AppDestinations.TILES) _calcBtn("Υλικά (Άμμος/Τσιμ.)", Icons.home_work_rounded, MortarCalculator(
                 category: widget.category.name, 
                 onResult: _handleCalcResult,
-                onAddMaterials: (items) async {
-                  final provider = Provider.of<ProjectProvider>(context, listen: false);
-                  for (var item in items) {
-                    await provider.addQuoteItem(widget.projectId, item);
-                  }
-                  setState(() {});
+                onAddMaterials: (items) {
+                  showDialog(
+                    context: context,
+                    builder: (ctx) {
+                      bool isExtra = false;
+                      return StatefulBuilder(
+                        builder: (ctx, setDialogState) => AlertDialog(
+                          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(28)),
+                          title: const PremiumHeader(title: "ΤΥΠΟΣ ΕΡΓΑΣΙΑΣ ΥΛΙΚΩΝ", icon: Icons.playlist_add_check_rounded, color: Color(0xFF4361EE)),
+                          content: Column(
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              const Text("Πώς θέλετε να καταχωρηθούν αυτά τα υλικά;", style: TextStyle(fontWeight: FontWeight.bold, fontSize: 13, color: Colors.blueGrey)),
+                              const SizedBox(height: 16),
+                              Container(
+                                decoration: BoxDecoration(
+                                  color: Colors.orange.withValues(alpha: 0.08),
+                                  borderRadius: BorderRadius.circular(16),
+                                  border: Border.all(color: Colors.orange.withValues(alpha: 0.3)),
+                                ),
+                                child: CheckboxListTile(
+                                  title: const Row(
+                                    children: [
+                                      Icon(Icons.stars_rounded, color: Colors.orange, size: 18),
+                                      SizedBox(width: 8),
+                                      Expanded(child: Text("ΕΞΤΡΑ ΕΡΓΑΣΙΑ", style: TextStyle(fontSize: 12, fontWeight: FontWeight.w900, color: Colors.orange))),
+                                    ],
+                                  ),
+                                  subtitle: const Text("Θα σημανθούν ως 'ΕΞΤΡΑ' εκτός αρχικής προσφοράς", style: TextStyle(fontSize: 10, color: Colors.blueGrey, fontWeight: FontWeight.bold)),
+                                  value: isExtra,
+                                  onChanged: (v) => setDialogState(() => isExtra = v ?? false),
+                                  activeColor: Colors.orange,
+                                  contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
+                                ),
+                              ),
+                            ],
+                          ),
+                          actions: [
+                            TextButton(onPressed: () => Navigator.pop(ctx), child: const Text("ΑΚΥΡΟ", style: TextStyle(fontWeight: FontWeight.w900))),
+                            ElevatedButton(
+                              onPressed: () async {
+                                final provider = Provider.of<ProjectProvider>(context, listen: false);
+                                for (var item in items) {
+                                  // Update item with isExtra status
+                                  final finalItem = QuoteItem(
+                                    id: item.id,
+                                    category: item.category,
+                                    subCategory: item.subCategory,
+                                    description: item.description,
+                                    unit: item.unit,
+                                    quantity: item.quantity,
+                                    unitPrice: item.unitPrice,
+                                    isExtra: isExtra,
+                                  );
+                                  await provider.addQuoteItem(widget.projectId, finalItem);
+                                }
+                                if (ctx.mounted) Navigator.pop(ctx);
+                                setState(() {});
+                              },
+                              style: ElevatedButton.styleFrom(backgroundColor: const Color(0xFF4361EE)),
+                              child: const Text("ΠΡΟΣΘΗΚΗ", style: TextStyle(fontWeight: FontWeight.w900)),
+                            ),
+                          ],
+                        ),
+                      );
+                    },
+                  );
                 },
               ), catColor),
               if (widget.category == AppDestinations.ELECTRICAL) _calcBtn("Υπολογιστής", Icons.bolt_rounded, ElectricalCalculator(onResult: _handleCalcResult), catColor),
@@ -601,15 +662,66 @@ class _CategoryScreenState extends State<CategoryScreen> {
   }
 
   void _handleCalcResult(String desc, String qty, String price, String note) {
-    final item = QuoteItem(
-      category: widget.category,
-      description: desc,
-      unit: "τ.μ.",
-      quantity: qty,
-      unitPrice: price,
-      internalNote: note,
+    showDialog(
+      context: context,
+      builder: (ctx) {
+        bool isExtra = false;
+        return StatefulBuilder(
+          builder: (ctx, setDialogState) => AlertDialog(
+            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(28)),
+            title: const PremiumHeader(title: "ΤΥΠΟΣ ΕΡΓΑΣΙΑΣ", icon: Icons.playlist_add_check_rounded, color: Color(0xFF4361EE)),
+            content: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                const Text("Πώς θέλετε να καταχωρηθεί αυτή η εργασία από τον Υπολογιστή;", style: TextStyle(fontWeight: FontWeight.bold, fontSize: 13, color: Colors.blueGrey)),
+                const SizedBox(height: 16),
+                Container(
+                  decoration: BoxDecoration(
+                    color: Colors.orange.withValues(alpha: 0.08),
+                    borderRadius: BorderRadius.circular(16),
+                    border: Border.all(color: Colors.orange.withValues(alpha: 0.3)),
+                  ),
+                  child: CheckboxListTile(
+                    title: const Row(
+                      children: [
+                        Icon(Icons.stars_rounded, color: Colors.orange, size: 18),
+                        SizedBox(width: 8),
+                        Expanded(child: Text("ΕΞΤΡΑ ΕΡΓΑΣΙΑ", style: TextStyle(fontSize: 12, fontWeight: FontWeight.w900, color: Colors.orange))),
+                      ],
+                    ),
+                    subtitle: const Text("Θα σημανθεί ως 'ΕΞΤΡΑ' εκτός αρχικής προσφοράς", style: TextStyle(fontSize: 10, color: Colors.blueGrey, fontWeight: FontWeight.bold)),
+                    value: isExtra,
+                    onChanged: (v) => setDialogState(() => isExtra = v ?? false),
+                    activeColor: Colors.orange,
+                    contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
+                  ),
+                ),
+              ],
+            ),
+            actions: [
+              TextButton(onPressed: () => Navigator.pop(ctx), child: const Text("ΑΚΥΡΟ", style: TextStyle(fontWeight: FontWeight.w900))),
+              ElevatedButton(
+                onPressed: () {
+                  final item = QuoteItem(
+                    category: widget.category,
+                    description: desc,
+                    unit: "τ.μ.",
+                    quantity: qty,
+                    unitPrice: price,
+                    internalNote: note,
+                    isExtra: isExtra,
+                  );
+                  Provider.of<ProjectProvider>(context, listen: false).addQuoteItem(widget.projectId, item);
+                  Navigator.pop(ctx);
+                },
+                style: ElevatedButton.styleFrom(backgroundColor: const Color(0xFF4361EE)),
+                child: const Text("ΠΡΟΣΘΗΚΗ", style: TextStyle(fontWeight: FontWeight.w900)),
+              ),
+            ],
+          ),
+        );
+      },
     );
-    Provider.of<ProjectProvider>(context, listen: false).addQuoteItem(widget.projectId, item);
   }
 }
 
@@ -966,7 +1078,7 @@ class _AddEditQuoteItemDialogState extends State<_AddEditQuoteItemDialog> {
                           children: [
                             Icon(Icons.stars_rounded, color: Colors.orange, size: 18),
                             SizedBox(width: 8),
-                            Text("ΕΞΤΡΑ ΕΡΓΑΣΙΑ (Εκτός αρχικής προσφοράς)", style: TextStyle(fontSize: 11, fontWeight: FontWeight.w900, color: Colors.orange)),
+                            Expanded(child: Text("ΕΞΤΡΑ ΕΡΓΑΣΙΑ (Εκτός αρχικής προσφοράς)", style: TextStyle(fontSize: 11, fontWeight: FontWeight.w900, color: Colors.orange))),
                           ],
                         ),
                         subtitle: const Text("Θα επισημανθεί ξεκάθαρα ως 'ΕΞΤΡΑ' στην προσφορά και στο PDF", style: TextStyle(fontSize: 9, color: Colors.blueGrey, fontWeight: FontWeight.bold)),
