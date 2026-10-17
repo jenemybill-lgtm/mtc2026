@@ -1814,10 +1814,11 @@ class DatabaseHelper {
   }
 
   // Worker Dispatches (Προγραμματισμός Αποστολής Εργατών)
-  Future<List<WorkerDispatch>> getWorkerDispatches(int dateTimestamp) async {
+  Future<List<WorkerDispatch>> getWorkerDispatches(int startOfDay, int endOfDay) async {
     if (kIsWeb) {
       return (_webMemory['worker_dispatches'] ?? [])
           .map((e) => WorkerDispatch.fromMap(e))
+          .where((e) => e.date >= startOfDay && e.date <= endOfDay)
           .toList();
     }
     Database? db = await database;
@@ -1839,8 +1840,8 @@ class DatabaseHelper {
     
     var result = await db!.query(
       'worker_dispatches',
-      where: 'date = ?',
-      whereArgs: [dateTimestamp],
+      where: 'date >= ? AND date <= ?',
+      whereArgs: [startOfDay, endOfDay],
       orderBy: 'id DESC',
     );
     return result.map((e) => WorkerDispatch.fromMap(e)).toList();

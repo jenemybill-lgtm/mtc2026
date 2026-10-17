@@ -915,8 +915,9 @@ class ProjectProvider with ChangeNotifier {
 
   // --- WORKER DISPATCHES (Προγραμματισμός Αποστολών) ---
   Future<List<WorkerDispatch>> getWorkerDispatches(DateTime date) async {
-    final startOfDay = DateTime(date.year, date.month, date.day).millisecondsSinceEpoch;
-    return await DatabaseHelper().getWorkerDispatches(startOfDay);
+    final startOfDay = DateTime(date.year, date.month, date.day, 0, 0, 0).millisecondsSinceEpoch;
+    final endOfDay = DateTime(date.year, date.month, date.day, 23, 59, 59, 999).millisecondsSinceEpoch;
+    return await DatabaseHelper().getWorkerDispatches(startOfDay, endOfDay);
   }
 
   Future<void> addWorkerDispatch(WorkerDispatch d) async {
