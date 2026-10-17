@@ -1156,6 +1156,14 @@ class ProjectProvider with ChangeNotifier {
     await _autoSync();
   }
 
+  Future<List<Expense>> getExpensesForAccountant() async {
+    return await DatabaseHelper().getAllExpenses();
+  }
+
+  Future<List<Income>> getIncomesForAccountant() async {
+    return await DatabaseHelper().getAllIncomes();
+  }
+
   // --- FINANCIALS & BREAKDOWN ---
   Future<ProjectROIData> calculateProjectROIData(int projectId) async {
     final db = DatabaseHelper();

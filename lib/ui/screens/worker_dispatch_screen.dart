@@ -566,7 +566,10 @@ class _DispatchCard extends StatelessWidget {
                             ],
                           ),
                           child: ElevatedButton.icon(
-                            onPressed: () => _sendWhatsApp(context, dispatch, project),
+                            onPressed: () {
+                              final provider = Provider.of<ProjectProvider>(context, listen: false);
+                              _sendWhatsApp(context, dispatch, project, provider.settings.companyName.isNotEmpty ? provider.settings.companyName : "MTC 2026");
+                            },
                             icon: const Icon(Icons.chat_rounded, size: 16),
                             label: const Text("WHATSAPP", style: TextStyle(fontWeight: FontWeight.w900, fontSize: 10, letterSpacing: 0.5)),
                             style: ElevatedButton.styleFrom(
@@ -595,7 +598,10 @@ class _DispatchCard extends StatelessWidget {
                             ],
                           ),
                           child: ElevatedButton.icon(
-                            onPressed: () => _sendSMS(context, dispatch, project),
+                            onPressed: () {
+                              final provider = Provider.of<ProjectProvider>(context, listen: false);
+                              _sendSMS(context, dispatch, project, provider.settings.companyName.isNotEmpty ? provider.settings.companyName : "MTC 2026");
+                            },
                             icon: const Icon(Icons.sms_rounded, size: 16),
                             label: const Text("SMS", style: TextStyle(fontWeight: FontWeight.w900, fontSize: 10, letterSpacing: 0.5)),
                             style: ElevatedButton.styleFrom(
@@ -648,14 +654,21 @@ class _DispatchCard extends StatelessWidget {
     );
   }
 
-  void _sendWhatsApp(BuildContext context, WorkerDispatch dispatch, Project project) async {
+  void _sendWhatsApp(BuildContext context, WorkerDispatch dispatch, Project project, String companyName) async {
     final dateStr = DateFormat('dd/MM/yyyy', 'el').format(DateTime.fromMillisecondsSinceEpoch(dispatch.date));
+    
+    // Construct Google Maps Link if address is available
+    String mapsLink = "";
+    if (project.address.isNotEmpty) {
+      mapsLink = "\n📍 Τοποθεσία: https://www.google.com/maps/search/?api=1&query=${Uri.encodeComponent(project.address)}";
+    }
+
     final msg = """
-👷‍♂️ *MTC 2026 - ΟΔΗΓΙΕΣ ΕΡΓΑΣΙΑΣ*
+👷‍♂️ *ΟΔΗΓΙΕΣ ΕΡΓΑΣΙΑΣ | $companyName*
 📅 Ημερομηνία: $dateStr
 ⏰ Ώρα προσέλευσης: ${dispatch.timeStr}
-📍 Έργο: ${project.name.toUpperCase()}
-🗺️ Διεύθυνση: ${project.address.isNotEmpty ? project.address : 'Χωρίς Διεύθυνση'}
+🏗️ Έργο: ${project.name.toUpperCase()}
+🗺️ Διεύθυνση: ${project.address.isNotEmpty ? project.address : 'Χωρίς Διεύθυνση'}$mapsLink
 🛠️ Εργασία: ${dispatch.taskDescription.isNotEmpty ? dispatch.taskDescription : 'Γενικές Εργασίες'}
 
 Παρακαλώ επιβεβαιώστε τη λήψη.
@@ -686,14 +699,21 @@ class _DispatchCard extends StatelessWidget {
     }
   }
 
-  void _sendSMS(BuildContext context, WorkerDispatch dispatch, Project project) async {
+  void _sendSMS(BuildContext context, WorkerDispatch dispatch, Project project, String companyName) async {
     final dateStr = DateFormat('dd/MM/yyyy', 'el').format(DateTime.fromMillisecondsSinceEpoch(dispatch.date));
+    
+    // Construct Google Maps Link if address is available
+    String mapsLink = "";
+    if (project.address.isNotEmpty) {
+      mapsLink = "\nΤοποθεσία: https://www.google.com/maps/search/?api=1&query=${Uri.encodeComponent(project.address)}";
+    }
+
     final msg = """
-MTC 2026 ΟΔΗΓΙΕΣ:
+ΟΔΗΓΙΕΣ ΕΡΓΑΣΙΑΣ ($companyName):
 Ημερομηνία: $dateStr
 Ώρα: ${dispatch.timeStr}
 Έργο: ${project.name.toUpperCase()}
-Διεύθυνση: ${project.address.isNotEmpty ? project.address : 'Χωρίς Διεύθυνση'}
+Διεύθυνση: ${project.address.isNotEmpty ? project.address : 'Χωρίς Διεύθυνση'}$mapsLink
 Εργασία: ${dispatch.taskDescription.isNotEmpty ? dispatch.taskDescription : 'Γενικές Εργασίες'}
 """;
 
