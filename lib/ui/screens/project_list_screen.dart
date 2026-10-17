@@ -709,6 +709,7 @@ class _ProjectEntryDialogState extends State<ProjectEntryDialog> {
               TextField(controller: _nameController, decoration: const InputDecoration(labelText: "Όνομα Έργου", prefixIcon: Icon(Icons.business_rounded, size: 20))),
               const SizedBox(height: 12),
               Autocomplete<Client>(
+                initialValue: TextEditingValue(text: _selectedClient?.name ?? widget.initialProject?.clientName ?? ""),
                 optionsBuilder: (TextEditingValue textEditingValue) {
                   final query = textEditingValue.text.trim();
                   if (query.isEmpty) {
