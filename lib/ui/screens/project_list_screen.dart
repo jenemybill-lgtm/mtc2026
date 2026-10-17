@@ -436,150 +436,170 @@ class ProjectCardPremium extends StatelessWidget {
 
     return Container(
       decoration: BoxDecoration(
-        color: accentColor,
-        borderRadius: BorderRadius.circular(20),
+        color: accentColor.withValues(alpha: 0.05),
+        borderRadius: BorderRadius.circular(16),
+        border: Border.all(color: accentColor.withValues(alpha: 0.2), width: 1.0),
         boxShadow: [
           BoxShadow(
-            color: accentColor.withValues(alpha: 0.35),
-            blurRadius: 15,
-            offset: const Offset(0, 6),
+            color: Colors.black.withValues(alpha: 0.03),
+            blurRadius: 8,
+            offset: const Offset(0, 3),
           ),
         ],
       ),
       child: Material(
         color: Colors.transparent,
-        borderRadius: BorderRadius.circular(20),
+        borderRadius: BorderRadius.circular(16),
         child: InkWell(
           onTap: onClick,
           onLongPress: onLongClick,
-          borderRadius: BorderRadius.circular(20),
-          child: Padding(
-            padding: const EdgeInsets.all(12),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                // Top Row: Icon badge + Status tag + Budget chip
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  children: [
-                    Row(
-                      children: [
-                        Container(
-                          width: 30,
-                          height: 30,
-                          decoration: BoxDecoration(
-                            color: Colors.white.withValues(alpha: 0.2),
-                            borderRadius: BorderRadius.circular(10),
-                          ),
-                          child: Icon(
-                            isCompleted
-                                ? Icons.check_circle_rounded
-                                : project.status == 0
-                                    ? Icons.edit_document
-                                    : Icons.business_center_rounded,
-                            color: Colors.white,
-                            size: 16,
-                          ),
-                        ),
-                        const SizedBox(width: 8),
-                        Container(
-                          padding: const EdgeInsets.symmetric(horizontal: 7, vertical: 3),
-                          decoration: BoxDecoration(
-                            color: Colors.white.withValues(alpha: 0.15),
-                            borderRadius: BorderRadius.circular(8),
-                          ),
-                          child: Text(
-                            statusLabel,
-                            style: const TextStyle(
-                              fontSize: 8,
-                              fontWeight: FontWeight.w900,
-                              color: Colors.white,
-                              letterSpacing: 0.5,
-                            ),
-                          ),
-                        ),
-                      ],
+          borderRadius: BorderRadius.circular(16),
+          child: Stack(
+            children: [
+              Positioned(
+                left: 0,
+                top: 0,
+                bottom: 0,
+                child: Container(
+                  width: 4,
+                  decoration: BoxDecoration(
+                    color: accentColor,
+                    borderRadius: const BorderRadius.only(
+                      topLeft: Radius.circular(16),
+                      bottomLeft: Radius.circular(16),
                     ),
-                    if (project.proposalValue > 0)
-                      Text(
-                        "${project.proposalValue.toStringAsFixed(0)}€",
-                        style: const TextStyle(
-                          fontSize: 11,
-                          fontWeight: FontWeight.w900,
-                          color: Colors.white,
-                        ),
-                      ),
-                  ],
+                  ),
                 ),
-
-                const SizedBox(height: 8),
-
-                // Center Title & Client Subtitle
-                Expanded(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: [
-                      Text(
-                        project.name.toUpperCase(),
-                        style: const TextStyle(
-                          fontWeight: FontWeight.w900,
-                          fontSize: 12,
-                          color: Colors.white,
-                          letterSpacing: -0.2,
-                          height: 1.2,
-                        ),
-                        maxLines: 2,
-                        overflow: TextOverflow.ellipsis,
-                      ),
-                      if (project.clientName.isNotEmpty) ...[
-                        const SizedBox(height: 3),
+              ),
+              Padding(
+                padding: const EdgeInsets.fromLTRB(16, 12, 12, 12),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    // Top Row: Icon badge + Status tag + Budget chip
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
                         Row(
                           children: [
-                            Icon(Icons.person_outline_rounded, size: 10, color: Colors.white.withValues(alpha: 0.7)),
-                            const SizedBox(width: 3),
-                            Expanded(
+                            Container(
+                              width: 32,
+                              height: 32,
+                              decoration: BoxDecoration(
+                                color: accentColor.withValues(alpha: 0.15),
+                                borderRadius: BorderRadius.circular(10),
+                              ),
+                              child: Icon(
+                                isCompleted
+                                    ? Icons.check_circle_rounded
+                                    : project.status == 0
+                                        ? Icons.edit_document
+                                        : Icons.business_center_rounded,
+                                color: accentColor,
+                                size: 18,
+                              ),
+                            ),
+                            const SizedBox(width: 8),
+                            Container(
+                              padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                              decoration: BoxDecoration(
+                                color: accentColor.withValues(alpha: 0.15),
+                                borderRadius: BorderRadius.circular(8),
+                              ),
                               child: Text(
-                                project.clientName.toUpperCase(),
+                                statusLabel,
                                 style: TextStyle(
-                                  fontWeight: FontWeight.w800,
-                                  fontSize: 9,
-                                  color: Colors.white.withValues(alpha: 0.8),
-                                  letterSpacing: 0.2,
+                                  fontSize: 8,
+                                  fontWeight: FontWeight.w900,
+                                  color: accentColor,
+                                  letterSpacing: 0.5,
                                 ),
-                                maxLines: 1,
-                                overflow: TextOverflow.ellipsis,
                               ),
                             ),
                           ],
                         ),
-                      ],
-                    ],
-                  ),
-                ),
-
-                // Bottom Row: Date badge
-                if (dateStr != null) ...[
-                  const SizedBox(height: 4),
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    children: [
-                      Row(
-                        children: [
-                          Icon(Icons.calendar_today_rounded, size: 9, color: Colors.white.withValues(alpha: 0.7)),
-                          const SizedBox(width: 4),
+                        if (project.proposalValue > 0)
                           Text(
-                            dateStr,
-                            style: const TextStyle(fontSize: 8, fontWeight: FontWeight.bold, color: Colors.white),
+                            "${project.proposalValue.toStringAsFixed(0)}€",
+                            style: TextStyle(
+                              fontSize: 12,
+                              fontWeight: FontWeight.w900,
+                              color: accentColor,
+                            ),
                           ),
+                      ],
+                    ),
+
+                    const SizedBox(height: 12),
+
+                    // Center Title & Client Subtitle
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          Text(
+                            project.name.toUpperCase(),
+                            style: const TextStyle(
+                              fontWeight: FontWeight.w900,
+                              fontSize: 14,
+                              color: Color(0xFF1E293B),
+                              letterSpacing: -0.2,
+                              height: 1.2,
+                            ),
+                            maxLines: 2,
+                            overflow: TextOverflow.ellipsis,
+                          ),
+                          if (project.clientName.isNotEmpty) ...[
+                            const SizedBox(height: 3),
+                            Row(
+                              children: [
+                                const Icon(Icons.person_outline_rounded, size: 10, color: Colors.blueGrey),
+                                const SizedBox(width: 3),
+                                Expanded(
+                                  child: Text(
+                                    project.clientName.toUpperCase(),
+                                    style: const TextStyle(
+                                      fontWeight: FontWeight.w800,
+                                      fontSize: 9,
+                                      color: Colors.blueGrey,
+                                      letterSpacing: 0.2,
+                                    ),
+                                    maxLines: 1,
+                                    overflow: TextOverflow.ellipsis,
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ],
                         ],
                       ),
-                      Icon(Icons.chevron_right_rounded, size: 14, color: Colors.white.withValues(alpha: 0.5)),
+                    ),
+
+                    // Bottom Row: Date badge
+                    if (dateStr != null) ...[
+                      const SizedBox(height: 4),
+                      Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        children: [
+                          Row(
+                            children: [
+                              const Icon(Icons.calendar_today_rounded, size: 9, color: Colors.blueGrey),
+                              const SizedBox(width: 4),
+                              Text(
+                                dateStr,
+                                style: const TextStyle(fontSize: 8, fontWeight: FontWeight.bold, color: Colors.blueGrey),
+                              ),
+                            ],
+                          ),
+                          Icon(Icons.chevron_right_rounded, size: 14, color: Colors.blueGrey.withValues(alpha: 0.5)),
+                        ],
+                      ),
                     ],
-                  ),
-                ],
-              ],
-            ),
+                  ],
+                ),
+              ),
+            ],
           ),
         ),
       ),
