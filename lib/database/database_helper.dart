@@ -2678,6 +2678,7 @@ class DatabaseHelper {
       'project_documents': 'project_documents',
       'global_settings': 'global_settings',
       'managers': 'managers',
+      'worker_dispatches': 'worker_dispatches',
     };
 
     final currentAppDirPath = appDir.path;
@@ -2960,6 +2961,7 @@ class DatabaseHelper {
       'project_documents': 'project_documents',
       'global_settings': 'global_settings',
       'managers': 'managers',
+      'worker_dispatches': 'worker_dispatches',
     };
 
     await db!.transaction((txn) async {
