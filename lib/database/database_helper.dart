@@ -142,7 +142,20 @@ class DatabaseHelper {
     await _ensureCompanyExpenseCategory(db);
     await _ensureQuoteItemExtraColumn(db);
     await _ensureClientNotesColumn(db);
+    await _ensureToolAssignedToColumn(db);
     return db;
+  }
+
+  Future<void> _ensureToolAssignedToColumn(Database db) async {
+    final tableInfo = await db.rawQuery("PRAGMA table_info(tools)");
+    final existingColumns = tableInfo.map((row) => row['name'] as String).toSet();
+    if (!existingColumns.contains('assignedTo')) {
+      try {
+        await db.execute("ALTER TABLE tools ADD COLUMN assignedTo TEXT DEFAULT ''");
+      } catch (e) {
+        print("Schema update error tools assignedTo: $e");
+      }
+    }
   }
 
   Future<void> _ensureClientNotesColumn(Database db) async {
@@ -657,7 +670,8 @@ class DatabaseHelper {
         lastLocationUpdate INTEGER,
         comments TEXT,
         dateAdded INTEGER,
-        quantity REAL
+        quantity REAL,
+        assignedTo TEXT DEFAULT ''
       )
     ''');
 

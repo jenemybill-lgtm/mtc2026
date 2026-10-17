@@ -594,6 +594,7 @@ class Tool {
   final String comments;
   final int dateAdded;
   final double quantity;
+  final String assignedTo; // <--- Νέο πεδίο
 
   Tool({
     this.id = 0,
@@ -606,6 +607,7 @@ class Tool {
     this.comments = "",
     int? dateAdded,
     this.quantity = 1.0,
+    this.assignedTo = "", // <--- Νέο πεδίο
   })  : lastLocationUpdate = lastLocationUpdate ?? DateTime.now().millisecondsSinceEpoch,
         dateAdded = dateAdded ?? DateTime.now().millisecondsSinceEpoch;
 
@@ -621,6 +623,7 @@ class Tool {
       'comments': comments,
       'dateAdded': dateAdded,
       'quantity': quantity,
+      'assignedTo': assignedTo, // <--- Νέο πεδίο
     };
   }
 
@@ -635,7 +638,36 @@ class Tool {
       lastLocationUpdate: map['lastLocationUpdate'],
       comments: map['comments'] ?? "",
       dateAdded: map['dateAdded'],
-      quantity: (map['quantity'] as num).toDouble(),
+      quantity: (map['quantity'] as num?)?.toDouble() ?? 1.0,
+      assignedTo: map['assignedTo'] ?? "", // <--- Νέο πεδίο
+    );
+  }
+
+  Tool copyWith({
+    int? id,
+    String? name,
+    String? category,
+    String? locationType,
+    int? locationId,
+    String? customLocationName,
+    int? lastLocationUpdate,
+    String? comments,
+    int? dateAdded,
+    double? quantity,
+    String? assignedTo,
+  }) {
+    return Tool(
+      id: id ?? this.id,
+      name: name ?? this.name,
+      category: category ?? this.category,
+      locationType: locationType ?? this.locationType,
+      locationId: locationId ?? this.locationId,
+      customLocationName: customLocationName ?? this.customLocationName,
+      lastLocationUpdate: lastLocationUpdate ?? this.lastLocationUpdate,
+      comments: comments ?? this.comments,
+      dateAdded: dateAdded ?? this.dateAdded,
+      quantity: quantity ?? this.quantity,
+      assignedTo: assignedTo ?? this.assignedTo,
     );
   }
 }

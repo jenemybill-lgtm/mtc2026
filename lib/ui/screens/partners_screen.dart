@@ -291,16 +291,42 @@ class _PartnerEntryDialogState extends State<_PartnerEntryDialog> {
   late TextEditingController _phoneController;
   late String _selectedTrade;
   late TextEditingController _rateController;
+  late TextEditingController _customTradeController;
+  bool _isCustomTrade = false;
 
-  final List<String> _defaultTrades = ["Εργάτης", "Ανακύκλωση Μπάζων", "Προμηθευτής Μαρμάρων", "Εκσκαφές", "Μπετά", "Χτίστης", "Ηλεκτρολόγος", "Υδραυλικός", "Σοβατζής", "Μαρμαράς", "Πλακάς", "Γυψοσανιδάς", "Μονωτής", "Αλουμινάς", "Ξυλουργός", "Ελαιοχρωματιστής", "Σιδεράς", "Γεμίσματα", "Θερμοπρόσοψη", "Πατωματζής"];
+  late List<String> _availableTrades;
 
   @override
   void initState() {
     super.initState();
     _nameController = TextEditingController(text: widget.initialPartner?.name ?? "");
     _phoneController = TextEditingController(text: widget.initialPartner?.phone ?? "");
-    _selectedTrade = widget.initialPartner?.trade ?? "Εργάτης";
     _rateController = TextEditingController(text: widget.initialPartner?.baseRate.toString() ?? "0");
+    _customTradeController = TextEditingController();
+
+    // Συλλογή όλων των υπαρχουσών ειδικοτήτων από τη βάση (μέσω Provider)
+    final provider = Provider.of<ProjectProvider>(context, listen: false);
+    final existingTrades = provider.partners.map((p) => p.trade).toSet().toList();
+    
+    final List<String> defaultTrades = [
+      "Εργάτης", "Ανακύκλωση Μπάζων", "Προμηθευτής Μαρμάρων", "Εκσκαφές", "Μπετά", 
+      "Χτίστης", "Ηλεκτρολόγος", "Υδραυλικός", "Σοβατζής", "Μαρμαράς", "Πλακάς", 
+      "Γυψοσανιδάς", "Μονωτής", "Αλουμινάς", "Ξυλουργός", "Ελαιοχρωματιστής", 
+      "Σιδεράς", "Γεμίσματα", "Θερμοπρόσοψη", "Πατωματζής"
+    ];
+
+    // Συνένωση προεπιλεγμένων και custom ειδικοτήτων, αφαίρεση διπλοτύπων και ταξινόμηση
+    _availableTrades = {...defaultTrades, ...existingTrades}.toList()..sort();
+    _availableTrades.add("+ Νέα Κατηγορία..."); // Προσθήκη επιλογής για νέα ειδικότητα
+
+    final initialTrade = widget.initialPartner?.trade ?? "Εργάτης";
+    if (_availableTrades.contains(initialTrade)) {
+      _selectedTrade = initialTrade;
+    } else {
+      // Αν δεν υπάρχει (σπάνιο), ας το προσθέσουμε
+      _availableTrades.insert(0, initialTrade);
+      _selectedTrade = initialTrade;
+    }
   }
 
   @override
@@ -360,17 +386,29 @@ class _PartnerEntryDialogState extends State<_PartnerEntryDialog> {
                         fillColor: const Color(0xFFF1F5F9),
                         border: OutlineInputBorder(borderRadius: BorderRadius.circular(16), borderSide: BorderSide.none),
                       ),
-                      items: _defaultTrades.map((t) => DropdownMenuItem(value: t, child: Text(t, style: const TextStyle(fontSize: 14, fontWeight: FontWeight.bold)))).toList(),
+                      items: _availableTrades.map((t) => DropdownMenuItem(
+                        value: t, 
+                        child: Text(t, style: TextStyle(
+                          fontSize: 13, 
+                          fontWeight: FontWeight.bold,
+                          color: t == "+ Νέα Κατηγορία..." ? Colors.blue : const Color(0xFF1E293B)
+                        ))
+                      )).toList(),
                       onChanged: (v) {
                         setState(() {
                            _selectedTrade = v!;
-                           if (_selectedTrade != "Εργάτης") {
+                           _isCustomTrade = _selectedTrade == "+ Νέα Κατηγορία...";
+                           if (!_isCustomTrade && _selectedTrade != "Εργάτης") {
                              _rateController.text = "0";
                            }
                         });
                       },
                     ),
-                    if (_selectedTrade == "Εργάτης") ...[
+                    if (_isCustomTrade) ...[
+                      const SizedBox(height: 16),
+                      _buildMinimalTextField(_customTradeController, "Πληκτρολογήστε Νέα Ειδικότητα", Icons.edit_attributes_rounded),
+                    ],
+                    if (!_isCustomTrade && _selectedTrade == "Εργάτης") ...[
                       const SizedBox(height: 16),
                       _buildMinimalTextField(_rateController, "Βασικό Μεροκάματο (€)", Icons.euro_rounded, type: TextInputType.number),
                     ],
@@ -392,7 +430,15 @@ class _PartnerEntryDialogState extends State<_PartnerEntryDialog> {
                       child: ElevatedButton(
                         onPressed: () {
                           if (_nameController.text.isNotEmpty) {
-                            widget.onConfirm(_nameController.text, _phoneController.text, _selectedTrade, double.tryParse(_rateController.text) ?? 0.0);
+                            final finalTrade = _isCustomTrade ? _customTradeController.text.trim() : _selectedTrade;
+                            if (_isCustomTrade && finalTrade.isEmpty) return; // Πρέπει να γράψει κάτι
+
+                            widget.onConfirm(
+                              _nameController.text, 
+                              _phoneController.text, 
+                              finalTrade, 
+                              double.tryParse(_rateController.text) ?? 0.0
+                            );
                             Navigator.pop(context);
                           }
                         },
