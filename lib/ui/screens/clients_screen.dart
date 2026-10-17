@@ -8,6 +8,8 @@ import 'package:mtc2026/ui/components/premium_ui.dart';
 import 'package:mtc2026/utils/excel_exporter.dart';
 import 'package:mtc2026/utils/pdf_generator.dart';
 
+import 'package:mtc2026/utils/toast_helper.dart';
+
 class ClientsScreen extends StatefulWidget {
   const ClientsScreen({super.key});
 
@@ -470,6 +472,66 @@ class _ClientDetailsSheet extends StatelessWidget {
                 }
               },
             ),
+          const Divider(height: 32),
+          const Text("ΕΝΕΡΓΕΙΕΣ", style: TextStyle(fontWeight: FontWeight.w900, color: Colors.blueGrey, fontSize: 11)),
+          const SizedBox(height: 12),
+          Row(
+            children: [
+              Expanded(
+                child: ElevatedButton.icon(
+                  onPressed: () async {
+                    final msg = "Καλησπέρα σας,\n\nΕπικοινωνούμε από την MTC (Τεχνική Εταιρεία - Ανακαινίσεις & Κατασκευές). Πώς μπορούμε να σας βοηθήσουμε;\n\nΜε εκτίμηση,\nΜόσχος Βασίλειος";
+                    String cleanPhone = client.phone.replaceAll(RegExp(r'[^\d+]'), '');
+                    if (!cleanPhone.startsWith('+')) cleanPhone = '+30$cleanPhone';
+                    
+                    final uri = Uri.parse("https://wa.me/${cleanPhone.replaceAll('+', '')}?text=${Uri.encodeComponent(msg)}");
+                    try {
+                      if (await canLaunchUrl(uri)) {
+                        await launchUrl(uri, mode: LaunchMode.externalApplication);
+                      } else {
+                        await launchUrl(uri, mode: LaunchMode.externalApplication);
+                      }
+                    } catch (e) {
+                      if (context.mounted) ToastHelper.showError(context, "Σφάλμα άνοιγματος WhatsApp: $e");
+                    }
+                  },
+                  icon: const Icon(Icons.chat_rounded, size: 16),
+                  label: const Text("WHATSAPP", style: TextStyle(fontWeight: FontWeight.w900, fontSize: 11)),
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: const Color(0xFF25D366),
+                    foregroundColor: Colors.white,
+                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                  ),
+                ),
+              ),
+              const SizedBox(width: 8),
+              Expanded(
+                child: ElevatedButton.icon(
+                  onPressed: () async {
+                    final msg = "Καλησπέρα σας,\nΕπικοινωνούμε από την MTC (Τεχνική Εταιρεία - Ανακαινίσεις & Κατασκευές).";
+                    String cleanPhone = client.phone.replaceAll(RegExp(r'[^\d+]'), '');
+                    final uri = Uri.parse("sms:$cleanPhone?body=${Uri.encodeComponent(msg)}");
+                    try {
+                      if (await canLaunchUrl(uri)) {
+                        await launchUrl(uri, mode: LaunchMode.externalApplication);
+                      } else {
+                        await launchUrl(uri, mode: LaunchMode.externalApplication);
+                      }
+                    } catch (e) {
+                      if (context.mounted) ToastHelper.showError(context, "Σφάλμα άνοιγματος SMS: $e");
+                    }
+                  },
+                  icon: const Icon(Icons.sms_rounded, size: 16),
+                  label: const Text("SMS", style: TextStyle(fontWeight: FontWeight.w900, fontSize: 11)),
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: const Color(0xFF4361EE),
+                    foregroundColor: Colors.white,
+                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                  ),
+                ),
+              ),
+            ],
+          ),
           const Divider(height: 32),
           const Text("ΙΣΤΟΡΙΚΟ ΕΡΓΩΝ", style: TextStyle(fontWeight: FontWeight.w900, color: Colors.blue, fontSize: 14)),
           const SizedBox(height: 8),
