@@ -117,7 +117,7 @@ class _ProjectManagementHubScreenState extends State<ProjectManagementHubScreen>
             },
           )),
           _MgmtModule("Τιμολόγια", Icons.receipt_rounded, const Color(0xFF4CC9F0), InvoicesMaterialsScreen(expenses: provider.currentProjectExpenses, onDelete: (e) => provider.deleteExpense(project.id, e.id))),
-          _MgmtModule("Προδιαγραφές Υλικών", Icons.verified_rounded, const Color(0xFF4CC9F0), ProjectSpecificationsScreen(project: project)),
+          _MgmtModule("Ταυτότητα Υλικών (Χρώματα/Κωδικοί)", Icons.palette_rounded, const Color(0xFF4CC9F0), ProjectSpecificationsScreen(project: project)),
           _MgmtModule("Checklist", Icons.fact_check_rounded, const Color(0xFF4CC9F0), ProjectChecklistScreen(project: project)),
           _MgmtModule("Timeline", Icons.timeline_rounded, const Color(0xFF4CC9F0), ProjectTimelineScreen(projectId: project.id)),
         ]),

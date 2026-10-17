@@ -43,7 +43,7 @@ class _ProjectSpecificationsScreenState extends State<ProjectSpecificationsScree
       appBar: AppBar(
         title: Column(
           children: [
-            const Text("ΤΑΥΤΟΤΗΤΑ ΥΛΙΚΩΝ ΕΡΓΟΥ", style: TextStyle(fontWeight: FontWeight.w900, fontSize: 14)),
+            const Text("ΤΑΥΤΟΤΗΤΑ ΥΛΙΚΩΝ & ΚΩΔΙΚΟΙ", style: TextStyle(fontWeight: FontWeight.w900, fontSize: 14)),
             Text(widget.project.name.toUpperCase(), style: const TextStyle(fontSize: 8, fontWeight: FontWeight.w800, color: Colors.blue, letterSpacing: 1)),
           ],
         ),
@@ -122,9 +122,9 @@ class _ProjectSpecificationsScreenState extends State<ProjectSpecificationsScree
     final nameController = TextEditingController(text: specToEdit?.name ?? "");
     final brandController = TextEditingController(text: specToEdit?.brandCode ?? "");
     final supplierController = TextEditingController(text: specToEdit?.supplier ?? "");
-    final notesController = TextEditingController(text: specToEdit?.notes ?? "");
+    final locationController = TextEditingController(text: specToEdit?.notes ?? "");
 
-    final predefinedCategories = ["ΧΡΩΜΑΤΑ", "ΠΛΑΚΑΚΙΑ", "ΕΙΔΗ ΥΓΙΕΙΝΗΣ", "ΚΟΥΦΩΜΑΤΑ", "ΗΛΕΚΤΡΟΛΟΓΙΚΟ ΥΛΙΚΟ", "ΥΔΡΑΥΛΙΚΑ", "ΞΥΛΟΥΡΓΙΚΑ", "ΑΛΛΟ"];
+    final predefinedCategories = ["ΧΡΩΜΑΤΑ / ΤΟΙΧΟΙ", "ΠΛΑΚΑΚΙΑ / ΑΡΜΟΣΤΟΚΟΙ", "ΕΙΔΗ ΥΓΙΕΙΝΗΣ", "ΚΟΥΦΩΜΑΤΑ", "ΗΛΕΚΤΡΟΛΟΓΙΚΟ ΥΛΙΚΟ", "ΥΔΡΑΥΛΙΚΑ", "ΞΥΛΟΥΡΓΙΚΑ", "ΑΛΛΟ"];
 
     showDialog(
       context: context,
@@ -132,9 +132,9 @@ class _ProjectSpecificationsScreenState extends State<ProjectSpecificationsScree
         builder: (context, setState) => AlertDialog(
           shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(32)),
           title: PremiumHeader(
-            title: specToEdit == null ? "ΝΕΑ ΤΑΥΤΟΤΗΤΑ ΥΛΙΚΟΥ" : "ΕΠΕΞΕΡΓΑΣΙΑ",
-            icon: Icons.verified_rounded,
-            color: Colors.teal,
+            title: specToEdit == null ? "ΝΕΟΣ ΚΩΔΙΚΟΣ / ΥΛΙΚΟ" : "ΕΠΕΞΕΡΓΑΣΙΑ",
+            icon: Icons.palette_rounded,
+            color: const Color(0xFF4361EE),
           ),
           content: SizedBox(
             width: 500,
@@ -177,13 +177,41 @@ class _ProjectSpecificationsScreenState extends State<ProjectSpecificationsScree
                     },
                   ),
                   const SizedBox(height: 12),
-                  TextField(controller: nameController, decoration: InputDecoration(labelText: "Περιγραφή (π.χ. Χρώμα Σαλονιού)", prefixIcon: const Icon(Icons.description_rounded, size: 20), border: OutlineInputBorder(borderRadius: BorderRadius.circular(16)))),
+                  TextField(
+                    controller: nameController, 
+                    decoration: InputDecoration(
+                      labelText: "Περιγραφή (π.χ. Χρώμα Τοίχου, Αρμόστοκος)", 
+                      prefixIcon: const Icon(Icons.description_rounded, size: 20), 
+                      border: OutlineInputBorder(borderRadius: BorderRadius.circular(16)),
+                    ),
+                  ),
                   const SizedBox(height: 12),
-                  TextField(controller: brandController, decoration: InputDecoration(labelText: "Μάρκα / Κωδικός (π.χ. Vivechrom 10YY...)", prefixIcon: const Icon(Icons.qr_code_rounded, size: 20), border: OutlineInputBorder(borderRadius: BorderRadius.circular(16)))),
+                  TextField(
+                    controller: locationController, 
+                    decoration: InputDecoration(
+                      labelText: "Χώρος / Σημείο Εφαρμογής (π.χ. Σαλόνι - Τοίχος TV)", 
+                      prefixIcon: const Icon(Icons.room_rounded, size: 20), 
+                      border: OutlineInputBorder(borderRadius: BorderRadius.circular(16)),
+                    ),
+                  ),
                   const SizedBox(height: 12),
-                  TextField(controller: supplierController, decoration: InputDecoration(labelText: "Προμηθευτής (Προαιρετικό)", prefixIcon: const Icon(Icons.store_rounded, size: 20), border: OutlineInputBorder(borderRadius: BorderRadius.circular(16)))),
+                  TextField(
+                    controller: brandController, 
+                    decoration: InputDecoration(
+                      labelText: "Μάρκα & Κωδικός (π.χ. Vivechrom 10YY 12/34)", 
+                      prefixIcon: const Icon(Icons.qr_code_rounded, size: 20), 
+                      border: OutlineInputBorder(borderRadius: BorderRadius.circular(16)),
+                    ),
+                  ),
                   const SizedBox(height: 12),
-                  TextField(controller: notesController, maxLines: 2, decoration: InputDecoration(labelText: "Σημειώσεις (Προαιρετικό)", prefixIcon: const Icon(Icons.notes_rounded, size: 20), border: OutlineInputBorder(borderRadius: BorderRadius.circular(16)))),
+                  TextField(
+                    controller: supplierController, 
+                    decoration: InputDecoration(
+                      labelText: "Προμηθευτής / Κατάστημα (Προαιρετικό)", 
+                      prefixIcon: const Icon(Icons.store_rounded, size: 20), 
+                      border: OutlineInputBorder(borderRadius: BorderRadius.circular(16)),
+                    ),
+                  ),
                 ],
               ),
             ),
@@ -202,7 +230,7 @@ class _ProjectSpecificationsScreenState extends State<ProjectSpecificationsScree
                     name: name,
                     brandCode: brandController.text.trim(),
                     supplier: supplierController.text.trim(),
-                    notes: notesController.text.trim(),
+                    notes: locationController.text.trim(),
                   );
                   
                   if (specToEdit == null) {
@@ -213,7 +241,7 @@ class _ProjectSpecificationsScreenState extends State<ProjectSpecificationsScree
                   if (context.mounted) Navigator.pop(context);
                 }
               },
-              style: ElevatedButton.styleFrom(backgroundColor: Colors.teal, foregroundColor: Colors.white, shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12))),
+              style: ElevatedButton.styleFrom(backgroundColor: const Color(0xFF4361EE), foregroundColor: Colors.white, shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12))),
               child: const Text("ΑΠΟΘΗΚΕΥΣΗ", style: TextStyle(fontWeight: FontWeight.w900)),
             ),
           ],
@@ -260,10 +288,10 @@ class _SpecCard extends StatelessWidget {
       decoration: BoxDecoration(
         color: Colors.white,
         borderRadius: BorderRadius.circular(20),
-        border: Border.all(color: Colors.teal.withValues(alpha: 0.3), width: 1.2),
+        border: Border.all(color: Colors.black.withValues(alpha: 0.06), width: 1.0),
         boxShadow: [
           BoxShadow(
-            color: Colors.teal.withValues(alpha: 0.05),
+            color: Colors.black.withValues(alpha: 0.03),
             blurRadius: 10,
             offset: const Offset(0, 4),
           ),
@@ -287,22 +315,43 @@ class _SpecCard extends StatelessWidget {
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          Text(spec.name.toUpperCase(), style: const TextStyle(fontSize: 14, fontWeight: FontWeight.w900, color: Color(0xFF1E293B))),
-                          if (spec.brandCode.isNotEmpty) ...[
-                            const SizedBox(height: 6),
-                            Container(
-                              padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-                              decoration: BoxDecoration(color: Colors.blueGrey.withValues(alpha: 0.05), borderRadius: BorderRadius.circular(6)),
-                              child: Row(
-                                mainAxisSize: MainAxisSize.min,
-                                children: [
-                                  const Icon(Icons.qr_code_rounded, size: 10, color: Colors.blueGrey),
-                                  const SizedBox(width: 4),
-                                  Text(spec.brandCode, style: const TextStyle(fontSize: 11, fontWeight: FontWeight.bold, color: Colors.blueGrey)),
-                                ],
-                              ),
-                            ),
-                          ],
+                          Text(
+                            spec.name.toUpperCase(), 
+                            style: const TextStyle(fontSize: 14, fontWeight: FontWeight.w900, color: Color(0xFF1E293B)),
+                          ),
+                          const SizedBox(height: 8),
+                          Wrap(
+                            spacing: 8,
+                            runSpacing: 6,
+                            children: [
+                              if (spec.notes.isNotEmpty)
+                                Container(
+                                  padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                                  decoration: BoxDecoration(color: const Color(0xFF4361EE).withValues(alpha: 0.08), borderRadius: BorderRadius.circular(8)),
+                                  child: Row(
+                                    mainAxisSize: MainAxisSize.min,
+                                    children: [
+                                      const Icon(Icons.room_rounded, size: 12, color: Color(0xFF4361EE)),
+                                      const SizedBox(width: 4),
+                                      Text("Χώρος: ${spec.notes}", style: const TextStyle(fontSize: 11, fontWeight: FontWeight.bold, color: Color(0xFF4361EE))),
+                                    ],
+                                  ),
+                                ),
+                              if (spec.brandCode.isNotEmpty)
+                                Container(
+                                  padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                                  decoration: BoxDecoration(color: Colors.orange.withValues(alpha: 0.1), borderRadius: BorderRadius.circular(8)),
+                                  child: Row(
+                                    mainAxisSize: MainAxisSize.min,
+                                    children: [
+                                      const Icon(Icons.qr_code_rounded, size: 12, color: Colors.orange),
+                                      const SizedBox(width: 4),
+                                      Text("Κωδικός: ${spec.brandCode}", style: const TextStyle(fontSize: 11, fontWeight: FontWeight.w900, color: Colors.orange)),
+                                    ],
+                                  ),
+                                ),
+                            ],
+                          ),
                         ],
                       ),
                     ),
@@ -310,54 +359,37 @@ class _SpecCard extends StatelessWidget {
                       mainAxisSize: MainAxisSize.min,
                       children: [
                         IconButton(
-                          icon: const Icon(Icons.edit_outlined, size: 20, color: Colors.teal),
+                          icon: const Icon(Icons.edit_outlined, size: 20, color: Color(0xFF4361EE)),
                           tooltip: "Επεξεργασία",
-                          padding: EdgeInsets.zero,
-                          constraints: const BoxConstraints(),
-                          splashRadius: 20,
                           onPressed: onEdit,
                         ),
-                        const SizedBox(width: 12),
+                        const SizedBox(width: 8),
                         IconButton(
                           icon: const Icon(Icons.delete_outline_rounded, size: 20, color: Colors.redAccent),
                           tooltip: "Διαγραφή",
-                          padding: EdgeInsets.zero,
-                          constraints: const BoxConstraints(),
-                          splashRadius: 20,
                           onPressed: onDelete,
                         ),
                       ],
                     ),
                   ],
                 ),
-                const SizedBox(height: 12),
-                const Divider(),
-                const SizedBox(height: 8),
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  children: [
-                    if (spec.supplier.isNotEmpty)
+                if (spec.supplier.isNotEmpty) ...[
+                  const SizedBox(height: 12),
+                  const Divider(height: 1),
+                  const SizedBox(height: 8),
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
                       Row(
                         children: [
-                          const Icon(Icons.store_rounded, size: 12, color: Colors.grey),
+                          const Icon(Icons.store_rounded, size: 12, color: Colors.blueGrey),
                           const SizedBox(width: 4),
-                          Text(spec.supplier, style: const TextStyle(fontSize: 10, color: Colors.grey, fontWeight: FontWeight.bold)),
+                          Text("Προμηθευτής: ${spec.supplier}", style: const TextStyle(fontSize: 10, color: Colors.blueGrey, fontWeight: FontWeight.bold)),
                         ],
-                      )
-                    else
-                      const SizedBox.shrink(),
-                    Row(
-                      children: [
-                        const Icon(Icons.access_time_rounded, size: 12, color: Colors.grey),
-                        const SizedBox(width: 4),
-                        Text(date, style: const TextStyle(fontSize: 10, color: Colors.grey, fontWeight: FontWeight.bold)),
-                      ],
-                    ),
-                  ],
-                ),
-                if (spec.notes.isNotEmpty) ...[
-                  const SizedBox(height: 12),
-                  Text(spec.notes, style: const TextStyle(fontSize: 12, color: Colors.blueGrey, fontStyle: FontStyle.italic)),
+                      ),
+                      Text(date, style: const TextStyle(fontSize: 10, color: Colors.grey, fontWeight: FontWeight.bold)),
+                    ],
+                  ),
                 ],
               ],
             ),
