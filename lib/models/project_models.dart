@@ -121,6 +121,7 @@ class Client {
   final int dateAdded;
   final String status; // LEAD, ACTIVE, PAST
   final int? followUpDate;
+  final String notes; // <--- New CRM Field
 
   Client({
     this.id = 0,
@@ -130,6 +131,7 @@ class Client {
     int? dateAdded,
     this.status = "ACTIVE",
     this.followUpDate,
+    this.notes = "",
   }) : dateAdded = dateAdded ?? DateTime.now().millisecondsSinceEpoch;
 
   Map<String, dynamic> toMap() {
@@ -141,6 +143,7 @@ class Client {
       'dateAdded': dateAdded,
       'status': status,
       'followUpDate': followUpDate,
+      'notes': notes,
     };
   }
 
@@ -153,6 +156,7 @@ class Client {
       dateAdded: map['dateAdded'],
       status: map['status'] ?? "ACTIVE",
       followUpDate: map['followUpDate'],
+      notes: map['notes'] ?? "",
     );
   }
 
@@ -164,6 +168,7 @@ class Client {
     int? dateAdded,
     String? status,
     int? followUpDate,
+    String? notes,
   }) {
     return Client(
       id: id ?? this.id,
@@ -173,6 +178,7 @@ class Client {
       dateAdded: dateAdded ?? this.dateAdded,
       status: status ?? this.status,
       followUpDate: followUpDate ?? this.followUpDate,
+      notes: notes ?? this.notes,
     );
   }
 }

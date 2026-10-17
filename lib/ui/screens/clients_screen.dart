@@ -437,122 +437,190 @@ class _ClientEntryDialogState extends State<_ClientEntryDialog> {
   }
 }
 
-class _ClientDetailsSheet extends StatelessWidget {
+class _ClientDetailsSheet extends StatefulWidget {
   final Client client;
   const _ClientDetailsSheet({required this.client});
 
   @override
+  State<_ClientDetailsSheet> createState() => _ClientDetailsSheetState();
+}
+
+class _ClientDetailsSheetState extends State<_ClientDetailsSheet> {
+  late TextEditingController _notesController;
+
+  @override
+  void initState() {
+    super.initState();
+    _notesController = TextEditingController(text: widget.client.notes);
+  }
+
+  @override
   Widget build(BuildContext context) {
     return Container(
-      padding: const EdgeInsets.all(24),
-      child: Column(
-        mainAxisSize: MainAxisSize.min,
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Text(client.name.toUpperCase(), style: const TextStyle(fontWeight: FontWeight.w900, fontSize: 24)),
-          const SizedBox(height: 16),
-          _ActionRow(
-            icon: Icons.phone,
-            label: client.phone,
-            onTap: () async {
-              final uri = Uri.parse("tel:${client.phone}");
-              if (await canLaunchUrl(uri)) {
-                await launchUrl(uri);
-              }
-            },
-          ),
-          if (client.email.isNotEmpty)
+      padding: EdgeInsets.only(
+        left: 24, 
+        right: 24, 
+        top: 24, 
+        bottom: MediaQuery.of(context).viewInsets.bottom + 24
+      ),
+      child: SingleChildScrollView(
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                Expanded(child: Text(widget.client.name.toUpperCase(), style: const TextStyle(fontWeight: FontWeight.w900, fontSize: 22))),
+                IconButton(
+                  icon: const Icon(Icons.close_rounded),
+                  onPressed: () => Navigator.pop(context),
+                )
+              ],
+            ),
+            const SizedBox(height: 16),
             _ActionRow(
-              icon: Icons.email,
-              label: client.email,
+              icon: Icons.phone,
+              label: widget.client.phone,
               onTap: () async {
-                final uri = Uri.parse("mailto:${client.email}");
+                final uri = Uri.parse("tel:${widget.client.phone}");
                 if (await canLaunchUrl(uri)) {
                   await launchUrl(uri);
                 }
               },
             ),
-          const Divider(height: 32),
-          const Text("ΕΝΕΡΓΕΙΕΣ", style: TextStyle(fontWeight: FontWeight.w900, color: Colors.blueGrey, fontSize: 11)),
-          const SizedBox(height: 12),
-          Row(
-            children: [
-              Expanded(
-                child: ElevatedButton.icon(
-                  onPressed: () async {
-                    final msg = "Καλησπέρα σας,\n\nΕπικοινωνούμε από την MTC (Τεχνική Εταιρεία - Ανακαινίσεις & Κατασκευές). Πώς μπορούμε να σας βοηθήσουμε;\n\nΜε εκτίμηση,\nΜόσχος Βασίλειος";
-                    String cleanPhone = client.phone.replaceAll(RegExp(r'[^\d+]'), '');
-                    if (!cleanPhone.startsWith('+')) cleanPhone = '+30$cleanPhone';
-                    
-                    final uri = Uri.parse("https://wa.me/${cleanPhone.replaceAll('+', '')}?text=${Uri.encodeComponent(msg)}");
-                    try {
-                      if (await canLaunchUrl(uri)) {
-                        await launchUrl(uri, mode: LaunchMode.externalApplication);
-                      } else {
-                        await launchUrl(uri, mode: LaunchMode.externalApplication);
+            if (widget.client.email.isNotEmpty)
+              _ActionRow(
+                icon: Icons.email,
+                label: widget.client.email,
+                onTap: () async {
+                  final uri = Uri.parse("mailto:${widget.client.email}");
+                  if (await canLaunchUrl(uri)) {
+                    await launchUrl(uri);
+                  }
+                },
+              ),
+            
+            const Divider(height: 32),
+            const Row(
+              children: [
+                Icon(Icons.edit_note_rounded, color: Color(0xFF4361EE), size: 20),
+                SizedBox(width: 8),
+                Text("ΙΣΤΟΡΙΚΟ & ΣΗΜΕΙΩΣΕΙΣ CRM", style: TextStyle(fontWeight: FontWeight.w900, color: Color(0xFF4361EE), fontSize: 12)),
+              ],
+            ),
+            const SizedBox(height: 12),
+            TextField(
+              controller: _notesController,
+              maxLines: 4,
+              minLines: 2,
+              style: const TextStyle(fontSize: 12, fontWeight: FontWeight.bold, color: Color(0xFF1E293B)),
+              decoration: InputDecoration(
+                hintText: "π.χ. 'Μιλήσαμε 10/10 και περιμένει νέα προσφορά...'",
+                filled: true,
+                fillColor: Colors.blue.withValues(alpha: 0.05),
+                border: OutlineInputBorder(borderRadius: BorderRadius.circular(16), borderSide: BorderSide.none),
+              ),
+              onChanged: (val) {
+                // Auto-save logic can be implemented, or we save on close
+              },
+            ),
+            const SizedBox(height: 8),
+            Align(
+              alignment: Alignment.centerRight,
+              child: TextButton.icon(
+                onPressed: () async {
+                  final updatedClient = widget.client.copyWith(notes: _notesController.text);
+                  await Provider.of<ProjectProvider>(context, listen: false).updateClient(updatedClient);
+                  if (context.mounted) ToastHelper.showSuccess(context, "Οι σημειώσεις αποθηκεύτηκαν.");
+                }, 
+                icon: const Icon(Icons.save_rounded, size: 16), 
+                label: const Text("ΑΠΟΘΗΚΕΥΣΗ ΣΗΜΕΙΩΣΕΩΝ", style: TextStyle(fontWeight: FontWeight.bold, fontSize: 11)),
+              ),
+            ),
+
+            const Divider(height: 24),
+            const Text("ΕΝΕΡΓΕΙΕΣ", style: TextStyle(fontWeight: FontWeight.w900, color: Colors.blueGrey, fontSize: 11)),
+            const SizedBox(height: 12),
+            Row(
+              children: [
+                Expanded(
+                  child: ElevatedButton.icon(
+                    onPressed: () async {
+                      final msg = "Καλησπέρα σας,\n\nΕπικοινωνούμε από την MTC (Τεχνική Εταιρεία - Ανακαινίσεις & Κατασκευές). Πώς μπορούμε να σας βοηθήσουμε;\n\nΜε εκτίμηση,\nΜόσχος Βασίλειος";
+                      String cleanPhone = widget.client.phone.replaceAll(RegExp(r'[^\d+]'), '');
+                      if (!cleanPhone.startsWith('+')) cleanPhone = '+30$cleanPhone';
+                      
+                      final uri = Uri.parse("https://wa.me/${cleanPhone.replaceAll('+', '')}?text=${Uri.encodeComponent(msg)}");
+                      try {
+                        if (await canLaunchUrl(uri)) {
+                          await launchUrl(uri, mode: LaunchMode.externalApplication);
+                        } else {
+                          await launchUrl(uri, mode: LaunchMode.externalApplication);
+                        }
+                      } catch (e) {
+                        if (context.mounted) ToastHelper.showError(context, "Σφάλμα άνοιγματος WhatsApp: $e");
                       }
-                    } catch (e) {
-                      if (context.mounted) ToastHelper.showError(context, "Σφάλμα άνοιγματος WhatsApp: $e");
-                    }
-                  },
-                  icon: const Icon(Icons.chat_rounded, size: 16),
-                  label: const Text("WHATSAPP", style: TextStyle(fontWeight: FontWeight.w900, fontSize: 11)),
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: const Color(0xFF25D366),
-                    foregroundColor: Colors.white,
-                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                    },
+                    icon: const Icon(Icons.chat_rounded, size: 16),
+                    label: const Text("WHATSAPP", style: TextStyle(fontWeight: FontWeight.w900, fontSize: 11)),
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: const Color(0xFF25D366),
+                      foregroundColor: Colors.white,
+                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                    ),
                   ),
                 ),
-              ),
-              const SizedBox(width: 8),
-              Expanded(
-                child: ElevatedButton.icon(
-                  onPressed: () async {
-                    final msg = "Καλησπέρα σας,\nΕπικοινωνούμε από την MTC (Τεχνική Εταιρεία - Ανακαινίσεις & Κατασκευές).";
-                    String cleanPhone = client.phone.replaceAll(RegExp(r'[^\d+]'), '');
-                    final uri = Uri.parse("sms:$cleanPhone?body=${Uri.encodeComponent(msg)}");
-                    try {
-                      if (await canLaunchUrl(uri)) {
-                        await launchUrl(uri, mode: LaunchMode.externalApplication);
-                      } else {
-                        await launchUrl(uri, mode: LaunchMode.externalApplication);
+                const SizedBox(width: 8),
+                Expanded(
+                  child: ElevatedButton.icon(
+                    onPressed: () async {
+                      final msg = "Καλησπέρα σας,\nΕπικοινωνούμε από την MTC (Τεχνική Εταιρεία - Ανακαινίσεις & Κατασκευές).";
+                      String cleanPhone = widget.client.phone.replaceAll(RegExp(r'[^\d+]'), '');
+                      final uri = Uri.parse("sms:$cleanPhone?body=${Uri.encodeComponent(msg)}");
+                      try {
+                        if (await canLaunchUrl(uri)) {
+                          await launchUrl(uri, mode: LaunchMode.externalApplication);
+                        } else {
+                          await launchUrl(uri, mode: LaunchMode.externalApplication);
+                        }
+                      } catch (e) {
+                        if (context.mounted) ToastHelper.showError(context, "Σφάλμα άνοιγματος SMS: $e");
                       }
-                    } catch (e) {
-                      if (context.mounted) ToastHelper.showError(context, "Σφάλμα άνοιγματος SMS: $e");
-                    }
-                  },
-                  icon: const Icon(Icons.sms_rounded, size: 16),
-                  label: const Text("SMS", style: TextStyle(fontWeight: FontWeight.w900, fontSize: 11)),
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: const Color(0xFF4361EE),
-                    foregroundColor: Colors.white,
-                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                    },
+                    icon: const Icon(Icons.sms_rounded, size: 16),
+                    label: const Text("SMS", style: TextStyle(fontWeight: FontWeight.w900, fontSize: 11)),
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: const Color(0xFF4361EE),
+                      foregroundColor: Colors.white,
+                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                    ),
                   ),
                 ),
-              ),
-            ],
-          ),
-          const Divider(height: 32),
-          const Text("ΙΣΤΟΡΙΚΟ ΕΡΓΩΝ", style: TextStyle(fontWeight: FontWeight.w900, color: Colors.blue, fontSize: 14)),
-          const SizedBox(height: 8),
-          FutureBuilder<List<Project>>(
-            future: Provider.of<ProjectProvider>(context, listen: false).getProjectsForClient(client.id),
-            builder: (context, snapshot) {
-              if (!snapshot.hasData) return const Center(child: CircularProgressIndicator());
-              final projects = snapshot.data!;
-              if (projects.isEmpty) return const Text("Δεν βρέθηκαν έργα.", style: TextStyle(color: Colors.grey));
-              return Column(
-                children: projects.map((p) => ListTile(
-                  leading: const Icon(Icons.architecture, color: Colors.blue),
-                  title: Text(p.name, style: const TextStyle(fontWeight: FontWeight.bold)),
-                  trailing: const Icon(Icons.chevron_right),
-                  onTap: () {}, // Navigate to project
-                )).toList(),
-              );
-            },
-          ),
-          const SizedBox(height: 32),
-        ],
+              ],
+            ),
+            const Divider(height: 32),
+            const Text("ΙΣΤΟΡΙΚΟ ΕΡΓΩΝ", style: TextStyle(fontWeight: FontWeight.w900, color: Colors.blue, fontSize: 14)),
+            const SizedBox(height: 8),
+            FutureBuilder<List<Project>>(
+              future: Provider.of<ProjectProvider>(context, listen: false).getProjectsForClient(widget.client.id),
+              builder: (context, snapshot) {
+                if (!snapshot.hasData) return const Center(child: CircularProgressIndicator());
+                final projects = snapshot.data!;
+                if (projects.isEmpty) return const Text("Δεν βρέθηκαν έργα.", style: TextStyle(color: Colors.grey));
+                return Column(
+                  children: projects.map((p) => ListTile(
+                    leading: const Icon(Icons.architecture, color: Colors.blue),
+                    title: Text(p.name, style: const TextStyle(fontWeight: FontWeight.bold)),
+                    trailing: const Icon(Icons.chevron_right),
+                    onTap: () {}, // Navigate to project
+                  )).toList(),
+                );
+              },
+            ),
+            const SizedBox(height: 32),
+          ],
+        ),
       ),
     );
   }

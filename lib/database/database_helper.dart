@@ -141,7 +141,20 @@ class DatabaseHelper {
     await _ensurePartnerAiColumn(db);
     await _ensureCompanyExpenseCategory(db);
     await _ensureQuoteItemExtraColumn(db);
+    await _ensureClientNotesColumn(db);
     return db;
+  }
+
+  Future<void> _ensureClientNotesColumn(Database db) async {
+    final tableInfo = await db.rawQuery("PRAGMA table_info(clients)");
+    final existingColumns = tableInfo.map((row) => row['name'] as String).toSet();
+    if (!existingColumns.contains('notes')) {
+      try {
+        await db.execute("ALTER TABLE clients ADD COLUMN notes TEXT DEFAULT ''");
+      } catch (e) {
+        print("Schema update error client notes: $e");
+      }
+    }
   }
 
   Future<void> _ensureQuoteItemExtraColumn(Database db) async {
@@ -551,7 +564,8 @@ class DatabaseHelper {
         email TEXT,
         dateAdded INTEGER,
         status TEXT DEFAULT 'ACTIVE',
-        followUpDate INTEGER
+        followUpDate INTEGER,
+        notes TEXT DEFAULT ''
       )
     ''');
 
