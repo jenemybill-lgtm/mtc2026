@@ -40,12 +40,28 @@ class _ProjectChecklistScreenState extends State<ProjectChecklistScreen> {
           ],
         ),
       ),
-      floatingActionButton: FloatingActionButton.extended(
-        onPressed: () => _showAddDialog(context, provider),
-        label: const Text("ΝΕΟ ΤΑΣΚ", style: TextStyle(fontWeight: FontWeight.w900, letterSpacing: 1)),
-        icon: const Icon(Icons.add_task_rounded),
-        backgroundColor: Colors.teal,
-        foregroundColor: Colors.white,
+      floatingActionButton: Column(
+        mainAxisAlignment: MainAxisAlignment.end,
+        crossAxisAlignment: CrossAxisAlignment.end,
+        children: [
+          FloatingActionButton.extended(
+            heroTag: 'template_fab',
+            onPressed: () => _showTemplatesDialog(context, provider),
+            label: const Text("ΕΤΟΙΜΑ ΠΡΟΤΥΠΑ", style: TextStyle(fontWeight: FontWeight.w900, letterSpacing: 0.5, fontSize: 11)),
+            icon: const Icon(Icons.library_books_rounded, size: 18),
+            backgroundColor: const Color(0xFF1E293B),
+            foregroundColor: Colors.white,
+          ),
+          const SizedBox(height: 12),
+          FloatingActionButton.extended(
+            heroTag: 'new_task_fab',
+            onPressed: () => _showAddDialog(context, provider),
+            label: const Text("ΝΕΟ ΤΑΣΚ", style: TextStyle(fontWeight: FontWeight.w900, letterSpacing: 1)),
+            icon: const Icon(Icons.add_task_rounded),
+            backgroundColor: Colors.teal,
+            foregroundColor: Colors.white,
+          ),
+        ],
       ),
       body: Center(
         child: Container(
@@ -263,6 +279,71 @@ class _ProjectChecklistScreenState extends State<ProjectChecklistScreen> {
             },
             child: const Text("ΔΙΑΓΡΑΦΗ", style: TextStyle(color: Colors.red, fontWeight: FontWeight.bold)),
           ),
+        ],
+      ),
+    );
+  }
+
+  void _showTemplatesDialog(BuildContext context, ProjectProvider provider) {
+    final templates = {
+      "Ολοκλήρωση Ανακαίνισης (Γενικά)": [
+        "Αποκομιδή Μπάζων & Καθαρισμός Χώρου",
+        "Τελικός έλεγχος Ηλεκτρολογικών (Πρίζες, Πίνακας)",
+        "Τελικός έλεγχος Υδραυλικών (Διαρροές, Πίεση)",
+        "Έλεγχος Χρωματισμών (Μερεμέτια, Γωνίες)",
+        "Έλεγχος Κουφωμάτων (Κλείσιμο, Μονώσεις)",
+        "Παράδοση Κλειδιών στον Πελάτη",
+        "Εξόφληση Τελικού Υπολοίπου",
+      ],
+      "Παράδοση Μπάνιου": [
+        "Έλεγχος κλίσεων στα δάπεδα (Σιφώνια)",
+        "Σφράγιση Σιλικόνης σε είδη υγιεινής",
+        "Λειτουργία καζανακίου / Μπαταριών",
+        "Καθαρισμός από αρμόστοκους",
+        "Τοποθέτηση καθρέφτη / Αξεσουάρ",
+      ],
+      "Εγκατάσταση Κουζίνας": [
+        "Αλφάδιασμα ντουλαπιών & πάγκου",
+        "Σύνδεση Νεροχύτη / Μπαταρίας",
+        "Έλεγχος απορροφητήρα / Οπών αερισμού",
+        "Λειτουργία εντοιχισμένων συσκευών",
+        "Ρύθμιση μεντεσέδων στα πορτάκια",
+      ],
+    };
+
+    showDialog(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(28)),
+        title: const PremiumHeader(title: "ΠΡΟΤΥΠΑ ΛΙΣΤΑΣ ΕΛΕΓΧΟΥ", icon: Icons.library_add_check_rounded, color: Color(0xFF1E293B)),
+        content: SizedBox(
+          width: double.maxFinite,
+          child: ListView.separated(
+            shrinkWrap: true,
+            itemCount: templates.length,
+            separatorBuilder: (c, i) => const Divider(),
+            itemBuilder: (c, i) {
+              final title = templates.keys.elementAt(i);
+              final tasks = templates[title]!;
+              return ListTile(
+                title: Text(title, style: const TextStyle(fontWeight: FontWeight.w900, fontSize: 13, color: Color(0xFF1E293B))),
+                subtitle: Text("${tasks.length} προκαθορισμένες εργασίες", style: const TextStyle(fontSize: 11)),
+                trailing: const Icon(Icons.add_circle_outline_rounded, color: Colors.blue),
+                onTap: () async {
+                  for (var task in tasks) {
+                    await provider.addChecklistItem(ProjectChecklistItem(
+                      projectId: widget.project.id,
+                      title: task,
+                    ));
+                  }
+                  if (ctx.mounted) Navigator.pop(ctx);
+                },
+              );
+            },
+          ),
+        ),
+        actions: [
+          TextButton(onPressed: () => Navigator.pop(ctx), child: const Text("ΑΚΥΡΟ", style: TextStyle(fontWeight: FontWeight.w900))),
         ],
       ),
     );
