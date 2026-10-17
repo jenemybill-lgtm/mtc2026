@@ -1,5 +1,6 @@
 import 'dart:typed_data';
 import 'dart:io';
+import 'package:flutter/material.dart' show debugPrint;
 import 'package:pdf/pdf.dart';
 import 'package:pdf/widgets.dart' as pw;
 import 'package:printing/printing.dart';
@@ -129,6 +130,96 @@ class PdfGenerator {
       ),
     );
     return pdf;
+  }
+
+  static Future<void> generateAndShareReceipt({
+    required String projectName,
+    required String supplierName,
+    required List<Map<String, dynamic>> items,
+    required Settings settings,
+  }) async {
+    final pdf = pw.Document();
+    pw.Font font;
+    pw.Font boldFont;
+    try {
+      font = await PdfGoogleFonts.robotoRegular();
+      boldFont = await PdfGoogleFonts.robotoBold();
+    } catch (e) {
+      font = pw.Font.helvetica();
+      boldFont = pw.Font.helveticaBold();
+    }
+    final logoImage = settings.logoUri != null ? await _loadLogo(settings.logoUri!) : null;
+    final dateStr = DateFormat('dd/MM/yyyy HH:mm').format(DateTime.now());
+
+    pdf.addPage(
+      pw.Page(
+        pageFormat: PdfPageFormat.a4,
+        theme: pw.ThemeData.withFont(base: font, bold: boldFont),
+        build: (context) => pw.Column(
+          crossAxisAlignment: pw.CrossAxisAlignment.start,
+          children: [
+            _buildHeader(settings, logoImage),
+            pw.SizedBox(height: 20),
+            pw.Center(child: pw.Text("ΔΕΛΤΙΟ ΠΑΡΑΛΑΒΗΣ ΥΛΙΚΩΝ", style: pw.TextStyle(fontSize: 18, fontWeight: pw.FontWeight.bold))),
+            pw.SizedBox(height: 20),
+            pw.Text("Έργο: ${projectName.toUpperCase()}", style: pw.TextStyle(fontSize: 12, fontWeight: pw.FontWeight.bold)),
+            pw.SizedBox(height: 5),
+            pw.Text("Ημερομηνία: $dateStr", style: const pw.TextStyle(fontSize: 10)),
+            if (supplierName.isNotEmpty) ...[
+              pw.SizedBox(height: 5),
+              pw.Text("Προμηθευτής / Μεταφορική: $supplierName", style: const pw.TextStyle(fontSize: 10)),
+            ],
+            pw.SizedBox(height: 20),
+            pw.TableHelper.fromTextArray(
+              headers: ['Α/Α', 'ΠΕΡΙΓΡΑΦΗ ΥΛΙΚΟΥ', 'ΠΟΣΟΤΗΤΑ'],
+              headerStyle: pw.TextStyle(fontWeight: pw.FontWeight.bold, fontSize: 10),
+              cellStyle: const pw.TextStyle(fontSize: 10),
+              columnWidths: {
+                0: const pw.FlexColumnWidth(1),
+                1: const pw.FlexColumnWidth(6),
+                2: const pw.FlexColumnWidth(2),
+              },
+              data: List.generate(items.length, (index) {
+                final item = items[index];
+                return [(index + 1).toString(), item['name'].toString().toUpperCase(), item['quantity'].toString()];
+              }),
+            ),
+            pw.Spacer(),
+            pw.Row(
+              mainAxisAlignment: pw.MainAxisAlignment.spaceBetween,
+              children: [
+                pw.Column(
+                  crossAxisAlignment: pw.CrossAxisAlignment.center,
+                  children: [
+                    pw.Text("Ο ΠΑΡΑΔΟΥΣ", style: pw.TextStyle(fontWeight: pw.FontWeight.bold, fontSize: 10)),
+                    pw.SizedBox(height: 40),
+                    pw.Container(width: 150, height: 1, color: PdfColors.black),
+                    pw.SizedBox(height: 5),
+                    pw.Text("(Υπογραφή & Ολογράφως)", style: const pw.TextStyle(fontSize: 8, color: PdfColors.grey700)),
+                  ]
+                ),
+                pw.Column(
+                  crossAxisAlignment: pw.CrossAxisAlignment.center,
+                  children: [
+                    pw.Text("Ο ΠΑΡΑΛΑΒΩΝ (MTC)", style: pw.TextStyle(fontWeight: pw.FontWeight.bold, fontSize: 10)),
+                    pw.SizedBox(height: 40),
+                    pw.Container(width: 150, height: 1, color: PdfColors.black),
+                    pw.SizedBox(height: 5),
+                    pw.Text("(Υπογραφή & Ολογράφως)", style: const pw.TextStyle(fontSize: 8, color: PdfColors.grey700)),
+                  ]
+                ),
+              ]
+            )
+          ],
+        ),
+      ),
+    );
+
+    try {
+      await Printing.sharePdf(bytes: await pdf.save(), filename: 'MTC_Receipt_${projectName.replaceAll(' ', '_')}.pdf');
+    } catch (e) {
+      debugPrint("Printing Error: $e");
+    }
   }
 
   static Future<void> generateAndShareQuote({

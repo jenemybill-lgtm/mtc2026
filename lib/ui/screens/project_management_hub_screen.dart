@@ -8,6 +8,7 @@ import 'package:mtc2026/ui/components/premium_ui.dart';
 import 'package:mtc2026/ui/screens/project_economics_screen.dart';
 import 'package:mtc2026/ui/screens/project_photos_screen.dart';
 import 'package:mtc2026/ui/screens/project_documents_screen.dart';
+import 'package:mtc2026/ui/screens/material_receipt_screen.dart';
 import 'package:mtc2026/ui/screens/project_sketches_screen.dart';
 import 'package:mtc2026/ui/screens/project_timeline_screen.dart';
 import 'package:mtc2026/ui/screens/shopping_list_screen.dart';
@@ -156,6 +157,7 @@ class _ProjectManagementHubScreenState extends State<ProjectManagementHubScreen>
               _MgmtModule("Εργαλεία", Icons.build_rounded, const Color(0xFF4CC9F0), ToolCategoryPickerScreen(title: "ΕΡΓΑΛΕΙΑ ΕΡΓΟΥ", locationType: "PROJECT", locationId: project.id)),
               _MgmtModule("Υλικά", Icons.inventory_rounded, const Color(0xFF4CC9F0), MaterialCategoryPickerScreen(title: "ΥΛΙΚΑ ΕΡΓΟΥ", locationType: "PROJECT", projectId: project.id)),
               _MgmtModule("Ελλείψεις", Icons.shopping_cart_rounded, const Color(0xFF4CC9F0), ShoppingListScreen(projectId: project.id)),
+              _MgmtModule("Παραλαβές", Icons.local_shipping_rounded, const Color(0xFF4CC9F0), MaterialReceiptScreen(project: project)),
             ]),
             isDesktop: isDesktop,
             badge: count.toString(),
