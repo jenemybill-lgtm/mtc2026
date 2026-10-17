@@ -20,6 +20,7 @@ import 'package:mtc2026/ui/screens/project_comparison_screen.dart';
 import 'package:mtc2026/ui/screens/ai_assistant_screen.dart';
 import 'package:mtc2026/ui/screens/portfolio_screen.dart';
 import 'package:mtc2026/ui/screens/global_calendar_screen.dart';
+import 'package:mtc2026/ui/screens/tools_report_screen.dart';
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
@@ -199,12 +200,12 @@ class _HomeScreenState extends State<HomeScreen> {
                     ),
                     const SizedBox(height: 24),
                     _PremiumNavCard(
-                      title: "ΣΗΜΕΙΩΣΕΙΣ ΕΡΓΩΝ",
-                      subtitle: "Συγκεντρωτικές σημειώσεις",
-                      icon: Icons.assignment_rounded,
+                      title: "ΑΝΑΦΟΡΑ ΕΡΓΑΛΕΙΩΝ (ΕΡΓΟΤΑΞΙΑ)",
+                      subtitle: "Πού βρίσκονται τα εργαλεία & Ημέρες παραμονής",
+                      icon: Icons.home_repair_service_rounded,
                       color: const Color(0xFF4361EE),
                       isFullWidth: true,
-                      onClick: () => Navigator.push(context, MaterialPageRoute(builder: (context) => const AllProjectNotesScreen())),
+                      onClick: () => Navigator.push(context, MaterialPageRoute(builder: (context) => const ToolsReportScreen())),
                     ),
                   ],
                 ),
@@ -361,13 +362,13 @@ class _HomeScreenState extends State<HomeScreen> {
                 ),
                 const SizedBox(height: 16),
                 _PremiumNavCard(
-                  title: "ΣΗΜΕΙΩΣΕΙΣ ΕΡΓΩΝ",
-                  subtitle: "ΟΛΕΣ ΟΙ ΣΗΜΕΙΩΣΕΙΣ",
-                  icon: Icons.assignment_rounded,
+                  title: "ΑΝΑΦΟΡΑ ΕΡΓΑΛΕΙΩΝ",
+                  subtitle: "ΠΟΥ ΒΡΙΣΚΟΝΤΑΙ ΣΤΑ ΕΡΓΑ",
+                  icon: Icons.home_repair_service_rounded,
                   color: const Color(0xFF4361EE),
                   isFullWidth: true,
                   onClick: () => Navigator.push(context, PageRouteBuilder(
-                    pageBuilder: (c, a1, a2) => const AllProjectNotesScreen(),
+                    pageBuilder: (c, a1, a2) => const ToolsReportScreen(),
                     transitionsBuilder: (c, a1, a2, child) => FadeTransition(opacity: a1, child: child),
                   )),
                 ),
