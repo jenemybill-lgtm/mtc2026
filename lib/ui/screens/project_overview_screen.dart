@@ -301,11 +301,20 @@ class _PremiumClientCard extends StatelessWidget {
           SizedBox(height: isMobile ? 8 : 12),
           _infoRow(
             Icons.location_on_rounded, 
-            "ΔΙΕΥΘΥΝΣΗ ΕΡΓΟΥ", 
+            "ΔΙΕΥΘΥΝΣΗ ΕΡΓΟΥ (ΑΝΟΙΓΜΑ GPS)", 
             project.address.isEmpty ? "-" : project.address, 
             Colors.orange,
             isMobile: isMobile,
-            onTap: () => project.address.isNotEmpty ? launchUrl(Uri.parse("https://www.google.com/maps/search/?api=1&query=${Uri.encodeComponent(project.address)}")) : null
+            onTap: () {
+              if (project.address.isNotEmpty) {
+                // Χρήση scheme "geo:0,0?q=" για να ανοίγει κατευθείαν στην προεπιλεγμένη εφαρμογή πλοήγησης (Maps/Waze) του κινητού
+                final uri = Uri.parse("geo:0,0?q=${Uri.encodeComponent(project.address)}");
+                launchUrl(uri, mode: LaunchMode.externalApplication).catchError((_) {
+                  // Fallback σε browser αν δεν υποστηρίζεται
+                  launchUrl(Uri.parse("https://www.google.com/maps/search/?api=1&query=${Uri.encodeComponent(project.address)}"));
+                });
+              }
+            }
           ),
         ],
       ),
