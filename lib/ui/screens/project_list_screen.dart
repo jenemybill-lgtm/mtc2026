@@ -620,7 +620,10 @@ class ProjectEntryDialog extends StatefulWidget {
 class _ProjectEntryDialogState extends State<ProjectEntryDialog> {
   late TextEditingController _nameController;
   late TextEditingController _clientController;
-  late TextEditingController _addressController;
+  late TextEditingController _streetController;
+  late TextEditingController _numberController;
+  late TextEditingController _cityController;
+  late TextEditingController _zipController;
   late TextEditingController _phoneController;
   late TextEditingController _emailController;
   late TextEditingController _proposalController;
@@ -638,7 +641,27 @@ class _ProjectEntryDialogState extends State<ProjectEntryDialog> {
     _selectedClient = _findClientByProject(clients, widget.initialProject);
     _nameController = TextEditingController(text: widget.initialProject?.name ?? "");
     _clientController = TextEditingController(text: _selectedClient?.name ?? widget.initialProject?.clientName ?? "");
-    _addressController = TextEditingController(text: widget.initialProject?.address ?? "");
+    
+    // Attempt to parse existing address into components if possible, else dump to street
+    final addr = widget.initialProject?.address ?? "";
+    final parts = addr.split(', ');
+    _cityController = TextEditingController(text: parts.length > 1 ? parts[1] : "");
+    _zipController = TextEditingController(text: parts.length > 2 ? parts[2] : "");
+    
+    String streetNum = parts.isNotEmpty ? parts[0] : "";
+    String street = streetNum;
+    String number = "";
+    final lastSpace = streetNum.lastIndexOf(' ');
+    if (lastSpace != -1) {
+      final potentialNumber = streetNum.substring(lastSpace + 1);
+      if (int.tryParse(potentialNumber) != null || potentialNumber.contains(RegExp(r'\d'))) {
+        street = streetNum.substring(0, lastSpace);
+        number = potentialNumber;
+      }
+    }
+    _streetController = TextEditingController(text: street);
+    _numberController = TextEditingController(text: number);
+
     _phoneController = TextEditingController(text: _selectedClient?.phone ?? widget.initialProject?.clientPhone ?? "");
     _emailController = TextEditingController(text: _selectedClient?.email ?? widget.initialProject?.clientEmail ?? "");
     _proposalController = TextEditingController(text: widget.initialProject?.proposalValue.toString() ?? "0.0");
@@ -750,9 +773,28 @@ class _ProjectEntryDialogState extends State<ProjectEntryDialog> {
               TextField(controller: _phoneController, decoration: const InputDecoration(labelText: "Τηλέφωνο", prefixIcon: Icon(Icons.phone_rounded, size: 20)), keyboardType: TextInputType.phone),
               const SizedBox(height: 12),
               TextField(controller: _emailController, decoration: const InputDecoration(labelText: "Email", prefixIcon: Icon(Icons.email_rounded, size: 20)), keyboardType: TextInputType.emailAddress),
-              const SizedBox(height: 12),
-              TextField(controller: _addressController, decoration: const InputDecoration(labelText: "Διεύθυνση", prefixIcon: Icon(Icons.location_on_rounded, size: 20))),
-              const SizedBox(height: 12),
+              
+              // New separated address fields
+              const SizedBox(height: 16),
+              const Text("ΣΤΟΙΧΕΙΑ ΤΟΠΟΘΕΣΙΑΣ", style: TextStyle(fontSize: 10, fontWeight: FontWeight.w900, color: Colors.blueGrey, letterSpacing: 1)),
+              const SizedBox(height: 8),
+              Row(
+                children: [
+                  Expanded(flex: 3, child: TextField(controller: _streetController, decoration: const InputDecoration(labelText: "Οδός", prefixIcon: Icon(Icons.location_on_rounded, size: 18)))),
+                  const SizedBox(width: 8),
+                  Expanded(flex: 1, child: TextField(controller: _numberController, decoration: const InputDecoration(labelText: "Αριθμός"))),
+                ],
+              ),
+              const SizedBox(height: 8),
+              Row(
+                children: [
+                  Expanded(flex: 2, child: TextField(controller: _cityController, decoration: const InputDecoration(labelText: "Πόλη / Περιοχή"))),
+                  const SizedBox(width: 8),
+                  Expanded(flex: 1, child: TextField(controller: _zipController, decoration: const InputDecoration(labelText: "Τ.Κ."), keyboardType: TextInputType.number)),
+                ],
+              ),
+              
+              const SizedBox(height: 16),
               TextField(controller: _proposalController, decoration: const InputDecoration(labelText: "Προϋπολογισμός (€)", prefixIcon: Icon(Icons.euro_rounded, size: 20)), keyboardType: TextInputType.number),
               const SizedBox(height: 12),
               DropdownButtonFormField<int?>(
@@ -862,11 +904,20 @@ class _ProjectEntryDialogState extends State<ProjectEntryDialog> {
               (client) => client.name.trim().toLowerCase() == clientName.toLowerCase(),
               orElse: () => Client(name: "", phone: "", email: ""),
             );
+
+            // Construct full address from components
+            final List<String> addressParts = [];
+            final streetPart = "${_streetController.text.trim()} ${_numberController.text.trim()}".trim();
+            if (streetPart.isNotEmpty) addressParts.add(streetPart);
+            if (_cityController.text.trim().isNotEmpty) addressParts.add(_cityController.text.trim());
+            if (_zipController.text.trim().isNotEmpty) addressParts.add(_zipController.text.trim());
+            final fullAddress = addressParts.join(', ');
+
             if (_nameController.text.trim().isNotEmpty && (clientName.isNotEmpty || widget.initialProject != null)) {
               widget.onConfirm(
                 _nameController.text.trim(),
                 validClient.name.isNotEmpty ? validClient.name : clientName,
-                _addressController.text.trim(),
+                fullAddress,
                 validClient.name.isNotEmpty ? validClient.phone : _phoneController.text.trim(),
                 validClient.name.isNotEmpty ? validClient.email : _emailController.text.trim(),
                 validClient.name.isNotEmpty ? validClient.id : widget.initialProject?.clientId,
