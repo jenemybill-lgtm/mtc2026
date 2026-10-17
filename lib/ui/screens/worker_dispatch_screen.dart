@@ -7,6 +7,8 @@ import 'package:mtc2026/providers/project_provider.dart';
 import 'package:mtc2026/ui/components/premium_ui.dart';
 import 'package:mtc2026/utils/responsive.dart';
 
+import 'package:mtc2026/database/database_helper.dart';
+
 class WorkerDispatchScreen extends StatefulWidget {
   const WorkerDispatchScreen({super.key});
 
@@ -38,6 +40,40 @@ class _WorkerDispatchScreenState extends State<WorkerDispatchScreen> {
             Text("Οδηγίες, Πού θα πάνε αύριο & WhatsApp", style: TextStyle(fontSize: 10, color: Colors.blueGrey.withValues(alpha: 0.7), fontWeight: FontWeight.bold)),
           ],
         ),
+        actions: [
+          IconButton(
+            icon: const Icon(Icons.cloud_upload_rounded, color: Color(0xFF2563EB)),
+            tooltip: "Upload στο Cloud",
+            onPressed: () async {
+              await DatabaseHelper().backupDatabase(autoBackup: true);
+              final err = await provider.manualUploadToCloud(includePhotos: false);
+              if (context.mounted) {
+                if (err == null) {
+                  ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text("Ο προγραμματισμός αποστολών ανέβηκε επιτυχώς στο Cloud!"), backgroundColor: Colors.green));
+                } else {
+                  ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(err), backgroundColor: Colors.red));
+                }
+              }
+            },
+          ),
+          IconButton(
+            icon: const Icon(Icons.cloud_download_rounded, color: Color(0xFF3A0CA3)),
+            tooltip: "Download από Cloud",
+            onPressed: () async {
+              await DatabaseHelper().backupDatabase(autoBackup: true);
+              final err = await provider.manualDownloadFromCloud();
+              if (context.mounted) {
+                if (err == null) {
+                  ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text("Ο προγραμματισμός αποστολών λήφθηκε επιτυχώς από το Cloud!"), backgroundColor: Colors.green));
+                  setState(() {});
+                } else {
+                  ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(err), backgroundColor: Colors.red));
+                }
+              }
+            },
+          ),
+          const SizedBox(width: 8),
+        ],
       ),
       floatingActionButton: FloatingActionButton.extended(
         onPressed: () => _showAddDispatchDialog(context, provider),
