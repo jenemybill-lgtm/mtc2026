@@ -265,13 +265,38 @@ class _PremiumClientCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final provider = Provider.of<ProjectProvider>(context);
+    final client = provider.clients.firstWhere(
+      (c) => (project.clientId != null && project.clientId != 0 && c.id == project.clientId) || 
+             (c.name.trim().isNotEmpty && c.name.trim().toLowerCase() == project.clientName.trim().toLowerCase()),
+      orElse: () => Client(
+        name: project.clientName,
+        phone: project.clientPhone,
+        email: project.clientEmail,
+      ),
+    );
+
+    final displayPhone = client.phone.isNotEmpty ? client.phone : project.clientPhone;
+    final displayEmail = client.email.isNotEmpty ? client.email : project.clientEmail;
+    final displayClientName = client.name.isNotEmpty ? client.name : project.clientName;
+
     return PremiumCard(
       accentColor: Colors.blueGrey,
       padding: EdgeInsets.all(isMobile ? 12 : 20),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          const PremiumHeader(title: "ΣΤΟΙΧΕΙΑ ΠΕΛΑΤΗ", icon: Icons.person_pin_rounded, color: Colors.blueGrey),
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              const PremiumHeader(title: "ΣΤΟΙΧΕΙΑ ΠΕΛΑΤΗ", icon: Icons.person_pin_rounded, color: Colors.blueGrey),
+              if (displayClientName.isNotEmpty)
+                Text(
+                  displayClientName.toUpperCase(),
+                  style: const TextStyle(fontWeight: FontWeight.w900, fontSize: 13, color: Color(0xFF1E293B)),
+                ),
+            ],
+          ),
           SizedBox(height: isMobile ? 10 : 20),
           Row(
             children: [
@@ -279,10 +304,10 @@ class _PremiumClientCard extends StatelessWidget {
                 child: _infoRow(
                   Icons.phone_android_rounded, 
                   "ΤΗΛΕΦΩΝΟ", 
-                  project.clientPhone.isEmpty ? "-" : project.clientPhone, 
+                  displayPhone.isEmpty ? "-" : displayPhone, 
                   Colors.blue,
                   isMobile: isMobile,
-                  onTap: () => project.clientPhone.isNotEmpty ? launchUrl(Uri.parse("tel:${project.clientPhone}")) : null
+                  onTap: () => displayPhone.isNotEmpty ? launchUrl(Uri.parse("tel:$displayPhone")) : null
                 ),
               ),
               const SizedBox(width: 8),
@@ -290,10 +315,10 @@ class _PremiumClientCard extends StatelessWidget {
                 child: _infoRow(
                   Icons.email_rounded, 
                   "EMAIL", 
-                  project.clientEmail.isEmpty ? "-" : project.clientEmail, 
+                  displayEmail.isEmpty ? "-" : displayEmail, 
                   Colors.purple,
                   isMobile: isMobile,
-                  onTap: () => project.clientEmail.isNotEmpty ? launchUrl(Uri.parse("mailto:${project.clientEmail}")) : null
+                  onTap: () => displayEmail.isNotEmpty ? launchUrl(Uri.parse("mailto:$displayEmail")) : null
                 ),
               ),
             ],

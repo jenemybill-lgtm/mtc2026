@@ -25,27 +25,36 @@ class _ProjectMaterialNeedsScreenState extends State<ProjectMaterialNeedsScreen>
   }
 
   Future<void> _loadData() async {
-    final provider = Provider.of<ProjectProvider>(context, listen: false);
-    
-    // 1. Fetch Quote Data
-    await provider.fetchProjectData(widget.project.id);
-    
-    // 2. Fetch all types of inventory
-    final warehouse = await provider.getMaterials(null, "WAREHOUSE", "ΟΛΑ");
-    final van = await provider.getMaterials(null, "VAN", "ΟΛΑ");
-    final project = await provider.getMaterials(widget.project.id, "PROJECT", "ΟΛΑ");
+    try {
+      final provider = Provider.of<ProjectProvider>(context, listen: false);
+      
+      // 1. Fetch Quote Data
+      await provider.fetchProjectData(widget.project.id);
+      
+      // 2. Fetch all types of inventory
+      final warehouse = await provider.getMaterials(null, "WAREHOUSE", "ΟΛΑ");
+      final van = await provider.getMaterials(null, "VAN", "ΟΛΑ");
+      final project = await provider.getMaterials(widget.project.id, "PROJECT", "ΟΛΑ");
 
-    if (mounted) {
-      setState(() {
-        _quoteNeeds = provider.currentProjectQuoteItems.where((item) => 
-            item.internalNote.contains("ΥΛΙΚΑ:") || 
-            item.internalNote.contains("ΑΝΑΛΥΣΗ") ||
-            item.internalNote.contains("m²") ||
-            item.internalNote.contains("m³")).toList();
-            
-        _allInventory = [...project, ...van, ...warehouse];
-        _isLoading = false;
-      });
+      if (mounted) {
+        setState(() {
+          _quoteNeeds = provider.currentProjectQuoteItems.where((item) => 
+              item.internalNote.contains("ΥΛΙΚΑ:") || 
+              item.internalNote.contains("ΑΝΑΛΥΣΗ") ||
+              item.internalNote.contains("m²") ||
+              item.internalNote.contains("m³")).toList();
+              
+          _allInventory = [...project, ...van, ...warehouse];
+        });
+      }
+    } catch (e) {
+      debugPrint("Error loading material needs: $e");
+    } finally {
+      if (mounted) {
+        setState(() {
+          _isLoading = false;
+        });
+      }
     }
   }
 
