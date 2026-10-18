@@ -730,6 +730,34 @@ class MaterialEntity {
       minStockThreshold: (map['minStockThreshold'] as num).toDouble(),
     );
   }
+
+  MaterialEntity copyWith({
+    int? id,
+    String? name,
+    String? category,
+    double? quantity,
+    String? unit,
+    String? locationType,
+    String? colorCode,
+    int? purchaseDate,
+    int? projectId,
+    int? lastUpdated,
+    double? minStockThreshold,
+  }) {
+    return MaterialEntity(
+      id: id ?? this.id,
+      name: name ?? this.name,
+      category: category ?? this.category,
+      quantity: quantity ?? this.quantity,
+      unit: unit ?? this.unit,
+      locationType: locationType ?? this.locationType,
+      colorCode: colorCode ?? this.colorCode,
+      purchaseDate: purchaseDate ?? this.purchaseDate,
+      projectId: projectId ?? this.projectId,
+      lastUpdated: lastUpdated ?? this.lastUpdated,
+      minStockThreshold: minStockThreshold ?? this.minStockThreshold,
+    );
+  }
 }
 
 class ProjectROIData {

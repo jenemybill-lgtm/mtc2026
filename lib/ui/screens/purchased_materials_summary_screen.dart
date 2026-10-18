@@ -6,6 +6,8 @@ import 'package:mtc2026/providers/project_provider.dart';
 import 'package:mtc2026/ui/components/premium_ui.dart';
 import 'package:mtc2026/utils/toast_helper.dart';
 
+import 'package:collection/collection.dart';
+
 class PurchasedMaterialsSummaryScreen extends StatefulWidget {
   final Project project;
   const PurchasedMaterialsSummaryScreen({super.key, required this.project});
@@ -31,10 +33,20 @@ class _PurchasedMaterialsSummaryScreenState extends State<PurchasedMaterialsSumm
     final supplierC = TextEditingController();
     final invoiceC = TextEditingController();
 
-    const commonMaterials = [
-      "ΤΣΙΜΕΝΤΟ", "ΑΜΜΟΣ", "ΜΑΡΜΑΡΟΣΚΟΝΗ", "ΑΣΒΕΣΤΗΣ", "ΚΟΛΛΑ ΠΛΑΚΙΔΙΩΝ",
-      "ΧΡΩΜΑΤΑ", "ΑΣΤΑΡΙ", "ΓΥΨΟΣΑΝΙΔΕΣ", "ΣΙΔΗΡΟΣ ΟΠΛΙΣΜΟΥ", "ΣΩΛΗΝΕΣ", "ΚΑΛΩΔΙΑ"
-    ];
+    final Map<String, String> standardMaterialsWithUnits = {
+      "ΤΣΙΜΕΝΤΟ": "σακί",
+      "ΑΜΜΟΣ": "m³",
+      "ΜΑΡΜΑΡΟΣΚΟΝΗ": "m³",
+      "ΑΣΒΕΣΤΗΣ": "σακί",
+      "ΚΟΛΛΑ ΠΛΑΚΙΔΙΩΝ": "σακί",
+      "ΧΡΩΜΑΤΑ": "L",
+      "ΑΣΤΑΡΙ": "L",
+      "ΓΥΨΟΣΑΝΙΔΕΣ": "τεμ",
+      "ΣΙΔΗΡΟΣ ΟΠΛΙΣΜΟΥ": "kg",
+      "ΣΩΛΗΝΕΣ": "m",
+      "ΚΑΛΩΔΙΑ": "m",
+      "ΠΛΑΚΑΚΙΑ": "m²",
+    };
 
     showDialog(
       context: context,
@@ -49,11 +61,15 @@ class _PurchasedMaterialsSummaryScreenState extends State<PurchasedMaterialsSumm
               children: [
                 Autocomplete<String>(
                   optionsBuilder: (TextEditingValue textEditingValue) {
-                    if (textEditingValue.text.isEmpty) return commonMaterials;
-                    return commonMaterials.where((String option) => option.toLowerCase().contains(textEditingValue.text.toLowerCase()));
+                    final query = textEditingValue.text.trim().toUpperCase();
+                    if (query.isEmpty) return standardMaterialsWithUnits.keys.toList();
+                    return standardMaterialsWithUnits.keys.where((String option) => option.contains(query));
                   },
                   onSelected: (String selection) {
                     materialC.text = selection;
+                    if (standardMaterialsWithUnits.containsKey(selection)) {
+                      unitC.text = standardMaterialsWithUnits[selection]!;
+                    }
                   },
                   fieldViewBuilder: (context, controller, focusNode, onEditingComplete) {
                     materialC.addListener(() {
@@ -66,7 +82,7 @@ class _PurchasedMaterialsSummaryScreenState extends State<PurchasedMaterialsSumm
                       focusNode: focusNode,
                       onEditingComplete: onEditingComplete,
                       decoration: InputDecoration(
-                        labelText: "Όνομα Υλικού (π.χ. ΤΣΙΜΕΝΤΟ, ΧΡΩΜΑΤΑ)",
+                        labelText: "Επιλογή / Όνομα Υλικού (π.χ. ΤΣΙΜΕΝΤΟ)",
                         prefixIcon: const Icon(Icons.inventory_2_rounded, size: 20),
                         border: OutlineInputBorder(borderRadius: BorderRadius.circular(16)),
                       ),
@@ -119,7 +135,7 @@ class _PurchasedMaterialsSummaryScreenState extends State<PurchasedMaterialsSumm
           ElevatedButton(
             onPressed: () async {
               final matName = materialC.text.trim().toUpperCase();
-              final qty = double.tryParse(qtyC.text) ?? 1.0;
+              final qty = double.tryParse(qtyC.text.replaceAll(',', '.')) ?? 1.0;
               final amt = double.tryParse(amountC.text.replaceAll(',', '.')) ?? 0.0;
 
               if (matName.isNotEmpty) {
@@ -136,18 +152,29 @@ class _PurchasedMaterialsSummaryScreenState extends State<PurchasedMaterialsSumm
                 );
                 await provider.addExpense(widget.project.id, exp);
 
-                // 2. Add/Update in Project Materials Inventory
-                await provider.addMaterial(MaterialEntity(
-                  name: matName,
-                  category: "ΑΓΟΡΕΣ",
-                  quantity: qty,
-                  unit: unitC.text.trim(),
-                  locationType: "PROJECT",
-                  projectId: widget.project.id,
-                ));
+                // 2. Automatically link & increase quantity in "Υλικά" (Project Inventory)
+                final projectMaterials = await provider.getMaterials(widget.project.id, "PROJECT", "ΟΛΑ");
+                final existingMat = projectMaterials.where((m) => m.name.trim().toUpperCase() == matName).firstOrNull;
+
+                if (existingMat != null) {
+                  final updatedMat = existingMat.copyWith(
+                    quantity: existingMat.quantity + qty,
+                    lastUpdated: DateTime.now().millisecondsSinceEpoch,
+                  );
+                  await provider.updateMaterial(updatedMat);
+                } else {
+                  await provider.addMaterial(MaterialEntity(
+                    name: matName,
+                    category: "ΑΓΟΡΕΣ",
+                    quantity: qty,
+                    unit: unitC.text.trim(),
+                    locationType: "PROJECT",
+                    projectId: widget.project.id,
+                  ));
+                }
 
                 if (ctx.mounted) {
-                  ToastHelper.showSuccess(ctx, "Η αγορά υλικού καταχωρήθηκε επιτυχώς!");
+                  ToastHelper.showSuccess(ctx, "Η αγορά καταχωρήθηκε & το υπόλοιπο υλικών ενημερώθηκε!");
                   Navigator.pop(ctx);
                   setState(() {});
                 }
@@ -155,6 +182,70 @@ class _PurchasedMaterialsSummaryScreenState extends State<PurchasedMaterialsSumm
             },
             style: ElevatedButton.styleFrom(backgroundColor: const Color(0xFF4361EE)),
             child: const Text("ΚΑΤΑΧΩΡΗΣΗ", style: TextStyle(fontWeight: FontWeight.w900)),
+          ),
+        ],
+      ),
+    );
+  }
+
+  void _showConsumeMaterialDialog(BuildContext context, ProjectProvider provider, String materialName) {
+    final qtyC = TextEditingController(text: "1");
+
+    showDialog(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(28)),
+        title: PremiumHeader(
+          title: "ΑΝΑΛΩΣΗ / ΧΡΗΣΗ ΥΛΙΚΟΥ", 
+          subtitle: materialName.toUpperCase(),
+          icon: Icons.output_rounded, 
+          color: Colors.orange,
+        ),
+        content: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text("Πόση ποσότητα $materialName χρησιμοποιήθηκε / σπαταλήθηκε στο έργο;", style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 12, color: Colors.blueGrey)),
+            const SizedBox(height: 16),
+            TextField(
+              controller: qtyC,
+              decoration: const InputDecoration(labelText: "Ποσότητα προς Αφαίρεση", prefixIcon: Icon(Icons.remove_circle_outline_rounded, color: Colors.orange)),
+              keyboardType: TextInputType.number,
+            ),
+            const SizedBox(height: 8),
+            const Text("Η ποσότητα αυτή θα αφαιρεθεί αυτόματα από το διαθέσιμο υπόλοιπο του έργου.", style: TextStyle(fontSize: 10, color: Colors.blueGrey, fontStyle: FontStyle.italic)),
+          ],
+        ),
+        actions: [
+          TextButton(onPressed: () => Navigator.pop(ctx), child: const Text("ΑΚΥΡΟ", style: TextStyle(fontWeight: FontWeight.w900))),
+          ElevatedButton(
+            onPressed: () async {
+              final consumeQty = double.tryParse(qtyC.text.replaceAll(',', '.')) ?? 0.0;
+              if (consumeQty > 0) {
+                final projectMaterials = await provider.getMaterials(widget.project.id, "PROJECT", "ΟΛΑ");
+                final existingMat = projectMaterials.where((m) => m.name.trim().toUpperCase() == materialName.trim().toUpperCase()).firstOrNull;
+
+                if (existingMat != null) {
+                  final newQty = (existingMat.quantity - consumeQty).clamp(0.0, 99999.0);
+                  final updatedMat = existingMat.copyWith(
+                    quantity: newQty,
+                    lastUpdated: DateTime.now().millisecondsSinceEpoch,
+                  );
+                  await provider.updateMaterial(updatedMat);
+                  if (ctx.mounted) {
+                    ToastHelper.showSuccess(ctx, "Αφαιρέθηκαν $consumeQty ${existingMat.unit} από το διαθέσιμο υπόλοιπο!");
+                    Navigator.pop(ctx);
+                    setState(() {});
+                  }
+                } else {
+                  if (ctx.mounted) {
+                    ToastHelper.showError(ctx, "Το υλικό δεν βρέθηκε στο υπόλοιπο του έργου.");
+                  }
+                }
+              }
+            },
+            style: ElevatedButton.styleFrom(backgroundColor: Colors.orange),
+            child: const Text("ΑΦΑΙΡΕΣΗ", style: TextStyle(fontWeight: FontWeight.w900)),
           ),
         ],
       ),
@@ -283,6 +374,17 @@ class _PurchasedMaterialsSummaryScreenState extends State<PurchasedMaterialsSumm
                                   subtitle: Text(DateFormat('dd/MM/yyyy').format(DateTime.fromMillisecondsSinceEpoch(p.date)), style: const TextStyle(fontSize: 10, color: Colors.grey)),
                                   trailing: Text("${p.amount.toStringAsFixed(2)} €", style: const TextStyle(fontWeight: FontWeight.w900, fontSize: 13, color: Color(0xFF1E293B))),
                                 )),
+                                Padding(
+                                  padding: const EdgeInsets.all(12.0),
+                                  child: Align(
+                                    alignment: Alignment.centerRight,
+                                    child: TextButton.icon(
+                                      onPressed: () => _showConsumeMaterialDialog(context, provider, matName),
+                                      icon: const Icon(Icons.remove_circle_outline_rounded, color: Colors.orange, size: 16),
+                                      label: const Text("ΑΝΑΛΩΣΗ / ΧΡΗΣΗ ΥΛΙΚΟΥ", style: TextStyle(fontWeight: FontWeight.w900, fontSize: 11, color: Colors.orange)),
+                                    ),
+                                  ),
+                                ),
                               ],
                             ),
                           );
