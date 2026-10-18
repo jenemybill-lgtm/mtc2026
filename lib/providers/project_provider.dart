@@ -887,8 +887,24 @@ class ProjectProvider with ChangeNotifier {
   }
 
   // --- ATTENDANCE ---
+  Future<void> _autoLinkPartnerToProject(int projectId, String workerName) async {
+    if (projectId == 0 || workerName.isEmpty) return;
+    try {
+      final partner = _partners.firstWhere(
+        (p) => p.name.trim().toLowerCase() == workerName.trim().toLowerCase(),
+        orElse: () => Partner(name: "", phone: "", trade: ""),
+      );
+      if (partner.id != 0) {
+        await DatabaseHelper().addPartnerToProject(projectId, partner.id);
+      }
+    } catch (e) {
+      debugPrint("Auto-link partner to project error: $e");
+    }
+  }
+
   Future<void> addAttendance(AttendanceEntity r) async {
     await DatabaseHelper().insertAttendance(r);
+    await _autoLinkPartnerToProject(r.projectId ?? 0, r.workerName);
     await calculateDashboardStats();
     await _autoSync();
   }
@@ -896,6 +912,7 @@ class ProjectProvider with ChangeNotifier {
   Future<void> addMultipleAttendance(List<AttendanceEntity> records) async {
     for (var r in records) {
       await DatabaseHelper().insertAttendance(r);
+      await _autoLinkPartnerToProject(r.projectId ?? 0, r.workerName);
     }
     await calculateDashboardStats();
     await _autoSync('attendance');
@@ -943,6 +960,7 @@ class ProjectProvider with ChangeNotifier {
       workCategory: d.taskDescription.isNotEmpty ? d.taskDescription : "Γενικά",
     );
     await DatabaseHelper().insertAttendance(attendanceRecord);
+    await _autoLinkPartnerToProject(d.projectId, d.workerName);
 
     // 2. Ενημέρωση κατάστασης σε CONFIRMED
     final updatedDispatch = d.copyWith(status: "CONFIRMED");
