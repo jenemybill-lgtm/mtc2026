@@ -38,12 +38,7 @@ class _ProjectMaterialNeedsScreenState extends State<ProjectMaterialNeedsScreen>
 
       if (mounted) {
         setState(() {
-          _quoteNeeds = provider.currentProjectQuoteItems.where((item) => 
-              item.internalNote.contains("ΥΛΙΚΑ:") || 
-              item.internalNote.contains("ΑΝΑΛΥΣΗ") ||
-              item.internalNote.contains("m²") ||
-              item.internalNote.contains("m³")).toList();
-              
+          _quoteNeeds = provider.currentProjectQuoteItems;
           _allInventory = [...project, ...van, ...warehouse];
         });
       }
@@ -185,6 +180,45 @@ class _ProjectMaterialNeedsScreenState extends State<ProjectMaterialNeedsScreen>
     };
 
     for (var item in _quoteNeeds) {
+      final descUpper = item.description.toUpperCase();
+      final catName = item.category.name.toUpperCase();
+      final qtyVal = double.tryParse(item.quantity.replaceAll(',', '.')) ?? 0.0;
+
+      // 1. Αυτόματος υπολογισμός 0.5 Λίτρα Χρώμα / m² για εργασίες βαψίματος
+      if (catName.contains("PAINT") || descUpper.contains("ΒΑΨΙΜΟ") || descUpper.contains("ΧΡΩΜΑ") || descUpper.contains("ΕΛΑΙΟΧΡΩΜΑΤΙΣΜΟΣ") || descUpper.contains("ΣΟΒΑ")) {
+        if (qtyVal > 0) {
+          final paintLiters = qtyVal * 0.5; // 0.5L per m²
+          const paintKey = "ΧΡΩΜΑΤΑ (ΛΙΤΡΑ)|L";
+          if (aggregatedNeeds.containsKey(paintKey)) {
+            aggregatedNeeds[paintKey]!.totalRequired += paintLiters;
+          } else {
+            aggregatedNeeds[paintKey] = _AggregateNeed(name: "ΧΡΩΜΑΤΑ (ΛΙΤΡΑ)", totalRequired: paintLiters, unit: "L");
+          }
+
+          final primerLiters = qtyVal * 0.15; // 0.15L per m²
+          const primerKey = "ΑΣΤΑΡΙ (ΛΙΤΡΑ)|L";
+          if (aggregatedNeeds.containsKey(primerKey)) {
+            aggregatedNeeds[primerKey]!.totalRequired += primerLiters;
+          } else {
+            aggregatedNeeds[primerKey] = _AggregateNeed(name: "ΑΣΤΑΡΙ (ΛΙΤΡΑ)", totalRequired: primerLiters, unit: "L");
+          }
+        }
+      }
+
+      // 2. Αυτόματος υπολογισμός Κόλλας Πλακιδίων (1 σακί / 5m²)
+      if (catName.contains("TILE") || descUpper.contains("ΠΛΑΚΑΚΙ") || descUpper.contains("ΠΛΑΚΙΔΙ")) {
+        if (qtyVal > 0) {
+          final glueBags = (qtyVal / 5.0).ceilToDouble();
+          const glueKey = "ΚΟΛΛΑ ΠΛΑΚΙΔΙΩΝ (ΣΑΚΙΑ)|σακί";
+          if (aggregatedNeeds.containsKey(glueKey)) {
+            aggregatedNeeds[glueKey]!.totalRequired += glueBags;
+          } else {
+            aggregatedNeeds[glueKey] = _AggregateNeed(name: "ΚΟΛΛΑ ΠΛΑΚΙΔΙΩΝ (ΣΑΚΙΑ)", totalRequired: glueBags, unit: "σακί");
+          }
+        }
+      }
+
+      // 3. Ανάλυση σημειώσεων υπολογιστών (Άμμος, Τσιμέντο, Μαρμαρόσκονη, Ασβέστης κτλ)
       final lines = item.internalNote.split('\n');
       for (var line in lines) {
         if (line.trim().startsWith('- ')) {
