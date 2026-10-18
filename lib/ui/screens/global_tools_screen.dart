@@ -235,6 +235,7 @@ class _ToolEntryDialogState extends State<_ToolEntryDialog> {
   late TextEditingController _qtyController;
   late TextEditingController _commentsController;
   
+  late String _selectedCategory;
   late String _selectedLocationType;
   late int _selectedLocationId;
   String _customLocationName = "";
@@ -242,6 +243,7 @@ class _ToolEntryDialogState extends State<_ToolEntryDialog> {
   @override
   void initState() {
     super.initState();
+    _selectedCategory = widget.initialTool?.category ?? widget.category;
     _nameController = TextEditingController(text: widget.initialTool?.name ?? "");
     _qtyController = TextEditingController(text: widget.initialTool?.quantity.toInt().toString() ?? "1");
     _commentsController = TextEditingController(text: widget.initialTool?.comments ?? "");
@@ -313,7 +315,7 @@ class _ToolEntryDialogState extends State<_ToolEntryDialog> {
                         const SizedBox(width: 12),
                         Expanded(
                           child: DropdownButtonFormField<String>(
-                            value: widget.category,
+                            value: provider.toolCategories.contains(_selectedCategory) ? _selectedCategory : (provider.toolCategories.isNotEmpty ? provider.toolCategories.first : widget.category),
                             isExpanded: true,
                             decoration: InputDecoration(
                               labelText: "Κατηγορία",
@@ -322,7 +324,13 @@ class _ToolEntryDialogState extends State<_ToolEntryDialog> {
                               border: OutlineInputBorder(borderRadius: BorderRadius.circular(16), borderSide: BorderSide.none),
                             ),
                             items: provider.toolCategories.map((c) => DropdownMenuItem(value: c, child: Text(c, style: const TextStyle(fontSize: 12, fontWeight: FontWeight.bold)))).toList(),
-                            onChanged: (v) {},
+                            onChanged: (v) {
+                              if (v != null) {
+                                setState(() {
+                                  _selectedCategory = v;
+                                });
+                              }
+                            },
                           ),
                         ),
                       ],
@@ -402,7 +410,7 @@ class _ToolEntryDialogState extends State<_ToolEntryDialog> {
                             final tool = Tool(
                               id: widget.initialTool?.id ?? 0,
                               name: _nameController.text,
-                              category: widget.category,
+                              category: _selectedCategory,
                               quantity: double.tryParse(_qtyController.text) ?? 1.0,
                               comments: _commentsController.text,
                               locationType: _selectedLocationType,

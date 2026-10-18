@@ -514,20 +514,29 @@ class ProjectProvider with ChangeNotifier {
       await DatabaseHelper().getProjectsForClient(clientId);
 
   Future<void> addClient(Client c) async {
-    await DatabaseHelper().insertClient(c);
-    await fetchProjects();
+    final newId = await DatabaseHelper().insertClient(c);
+    final newClient = c.copyWith(id: newId);
+    _clients.add(newClient);
+    notifyListeners();
     await _autoSync('clients');
   }
 
   Future<void> updateClient(Client c) async {
     await DatabaseHelper().updateClient(c);
-    await fetchProjects();
+    final index = _clients.indexWhere((item) => item.id == c.id);
+    if (index != -1) {
+      _clients[index] = c;
+    } else {
+      _clients.add(c);
+    }
+    notifyListeners();
     await _autoSync('clients');
   }
 
   Future<void> deleteClient(int id) async {
     await DatabaseHelper().deleteClient(id);
-    await fetchProjects();
+    _clients.removeWhere((item) => item.id == id);
+    notifyListeners();
     await _autoSync('clients');
   }
 

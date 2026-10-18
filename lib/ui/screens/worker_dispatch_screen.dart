@@ -567,24 +567,49 @@ class _DispatchCard extends StatelessWidget {
                               BoxShadow(color: const Color(0xFF25D366).withValues(alpha: 0.3), blurRadius: 8, offset: const Offset(0, 3)),
                             ],
                           ),
-                          child: ElevatedButton.icon(
-                            onPressed: () {
+                          child: PopupMenuButton<String>(
+                            tooltip: "Αποστολή WhatsApp",
+                            offset: const Offset(0, 45),
+                            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+                            onSelected: (lang) {
                               final provider = Provider.of<ProjectProvider>(context, listen: false);
-                              _sendWhatsApp(context, dispatch, project, provider.settings.companyName.isNotEmpty ? provider.settings.companyName : "MTC 2026");
+                              final company = provider.settings.companyName.isNotEmpty ? provider.settings.companyName : "MTC 2026";
+                              _sendWhatsApp(context, dispatch, project, company, isArabic: lang == 'AR');
                             },
-                            icon: const Icon(Icons.chat_rounded, size: 16),
-                            label: const Text("WHATSAPP", style: TextStyle(fontWeight: FontWeight.w900, fontSize: 10, letterSpacing: 0.5)),
-                            style: ElevatedButton.styleFrom(
-                              backgroundColor: Colors.transparent,
-                              foregroundColor: Colors.white,
-                              shadowColor: Colors.transparent,
-                              padding: const EdgeInsets.symmetric(vertical: 12),
-                              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
+                            itemBuilder: (ctx) => [
+                              const PopupMenuItem(
+                                value: 'GR',
+                                child: Row(
+                                  children: [
+                                    Text("🇬🇷  Ελληνικά (GR)", style: TextStyle(fontWeight: FontWeight.bold, fontSize: 12)),
+                                  ],
+                                ),
+                              ),
+                              const PopupMenuItem(
+                                value: 'AR',
+                                child: Row(
+                                  children: [
+                                    Text("🇸🇦  العربية (Αραβικά)", style: TextStyle(fontWeight: FontWeight.bold, fontSize: 12)),
+                                  ],
+                                ),
+                              ),
+                            ],
+                            child: const Padding(
+                              padding: EdgeInsets.symmetric(vertical: 12),
+                              child: Row(
+                                mainAxisAlignment: MainAxisAlignment.center,
+                                children: [
+                                  Icon(Icons.chat_rounded, size: 16, color: Colors.white),
+                                  SizedBox(width: 4),
+                                  Text("WHATSAPP", style: TextStyle(fontWeight: FontWeight.w900, fontSize: 10, color: Colors.white, letterSpacing: 0.5)),
+                                  Icon(Icons.arrow_drop_down_rounded, size: 16, color: Colors.white),
+                                ],
+                              ),
                             ),
                           ),
                         ),
                       ),
-                      const SizedBox(width: 10),
+                      const SizedBox(width: 8),
                       // SMS Gradient Button
                       Expanded(
                         child: Container(
@@ -599,19 +624,44 @@ class _DispatchCard extends StatelessWidget {
                               BoxShadow(color: const Color(0xFF4361EE).withValues(alpha: 0.3), blurRadius: 8, offset: const Offset(0, 3)),
                             ],
                           ),
-                          child: ElevatedButton.icon(
-                            onPressed: () {
+                          child: PopupMenuButton<String>(
+                            tooltip: "Αποστολή SMS",
+                            offset: const Offset(0, 45),
+                            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+                            onSelected: (lang) {
                               final provider = Provider.of<ProjectProvider>(context, listen: false);
-                              _sendSMS(context, dispatch, project, provider.settings.companyName.isNotEmpty ? provider.settings.companyName : "MTC 2026");
+                              final company = provider.settings.companyName.isNotEmpty ? provider.settings.companyName : "MTC 2026";
+                              _sendSMS(context, dispatch, project, company, isArabic: lang == 'AR');
                             },
-                            icon: const Icon(Icons.sms_rounded, size: 16),
-                            label: const Text("SMS", style: TextStyle(fontWeight: FontWeight.w900, fontSize: 10, letterSpacing: 0.5)),
-                            style: ElevatedButton.styleFrom(
-                              backgroundColor: Colors.transparent,
-                              foregroundColor: Colors.white,
-                              shadowColor: Colors.transparent,
-                              padding: const EdgeInsets.symmetric(vertical: 12),
-                              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
+                            itemBuilder: (ctx) => [
+                              const PopupMenuItem(
+                                value: 'GR',
+                                child: Row(
+                                  children: [
+                                    Text("🇬🇷  Ελληνικά (GR)", style: TextStyle(fontWeight: FontWeight.bold, fontSize: 12)),
+                                  ],
+                                ),
+                              ),
+                              const PopupMenuItem(
+                                value: 'AR',
+                                child: Row(
+                                  children: [
+                                    Text("🇸🇦  العربية (Αραβικά)", style: TextStyle(fontWeight: FontWeight.bold, fontSize: 12)),
+                                  ],
+                                ),
+                              ),
+                            ],
+                            child: const Padding(
+                              padding: EdgeInsets.symmetric(vertical: 12),
+                              child: Row(
+                                mainAxisAlignment: MainAxisAlignment.center,
+                                children: [
+                                  Icon(Icons.sms_rounded, size: 16, color: Colors.white),
+                                  SizedBox(width: 4),
+                                  Text("SMS", style: TextStyle(fontWeight: FontWeight.w900, fontSize: 10, color: Colors.white, letterSpacing: 0.5)),
+                                  Icon(Icons.arrow_drop_down_rounded, size: 16, color: Colors.white),
+                                ],
+                              ),
                             ),
                           ),
                         ),
@@ -656,16 +706,27 @@ class _DispatchCard extends StatelessWidget {
     );
   }
 
-  void _sendWhatsApp(BuildContext context, WorkerDispatch dispatch, Project project, String companyName) async {
+  void _sendWhatsApp(BuildContext context, WorkerDispatch dispatch, Project project, String companyName, {bool isArabic = false}) async {
     final dateStr = DateFormat('dd/MM/yyyy', 'el').format(DateTime.fromMillisecondsSinceEpoch(dispatch.date));
     
     // Construct Google Maps Link if address is available
     String mapsLink = "";
     if (project.address.isNotEmpty) {
-      mapsLink = "\n📍 Τοποθεσία: https://www.google.com/maps/search/?api=1&query=${Uri.encodeComponent(project.address)}";
+      mapsLink = isArabic 
+          ? "\n📍 الموقع: https://www.google.com/maps/search/?api=1&query=${Uri.encodeComponent(project.address)}"
+          : "\n📍 Τοποθεσία: https://www.google.com/maps/search/?api=1&query=${Uri.encodeComponent(project.address)}";
     }
 
-    final msg = """
+    final msg = isArabic ? """
+👷‍♂️ *$companyName - تعليمات العمل*
+📅 التاريخ: $dateStr
+⏰ وقت الوصول: ${dispatch.timeStr}
+🏗️ المشروع: ${project.name.toUpperCase()}
+🗺️ العنوان: ${project.address.isNotEmpty ? project.address : 'بدون عنوان'}$mapsLink
+🛠️ العمل المطلوب: ${dispatch.taskDescription.isNotEmpty ? dispatch.taskDescription : 'أعمال عامة'}
+
+يرجى تأكيد الاستلام.
+""" : """
 👷‍♂️ *ΟΔΗΓΙΕΣ ΕΡΓΑΣΙΑΣ | $companyName*
 📅 Ημερομηνία: $dateStr
 ⏰ Ώρα προσέλευσης: ${dispatch.timeStr}
@@ -701,16 +762,25 @@ class _DispatchCard extends StatelessWidget {
     }
   }
 
-  void _sendSMS(BuildContext context, WorkerDispatch dispatch, Project project, String companyName) async {
+  void _sendSMS(BuildContext context, WorkerDispatch dispatch, Project project, String companyName, {bool isArabic = false}) async {
     final dateStr = DateFormat('dd/MM/yyyy', 'el').format(DateTime.fromMillisecondsSinceEpoch(dispatch.date));
     
     // Construct Google Maps Link if address is available
     String mapsLink = "";
     if (project.address.isNotEmpty) {
-      mapsLink = "\nΤοποθεσία: https://www.google.com/maps/search/?api=1&query=${Uri.encodeComponent(project.address)}";
+      mapsLink = isArabic 
+          ? "\nالموقع: https://www.google.com/maps/search/?api=1&query=${Uri.encodeComponent(project.address)}"
+          : "\nΤοποθεσία: https://www.google.com/maps/search/?api=1&query=${Uri.encodeComponent(project.address)}";
     }
 
-    final msg = """
+    final msg = isArabic ? """
+$companyName تعليمات:
+التاريخ: $dateStr
+الوقت: ${dispatch.timeStr}
+المشروع: ${project.name.toUpperCase()}
+العنوان: ${project.address.isNotEmpty ? project.address : 'بدون عنوان'}$mapsLink
+العمل: ${dispatch.taskDescription.isNotEmpty ? dispatch.taskDescription : 'أعمال عامة'}
+""" : """
 ΟΔΗΓΙΕΣ ΕΡΓΑΣΙΑΣ ($companyName):
 Ημερομηνία: $dateStr
 Ώρα: ${dispatch.timeStr}
