@@ -63,7 +63,7 @@ class _MaterialListScreenState extends State<MaterialListScreen> {
                   crossAxisCount: isDesktop ? 3 : 1,
                   mainAxisSpacing: 16,
                   crossAxisSpacing: 16,
-                  childAspectRatio: isDesktop ? 2.6 : 3.4,
+                  childAspectRatio: isDesktop ? 2.6 : 2.4,
                 ),
                 itemCount: materials.length,
                 itemBuilder: (context, index) => _MaterialItemCardPremium(
@@ -131,7 +131,7 @@ class _MaterialItemCardPremium extends StatelessWidget {
     return PremiumCard(
       onTap: onClick,
       accentColor: color,
-      padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 20),
+      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
       child: Row(
         children: [
           Container(

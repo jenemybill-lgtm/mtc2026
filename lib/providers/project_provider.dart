@@ -584,18 +584,21 @@ class ProjectProvider with ChangeNotifier {
   Future<void> addProjectNote(ProjectNote note) async {
     await DatabaseHelper().insertProjectNote(note);
     await fetchProjectData(note.projectId);
+    notifyListeners();
     await _autoSync();
   }
 
   Future<void> updateProjectNote(ProjectNote note) async {
     await DatabaseHelper().updateProjectNote(note);
     await fetchProjectData(note.projectId);
+    notifyListeners();
     await _autoSync();
   }
 
   Future<void> deleteProjectNote(int projectId, int noteId) async {
     await DatabaseHelper().deleteProjectNote(noteId);
     await fetchProjectData(projectId);
+    notifyListeners();
     await _autoSync();
   }
 

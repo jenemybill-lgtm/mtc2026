@@ -2103,7 +2103,7 @@ class DatabaseHelper {
 
     if (category != "ΟΛΑ") {
       if (where.isNotEmpty) where += ' AND ';
-      where += 'category = ?';
+      where += 'LOWER(category) = LOWER(?)';
       whereArgs.add(category);
     }
 
