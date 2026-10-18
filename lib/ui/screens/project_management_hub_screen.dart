@@ -12,7 +12,6 @@ import 'package:mtc2026/ui/screens/material_receipt_screen.dart';
 import 'package:mtc2026/ui/screens/purchased_materials_summary_screen.dart';
 import 'package:mtc2026/ui/screens/project_sketches_screen.dart';
 import 'package:mtc2026/ui/screens/project_timeline_screen.dart';
-import 'package:mtc2026/ui/screens/shopping_list_screen.dart';
 import 'package:mtc2026/ui/screens/tool_category_picker_screen.dart';
 import 'package:mtc2026/ui/screens/material_category_picker_screen.dart';
 import 'package:mtc2026/ui/screens/invoices_materials_screen.dart';
@@ -149,7 +148,7 @@ class _ProjectManagementHubScreenState extends State<ProjectManagementHubScreen>
           final count = snapshot.data?.length ?? 0;
           return _ManagementCategoryCard(
             title: "ΥΛΙΚΑ & ΕΞΟΠΛΙΣΜΟΣ",
-            subtitle: "$count Είδη • Εργαλεία & Ελλείψεις",
+            subtitle: "$count Είδη • Εργαλεία & Αγορές",
             icon: Icons.inventory_rounded,
             color: const Color(0xFF4CC9F0),
             onClick: () => _openCategory(context, "ΥΛΙΚΑ & ΕΞΟΠΛΙΣΜΟΣ", [
@@ -157,7 +156,6 @@ class _ProjectManagementHubScreenState extends State<ProjectManagementHubScreen>
               _MgmtModule("Ανάγκες", Icons.fact_check_rounded, const Color(0xFF4CC9F0), ProjectMaterialNeedsScreen(project: project)),
               _MgmtModule("Εργαλεία", Icons.build_rounded, const Color(0xFF4CC9F0), ToolCategoryPickerScreen(title: "ΕΡΓΑΛΕΙΑ ΕΡΓΟΥ", locationType: "PROJECT", locationId: project.id)),
               _MgmtModule("Υλικά", Icons.inventory_rounded, const Color(0xFF4CC9F0), MaterialCategoryPickerScreen(title: "ΥΛΙΚΑ ΕΡΓΟΥ", locationType: "PROJECT", projectId: project.id)),
-              _MgmtModule("Ελλείψεις", Icons.shopping_cart_rounded, const Color(0xFF4CC9F0), ShoppingListScreen(projectId: project.id)),
               _MgmtModule("Παραλαβές", Icons.local_shipping_rounded, const Color(0xFF4CC9F0), MaterialReceiptScreen(project: project)),
               _MgmtModule("Αγορασμένα Υλικά", Icons.shopping_bag_rounded, const Color(0xFF4CC9F0), PurchasedMaterialsSummaryScreen(project: project)),
             ]),

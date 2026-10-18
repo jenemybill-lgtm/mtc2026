@@ -123,13 +123,13 @@ class _PurchasedMaterialsSummaryScreenState extends State<PurchasedMaterialsSumm
               final amt = double.tryParse(amountC.text.replaceAll(',', '.')) ?? 0.0;
 
               if (matName.isNotEmpty) {
-                // 1. Add as Project Expense
+                // 1. Add as Project Expense with explicit MATERIAL_PURCHASE type
                 final exp = Expense(
                   date: DateTime.now().millisecondsSinceEpoch,
                   description: "ΑΓΟΡΑ ΥΛΙΚΟΥ: $matName ($qty ${unitC.text})",
                   workerName: supplierC.text.trim().isNotEmpty ? supplierC.text.trim() : "ΠΡΟΜΗΘΕΥΤΗΣ",
                   amount: amt,
-                  expenseType: "INVOICE",
+                  expenseType: "MATERIAL_PURCHASE",
                   projectId: widget.project.id,
                   hasVat: true,
                   invoiceNumber: invoiceC.text.trim(),
@@ -166,11 +166,9 @@ class _PurchasedMaterialsSummaryScreenState extends State<PurchasedMaterialsSumm
     final provider = Provider.of<ProjectProvider>(context);
     final isDesktop = MediaQuery.of(context).size.width > 900;
 
-    // Filter expenses that are material purchases for this project
+    // Filter expenses that are explicitly manually added material purchases for this project
     final materialExpenses = provider.currentProjectExpenses.where((e) => 
-        e.expenseType == "INVOICE" || 
-        e.description.toUpperCase().contains("ΥΛΙΚ") ||
-        e.description.toUpperCase().contains("ΑΓΟΡΑ")
+        e.expenseType == "MATERIAL_PURCHASE"
     ).toList();
 
     // Group purchases by Material Name
