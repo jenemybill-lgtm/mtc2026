@@ -59,35 +59,27 @@ class _PurchasedMaterialsSummaryScreenState extends State<PurchasedMaterialsSumm
             child: Column(
               mainAxisSize: MainAxisSize.min,
               children: [
-                Autocomplete<String>(
-                  optionsBuilder: (TextEditingValue textEditingValue) {
-                    final query = textEditingValue.text.trim().toUpperCase();
-                    if (query.isEmpty) return standardMaterialsWithUnits.keys.toList();
-                    return standardMaterialsWithUnits.keys.where((String option) => option.contains(query));
-                  },
-                  onSelected: (String selection) {
-                    materialC.text = selection;
-                    if (standardMaterialsWithUnits.containsKey(selection)) {
-                      unitC.text = standardMaterialsWithUnits[selection]!;
-                    }
-                  },
-                  fieldViewBuilder: (context, controller, focusNode, onEditingComplete) {
-                    materialC.addListener(() {
-                      if (controller.text != materialC.text) {
-                        materialC.text = controller.text;
-                      }
-                    });
-                    return TextField(
-                      controller: controller,
-                      focusNode: focusNode,
-                      onEditingComplete: onEditingComplete,
-                      decoration: InputDecoration(
-                        labelText: "Επιλογή / Όνομα Υλικού (π.χ. ΤΣΙΜΕΝΤΟ)",
-                        prefixIcon: const Icon(Icons.inventory_2_rounded, size: 20),
-                        border: OutlineInputBorder(borderRadius: BorderRadius.circular(16)),
-                      ),
-                    );
-                  },
+                TextField(
+                  controller: materialC,
+                  decoration: InputDecoration(
+                    labelText: "Όνομα Υλικού (Γράψτε ή Επιλέξτε)",
+                    hintText: "π.χ. ΤΣΙΜΕΝΤΟ ή ΕΙΔΙΚΟΣ ΑΡΜΟΣΤΟΚΟΣ",
+                    prefixIcon: const Icon(Icons.inventory_2_rounded, size: 20),
+                    suffixIcon: PopupMenuButton<String>(
+                      icon: const Icon(Icons.arrow_drop_down_rounded, size: 28, color: Color(0xFF4361EE)),
+                      onSelected: (val) {
+                        materialC.text = val;
+                        if (standardMaterialsWithUnits.containsKey(val)) {
+                          unitC.text = standardMaterialsWithUnits[val]!;
+                        }
+                      },
+                      itemBuilder: (ctx) => standardMaterialsWithUnits.keys.map((m) => PopupMenuItem(
+                        value: m, 
+                        child: Text(m, style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 12))
+                      )).toList(),
+                    ),
+                    border: OutlineInputBorder(borderRadius: BorderRadius.circular(16)),
+                  ),
                 ),
                 const SizedBox(height: 12),
                 Row(
@@ -339,54 +331,163 @@ class _PurchasedMaterialsSummaryScreenState extends State<PurchasedMaterialsSumm
                         subtitle: "Δεν έχετε καταχωρήσει αγορές υλικών για αυτό το έργο.\nΠατήστε 'ΝΕΑ ΑΓΟΡΑ ΥΛΙΚΟΥ' για να προσθέσετε.",
                         icon: Icons.shopping_bag_outlined,
                       )
-                    : ListView.builder(
-                        itemCount: groupedPurchases.length,
-                        itemBuilder: (context, index) {
-                          final matName = groupedPurchases.keys.elementAt(index);
-                          final purchases = groupedPurchases[matName]!;
-                          final totalCategorySpent = purchases.fold(0.0, (sum, e) => sum + e.amount);
+                    : FutureBuilder<List<MaterialEntity>>(
+                        future: provider.getMaterials(widget.project.id, "PROJECT", "ΟΛΑ"),
+                        builder: (context, snapshot) {
+                          final projectInventory = snapshot.data ?? [];
 
-                          return Container(
-                            margin: const EdgeInsets.only(bottom: 14),
-                            decoration: BoxDecoration(
-                              color: Colors.white,
-                              borderRadius: BorderRadius.circular(20),
-                              border: Border.all(color: Colors.black.withValues(alpha: 0.06), width: 1.0),
-                              boxShadow: [
-                                BoxShadow(color: Colors.black.withValues(alpha: 0.03), blurRadius: 8, offset: const Offset(0, 3)),
-                              ],
-                            ),
-                            child: ExpansionTile(
-                              tilePadding: const EdgeInsets.symmetric(horizontal: 20, vertical: 8),
-                              leading: Container(
-                                padding: const EdgeInsets.all(10),
-                                decoration: BoxDecoration(color: const Color(0xFF4361EE).withValues(alpha: 0.1), borderRadius: BorderRadius.circular(12)),
-                                child: const Icon(Icons.inventory_2_rounded, color: Color(0xFF4361EE), size: 22),
-                              ),
-                              title: Text(matName.toUpperCase(), style: const TextStyle(fontWeight: FontWeight.w900, fontSize: 14, color: Color(0xFF1E293B))),
-                              subtitle: Text("${purchases.length} Αγορές/Παραστατικά", style: const TextStyle(fontSize: 11, color: Colors.blueGrey, fontWeight: FontWeight.bold)),
-                              trailing: Text("${totalCategorySpent.toStringAsFixed(2)} €", style: const TextStyle(fontWeight: FontWeight.w900, fontSize: 15, color: Color(0xFF4361EE))),
-                              children: [
-                                const Divider(height: 1),
-                                ...purchases.map((p) => ListTile(
-                                  dense: true,
-                                  title: Text("${p.workerName} - ${p.description}", style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 12)),
-                                  subtitle: Text(DateFormat('dd/MM/yyyy').format(DateTime.fromMillisecondsSinceEpoch(p.date)), style: const TextStyle(fontSize: 10, color: Colors.grey)),
-                                  trailing: Text("${p.amount.toStringAsFixed(2)} €", style: const TextStyle(fontWeight: FontWeight.w900, fontSize: 13, color: Color(0xFF1E293B))),
-                                )),
-                                Padding(
-                                  padding: const EdgeInsets.all(12.0),
-                                  child: Align(
-                                    alignment: Alignment.centerRight,
-                                    child: TextButton.icon(
-                                      onPressed: () => _showConsumeMaterialDialog(context, provider, matName),
-                                      icon: const Icon(Icons.remove_circle_outline_rounded, color: Colors.orange, size: 16),
-                                      label: const Text("ΑΝΑΛΩΣΗ / ΧΡΗΣΗ ΥΛΙΚΟΥ", style: TextStyle(fontWeight: FontWeight.w900, fontSize: 11, color: Colors.orange)),
-                                    ),
-                                  ),
+                          return ListView.builder(
+                            itemCount: groupedPurchases.length,
+                            itemBuilder: (context, index) {
+                              final matName = groupedPurchases.keys.elementAt(index);
+                              final purchases = groupedPurchases[matName]!;
+                              final totalCategorySpent = purchases.fold(0.0, (sum, e) => sum + e.amount);
+
+                              // Calculate total purchased quantity from descriptions
+                              double totalPurchasedQty = 0.0;
+                              String unit = "τεμ";
+
+                              for (var p in purchases) {
+                                final match = RegExp(r"\(([\d.]+)\s*([^)]+)?\)").firstMatch(p.description);
+                                if (match != null) {
+                                  totalPurchasedQty += double.tryParse(match.group(1)!) ?? 1.0;
+                                  if (match.group(2) != null && match.group(2)!.trim().isNotEmpty) {
+                                    unit = match.group(2)!.trim();
+                                  }
+                                } else {
+                                  totalPurchasedQty += 1.0;
+                                }
+                              }
+
+                              // Find inventory item
+                              final invMat = projectInventory.firstWhereOrNull((m) => m.name.trim().toUpperCase() == matName.trim().toUpperCase());
+                              final remainingQty = invMat?.quantity ?? 0.0;
+                              if (invMat != null && invMat.unit.isNotEmpty) {
+                                unit = invMat.unit;
+                              }
+
+                              final consumedQty = (totalPurchasedQty - remainingQty).clamp(0.0, 99999.0);
+                              final indicativePrice = totalPurchasedQty > 0 ? (totalCategorySpent / totalPurchasedQty) : 0.0;
+
+                              return Container(
+                                margin: const EdgeInsets.only(bottom: 16),
+                                decoration: BoxDecoration(
+                                  color: Colors.white,
+                                  borderRadius: BorderRadius.circular(20),
+                                  border: Border.all(color: Colors.black.withValues(alpha: 0.06), width: 1.0),
+                                  boxShadow: [
+                                    BoxShadow(color: Colors.black.withValues(alpha: 0.03), blurRadius: 10, offset: const Offset(0, 4)),
+                                  ],
                                 ),
-                              ],
-                            ),
+                                child: Column(
+                                  children: [
+                                    // Header: Material Name + Indicative Unit Price
+                                    Padding(
+                                      padding: const EdgeInsets.fromLTRB(20, 16, 20, 12),
+                                      child: Row(
+                                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                                        children: [
+                                          Row(
+                                            children: [
+                                              Container(
+                                                padding: const EdgeInsets.all(10),
+                                                decoration: BoxDecoration(color: const Color(0xFF4361EE).withValues(alpha: 0.1), borderRadius: BorderRadius.circular(12)),
+                                                child: const Icon(Icons.inventory_2_rounded, color: Color(0xFF4361EE), size: 22),
+                                              ),
+                                              const SizedBox(width: 14),
+                                              Column(
+                                                crossAxisAlignment: CrossAxisAlignment.start,
+                                                children: [
+                                                  Text(matName.toUpperCase(), style: const TextStyle(fontWeight: FontWeight.w900, fontSize: 15, color: Color(0xFF1E293B))),
+                                                  if (indicativePrice > 0)
+                                                    Text("Ενδεικτική Τιμή: ~${indicativePrice.toStringAsFixed(2)} € / $unit", style: const TextStyle(fontSize: 10, color: Colors.blueGrey, fontWeight: FontWeight.bold)),
+                                                ],
+                                              ),
+                                            ],
+                                          ),
+                                        ],
+                                      ),
+                                    ),
+
+                                    // Material Consumption Badges (3 STATS)
+                                    Container(
+                                      margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
+                                      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                                      decoration: BoxDecoration(
+                                        color: const Color(0xFFF8FAFC),
+                                        borderRadius: BorderRadius.circular(16),
+                                        border: Border.all(color: Colors.black.withValues(alpha: 0.04)),
+                                      ),
+                                      child: Row(
+                                        children: [
+                                          Expanded(
+                                            child: Column(
+                                              children: [
+                                                const Text("ΑΓΟΡΑΣΘΗΚΑΝ", style: TextStyle(fontSize: 8, fontWeight: FontWeight.w900, color: Color(0xFF4361EE))),
+                                                const SizedBox(height: 4),
+                                                Text("${totalPurchasedQty.toStringAsFixed(0)} $unit", style: const TextStyle(fontWeight: FontWeight.w900, fontSize: 13, color: Color(0xFF4361EE))),
+                                              ],
+                                            ),
+                                          ),
+                                          Container(width: 1, height: 28, color: Colors.black.withValues(alpha: 0.08)),
+                                          Expanded(
+                                            child: Column(
+                                              children: [
+                                                const Text("ΧΑΛΑΣΑΝ / ΧΡΗΣΙΜΟΠΟΙΗΘΗΚΑΝ", style: TextStyle(fontSize: 7, fontWeight: FontWeight.w900, color: Colors.orange)),
+                                                const SizedBox(height: 4),
+                                                Text("${consumedQty.toStringAsFixed(0)} $unit", style: const TextStyle(fontWeight: FontWeight.w900, fontSize: 13, color: Colors.orange)),
+                                              ],
+                                            ),
+                                          ),
+                                          Container(width: 1, height: 28, color: Colors.black.withValues(alpha: 0.08)),
+                                          Expanded(
+                                            child: Column(
+                                              children: [
+                                                const Text("ΥΠΟΛΟΙΠΟ", style: TextStyle(fontSize: 8, fontWeight: FontWeight.w900, color: Color(0xFF10B981))),
+                                                const SizedBox(height: 4),
+                                                Text("${remainingQty.toStringAsFixed(0)} $unit", style: const TextStyle(fontWeight: FontWeight.w900, fontSize: 13, color: Color(0xFF10B981))),
+                                              ],
+                                            ),
+                                          ),
+                                        ],
+                                      ),
+                                    ),
+
+                                    // Expandable Purchases List & Consume Action
+                                    ExpansionTile(
+                                      tilePadding: const EdgeInsets.symmetric(horizontal: 20),
+                                      title: Text("Ιστορικό Αγορών (${purchases.length})", style: const TextStyle(fontSize: 11, fontWeight: FontWeight.bold, color: Colors.blueGrey)),
+                                      children: [
+                                        const Divider(height: 1),
+                                        ...purchases.map((p) => ListTile(
+                                          dense: true,
+                                          title: Text("${p.workerName} - ${p.description}", style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 12)),
+                                          subtitle: Text(DateFormat('dd/MM/yyyy').format(DateTime.fromMillisecondsSinceEpoch(p.date)), style: const TextStyle(fontSize: 10, color: Colors.grey)),
+                                          trailing: Text("${p.amount.toStringAsFixed(2)} €", style: const TextStyle(fontWeight: FontWeight.w900, fontSize: 13, color: Color(0xFF1E293B))),
+                                        )),
+                                        Padding(
+                                          padding: const EdgeInsets.all(12.0),
+                                          child: Align(
+                                            alignment: Alignment.centerRight,
+                                            child: ElevatedButton.icon(
+                                              onPressed: () => _showConsumeMaterialDialog(context, provider, matName),
+                                              icon: const Icon(Icons.remove_circle_outline_rounded, size: 16),
+                                              label: const Text("ΚΑΤΑΧΩΡΗΣΗ ΑΝΑΛΩΣΗΣ", style: TextStyle(fontWeight: FontWeight.w900, fontSize: 11)),
+                                              style: ElevatedButton.styleFrom(
+                                                backgroundColor: Colors.orange,
+                                                foregroundColor: Colors.white,
+                                                elevation: 0,
+                                                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                                              ),
+                                            ),
+                                          ),
+                                        ),
+                                      ],
+                                    ),
+                                  ],
+                                ),
+                              );
+                            },
                           );
                         },
                       ),
