@@ -55,85 +55,103 @@ class _ProjectMainScreenState extends State<ProjectMainScreen> {
   Widget build(BuildContext context) {
     final isDesktop = MediaQuery.of(context).size.width > 900;
 
-    return Scaffold(
-      backgroundColor: const Color(0xFFE2E8F0),
-      appBar: AppBar(
-        centerTitle: false,
-        title: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Text(_getTitle(_selectedIndex), style: const TextStyle(fontWeight: FontWeight.w800, fontSize: 15, letterSpacing: -0.5)),
-            Text(widget.project.name.toUpperCase(), style: const TextStyle(fontSize: 10, color: Color(0xFF1E40AF), fontWeight: FontWeight.w800, letterSpacing: 0.5)),
-          ],
-        ),
-        leading: IconButton(
-          icon: const Icon(Icons.arrow_back_ios_new_rounded, size: 20),
-          onPressed: () => Navigator.of(context).pop(),
-          tooltip: "Επιστροφή στη λίστα",
-        ),
-      ),
-      floatingActionButton: _buildFAB(),
-      body: Center(
-        child: Container(
-          constraints: const BoxConstraints(maxWidth: 1200),
-          child: Material(
-            color: const Color(0xFFE2E8F0),
-            child: _getScreen(_selectedIndex),
+    return PopScope(
+      canPop: _selectedIndex == 0,
+      onPopInvokedWithResult: (didPop, result) {
+        if (!didPop && _selectedIndex != 0) {
+          setState(() {
+            _selectedIndex = 0;
+          });
+        }
+      },
+      child: Scaffold(
+        backgroundColor: const Color(0xFFE2E8F0),
+        appBar: AppBar(
+          centerTitle: false,
+          title: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(_getTitle(_selectedIndex), style: const TextStyle(fontWeight: FontWeight.w800, fontSize: 15, letterSpacing: -0.5)),
+              Text(widget.project.name.toUpperCase(), style: const TextStyle(fontSize: 10, color: Color(0xFF1E40AF), fontWeight: FontWeight.w800, letterSpacing: 0.5)),
+            ],
+          ),
+          leading: IconButton(
+            icon: const Icon(Icons.arrow_back_ios_new_rounded, size: 20),
+            onPressed: () {
+              if (_selectedIndex != 0) {
+                setState(() {
+                  _selectedIndex = 0;
+                });
+              } else {
+                Navigator.of(context).pop();
+              }
+            },
+            tooltip: _selectedIndex != 0 ? "Επιστροφή στην Επισκόπηση" : "Επιστροφή στη λίστα",
           ),
         ),
-      ),
-      bottomNavigationBar: Container(
-        decoration: BoxDecoration(
-          border: Border(top: BorderSide(color: Colors.black.withValues(alpha: 0.05))),
+        floatingActionButton: _buildFAB(),
+        body: Center(
+          child: Container(
+            constraints: const BoxConstraints(maxWidth: 1200),
+            child: Material(
+              color: const Color(0xFFE2E8F0),
+              child: _getScreen(_selectedIndex),
+            ),
+          ),
         ),
-        child: NavigationBar(
-          height: 64,
-          elevation: 0,
-          backgroundColor: Colors.white,
-          indicatorColor: const Color(0xFF1E40AF).withValues(alpha: 0.1),
-          selectedIndex: _selectedIndex + 1,
-          onDestinationSelected: (index) {
-            if (index == 0) {
-              Navigator.of(context).pushAndRemoveUntil(
-                MaterialPageRoute(builder: (context) => const HomeScreen()),
-                (route) => false,
-              );
-            } else {
-              setState(() => _selectedIndex = index - 1);
-            }
-          },
-          destinations: const [
-            NavigationDestination(
-              icon: Icon(Icons.home_outlined, size: 22),
-              selectedIcon: Icon(Icons.home_rounded, size: 22, color: Color(0xFF1E40AF)),
-              label: "Αρχική",
-            ),
-            NavigationDestination(
-              icon: Icon(Icons.dashboard_outlined, size: 22),
-              selectedIcon: Icon(Icons.dashboard_rounded, size: 22, color: Color(0xFF1E40AF)),
-              label: "Επισκόπηση",
-            ),
-            NavigationDestination(
-              icon: Icon(Icons.assignment_outlined, size: 22),
-              selectedIcon: Icon(Icons.assignment_rounded, size: 22, color: Color(0xFF1E40AF)),
-              label: "Προσφορά",
-            ),
-            NavigationDestination(
-              icon: Icon(Icons.analytics_outlined, size: 22),
-              selectedIcon: Icon(Icons.analytics_rounded, size: 22, color: Color(0xFF1E40AF)),
-              label: "Σύνολο",
-            ),
-            NavigationDestination(
-              icon: Icon(Icons.event_note_outlined, size: 22),
-              selectedIcon: Icon(Icons.event_note_rounded, size: 22, color: Color(0xFF1E40AF)),
-              label: "Ημερολόγιο",
-            ),
-            NavigationDestination(
-              icon: Icon(Icons.dashboard_customize_outlined, size: 22),
-              selectedIcon: Icon(Icons.dashboard_customize_rounded, size: 22, color: Color(0xFF1E40AF)),
-              label: "Διαχείριση",
-            ),
-          ],
+        bottomNavigationBar: Container(
+          decoration: BoxDecoration(
+            border: Border(top: BorderSide(color: Colors.black.withValues(alpha: 0.05))),
+          ),
+          child: NavigationBar(
+            height: 64,
+            elevation: 0,
+            backgroundColor: Colors.white,
+            indicatorColor: const Color(0xFF1E40AF).withValues(alpha: 0.1),
+            selectedIndex: _selectedIndex + 1,
+            onDestinationSelected: (index) {
+              if (index == 0) {
+                Navigator.of(context).pushAndRemoveUntil(
+                  MaterialPageRoute(builder: (context) => const HomeScreen()),
+                  (route) => false,
+                );
+              } else {
+                setState(() => _selectedIndex = index - 1);
+              }
+            },
+            destinations: const [
+              NavigationDestination(
+                icon: Icon(Icons.home_outlined, size: 22),
+                selectedIcon: Icon(Icons.home_rounded, size: 22, color: Color(0xFF1E40AF)),
+                label: "Αρχική",
+              ),
+              NavigationDestination(
+                icon: Icon(Icons.dashboard_outlined, size: 22),
+                selectedIcon: Icon(Icons.dashboard_rounded, size: 22, color: Color(0xFF1E40AF)),
+                label: "Επισκόπηση",
+              ),
+              NavigationDestination(
+                icon: Icon(Icons.assignment_outlined, size: 22),
+                selectedIcon: Icon(Icons.assignment_rounded, size: 22, color: Color(0xFF1E40AF)),
+                label: "Προσφορά",
+              ),
+              NavigationDestination(
+                icon: Icon(Icons.analytics_outlined, size: 22),
+                selectedIcon: Icon(Icons.analytics_rounded, size: 22, color: Color(0xFF1E40AF)),
+                label: "Σύνολο",
+              ),
+              NavigationDestination(
+                icon: Icon(Icons.event_note_outlined, size: 22),
+                selectedIcon: Icon(Icons.event_note_rounded, size: 22, color: Color(0xFF1E40AF)),
+                label: "Ημερολόγιο",
+              ),
+              NavigationDestination(
+                icon: Icon(Icons.dashboard_customize_outlined, size: 22),
+                selectedIcon: Icon(Icons.dashboard_customize_rounded, size: 22, color: Color(0xFF1E40AF)),
+                label: "Διαχείριση",
+              ),
+            ],
+          ),
         ),
       ),
     );
