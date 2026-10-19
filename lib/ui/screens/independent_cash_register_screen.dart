@@ -54,41 +54,71 @@ class _IndependentCashRegisterScreenState extends State<IndependentCashRegisterS
                 );
               }
 
-              // Ομαδοποίηση ανά μήνα-έτος
-              final groupedRecords = <String, List<CashFlowEntity>>{};
+              // Ομαδοποίηση ανά Μήνα/Έτος
+              final Map<DateTime, List<CashFlowEntity>> groupedRecords = {};
               for (var r in allRecords) {
                 final dt = DateTime.fromMillisecondsSinceEpoch(r.date);
-                final monthKey = DateFormat('MMMM yyyy', 'el').format(dt).toUpperCase();
+                final monthKey = DateTime(dt.year, dt.month); // Χρήση 1ης μέρας του μήνα ως κλειδί
                 groupedRecords.putIfAbsent(monthKey, () => []).add(r);
               }
 
+              // Ταξινόμηση μηνών (πιο πρόσφατος πρώτος)
+              final sortedMonths = groupedRecords.keys.toList()..sort((a, b) => b.compareTo(a));
+
               return ListView.builder(
-                padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 16),
-                itemCount: groupedRecords.length,
+                padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 24),
+                itemCount: sortedMonths.length,
                 itemBuilder: (context, index) {
-                  final monthKey = groupedRecords.keys.elementAt(index);
-                  final records = groupedRecords[monthKey]!;
+                  final month = sortedMonths[index];
+                  final records = groupedRecords[month]!;
+                  final monthTitle = DateFormat('MMMM yyyy', 'el').format(month).toUpperCase();
                   
                   final totalIncome = records.where((r) => r.type == "INCOME").fold(0.0, (sum, r) => sum + r.amount);
                   final totalExpense = records.where((r) => r.type == "EXPENSE").fold(0.0, (sum, r) => sum + r.amount);
                   final balance = totalIncome - totalExpense;
 
-                  return Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Padding(
-                        padding: const EdgeInsets.only(top: 16, bottom: 8),
-                        child: Text(monthKey, style: const TextStyle(fontWeight: FontWeight.w900, fontSize: 16, color: Color(0xFF1E293B))),
+                  return Container(
+                    margin: const EdgeInsets.only(bottom: 16),
+                    decoration: BoxDecoration(
+                      color: Colors.white,
+                      borderRadius: BorderRadius.circular(24),
+                      border: Border.all(color: Colors.black.withValues(alpha: 0.05)),
+                      boxShadow: [
+                        BoxShadow(color: Colors.black.withValues(alpha: 0.03), blurRadius: 10, offset: const Offset(0, 4))
+                      ],
+                    ),
+                    child: Theme(
+                      data: Theme.of(context).copyWith(dividerColor: Colors.transparent),
+                      child: ExpansionTile(
+                        initiallyExpanded: index == 0, // Ανοιχτός μόνο ο πιο πρόσφατος μήνας
+                        tilePadding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
+                        leading: Container(
+                          padding: const EdgeInsets.all(12),
+                          decoration: BoxDecoration(
+                            color: const Color(0xFF4361EE).withValues(alpha: 0.1),
+                            shape: BoxShape.circle,
+                          ),
+                          child: const Icon(Icons.date_range_rounded, color: Color(0xFF4361EE), size: 22),
+                        ),
+                        title: Text(monthTitle, style: const TextStyle(fontWeight: FontWeight.w900, fontSize: 16, color: Color(0xFF1E293B))),
+                        subtitle: Text(
+                          "${records.length} Εγγραφές | Υπόλοιπο: ${balance >= 0 ? '+' : ''}${balance.toStringAsFixed(2)} €", 
+                          style: TextStyle(fontWeight: FontWeight.w900, fontSize: 12, color: balance >= 0 ? const Color(0xFF10B981) : Colors.redAccent),
+                        ),
+                        children: [
+                          _buildSummaryCards(totalIncome, totalExpense, balance),
+                          ...records.map((record) => Padding(
+                            padding: const EdgeInsets.symmetric(horizontal: 16.0),
+                            child: _CashFlowCard(
+                              record: record,
+                              onEdit: () => _showCashFlowDialog(context, provider, recordToEdit: record),
+                              onDelete: () => _deleteRecord(context, provider, record),
+                            ),
+                          )),
+                          const SizedBox(height: 16),
+                        ],
                       ),
-                      _buildSummaryCards(totalIncome, totalExpense, balance),
-                      const SizedBox(height: 12),
-                      ...records.map((record) => _CashFlowCard(
-                        record: record,
-                        onEdit: () => _showCashFlowDialog(context, provider, recordToEdit: record),
-                        onDelete: () => _deleteRecord(context, provider, record),
-                      )),
-                      const SizedBox(height: 24),
-                    ],
+                    ),
                   );
                 },
               );
@@ -101,13 +131,12 @@ class _IndependentCashRegisterScreenState extends State<IndependentCashRegisterS
 
   Widget _buildSummaryCards(double income, double expense, double balance) {
     return Padding(
-      padding: const EdgeInsets.all(24),
+      padding: const EdgeInsets.fromLTRB(16, 0, 16, 16),
       child: Container(
         decoration: BoxDecoration(
-          color: Colors.white,
-          borderRadius: BorderRadius.circular(24),
-          border: Border.all(color: Colors.black.withValues(alpha: 0.05)),
-          boxShadow: [BoxShadow(color: Colors.black.withValues(alpha: 0.03), blurRadius: 10, offset: const Offset(0, 4))],
+          color: const Color(0xFFF8FAFC),
+          borderRadius: BorderRadius.circular(20),
+          border: Border.all(color: Colors.black.withValues(alpha: 0.03)),
         ),
         padding: const EdgeInsets.all(20),
         child: Column(
