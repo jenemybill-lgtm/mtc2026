@@ -137,18 +137,45 @@ class _IndependentCashRegisterScreenState extends State<IndependentCashRegisterS
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
                 const Text("ΤΡΕΧΟΝ ΥΠΟΛΟΙΠΟ ΜΗΝΑ", style: TextStyle(fontWeight: FontWeight.w900, fontSize: 11, color: Colors.blueGrey)),
-                Text(
-                  "${balance.toStringAsFixed(2)} €", 
-                  style: TextStyle(fontWeight: FontWeight.w900, fontSize: 24, color: balance >= 0 ? const Color(0xFF10B981) : Colors.redAccent),
+                Container(
+                  padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                  decoration: BoxDecoration(
+                    color: (balance >= 0 ? const Color(0xFF10B981) : Colors.redAccent).withValues(alpha: 0.1),
+                    borderRadius: BorderRadius.circular(12),
+                  ),
+                  child: Text(
+                    "${balance.toStringAsFixed(2)} €", 
+                    style: TextStyle(fontWeight: FontWeight.w900, fontSize: 24, color: balance >= 0 ? const Color(0xFF10B981) : Colors.redAccent),
+                  ),
                 ),
               ],
             ),
             const Padding(padding: EdgeInsets.symmetric(vertical: 16), child: Divider(height: 1)),
             Row(
               children: [
-                Expanded(child: _SummaryStat("ΕΣΟΔΑ (+)", income, const Color(0xFF10B981))),
-                Container(width: 1, height: 30, color: Colors.black.withValues(alpha: 0.1)),
-                Expanded(child: _SummaryStat("ΕΞΟΔΑ (-)", expense, Colors.redAccent)),
+                Expanded(
+                  child: Container(
+                    padding: const EdgeInsets.all(12),
+                    decoration: BoxDecoration(
+                      color: const Color(0xFF10B981).withValues(alpha: 0.05),
+                      borderRadius: BorderRadius.circular(16),
+                      border: Border.all(color: const Color(0xFF10B981).withValues(alpha: 0.1)),
+                    ),
+                    child: _SummaryStat("ΕΣΟΔΑ (+)", income, const Color(0xFF10B981)),
+                  ),
+                ),
+                const SizedBox(width: 16),
+                Expanded(
+                  child: Container(
+                    padding: const EdgeInsets.all(12),
+                    decoration: BoxDecoration(
+                      color: Colors.redAccent.withValues(alpha: 0.05),
+                      borderRadius: BorderRadius.circular(16),
+                      border: Border.all(color: Colors.redAccent.withValues(alpha: 0.1)),
+                    ),
+                    child: _SummaryStat("ΕΞΟΔΑ (-)", expense, Colors.redAccent),
+                  ),
+                ),
               ],
             ),
           ],
