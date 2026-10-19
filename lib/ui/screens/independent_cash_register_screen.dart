@@ -14,8 +14,6 @@ class IndependentCashRegisterScreen extends StatefulWidget {
 }
 
 class _IndependentCashRegisterScreenState extends State<IndependentCashRegisterScreen> {
-  DateTime _selectedMonth = DateTime.now();
-
   @override
   Widget build(BuildContext context) {
     final provider = Provider.of<ProjectProvider>(context);
@@ -42,80 +40,61 @@ class _IndependentCashRegisterScreenState extends State<IndependentCashRegisterS
       body: Center(
         child: Container(
           constraints: BoxConstraints(maxWidth: isDesktop ? 1000 : double.infinity),
-          child: Column(
-            children: [
-              _buildMonthNavigator(),
-              Expanded(
-                child: FutureBuilder<List<CashFlowEntity>>(
-                  future: provider.getCashFlows(),
-                  builder: (context, snapshot) {
-                    if (!snapshot.hasData) return const Center(child: CircularProgressIndicator());
-                    
-                    final allRecords = snapshot.data!;
-                    final records = allRecords.where((r) {
-                      final dt = DateTime.fromMillisecondsSinceEpoch(r.date);
-                      return dt.year == _selectedMonth.year && dt.month == _selectedMonth.month;
-                    }).toList();
+          child: FutureBuilder<List<CashFlowEntity>>(
+            future: provider.getCashFlows(),
+            builder: (context, snapshot) {
+              if (!snapshot.hasData) return const Center(child: CircularProgressIndicator());
+              
+              final allRecords = snapshot.data!;
+              if (allRecords.isEmpty) {
+                return const PremiumEmptyState(
+                  title: "ΚΑΜΙΑ ΕΓΓΡΑΦΗ",
+                  subtitle: "Δεν βρέθηκαν συναλλαγές στο ταμείο.\nΠατήστε 'ΝΕΑ ΚΙΝΗΣΗ' για να προσθέσετε.",
+                  icon: Icons.account_balance_wallet_outlined,
+                );
+              }
 
-                    final totalIncome = records.where((r) => r.type == "INCOME").fold(0.0, (sum, r) => sum + r.amount);
-                    final totalExpense = records.where((r) => r.type == "EXPENSE").fold(0.0, (sum, r) => sum + r.amount);
-                    final balance = totalIncome - totalExpense;
+              // Ομαδοποίηση ανά μήνα-έτος
+              final groupedRecords = <String, List<CashFlowEntity>>{};
+              for (var r in allRecords) {
+                final dt = DateTime.fromMillisecondsSinceEpoch(r.date);
+                final monthKey = DateFormat('MMMM yyyy', 'el').format(dt).toUpperCase();
+                groupedRecords.putIfAbsent(monthKey, () => []).add(r);
+              }
 
-                    return Column(
-                      children: [
-                        _buildSummaryCards(totalIncome, totalExpense, balance),
-                        Expanded(
-                          child: records.isEmpty
-                              ? const PremiumEmptyState(
-                                  title: "ΚΑΜΙΑ ΕΓΓΡΑΦΗ",
-                                  subtitle: "Δεν βρέθηκαν συναλλαγές για αυτόν τον μήνα.\nΠατήστε 'ΝΕΑ ΚΙΝΗΣΗ' για να προσθέσετε.",
-                                  icon: Icons.account_balance_wallet_outlined,
-                                )
-                              : ListView.builder(
-                                  padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 16),
-                                  itemCount: records.length,
-                                  itemBuilder: (context, index) {
-                                    final record = records[index];
-                                    return _CashFlowCard(
-                                      record: record,
-                                      onEdit: () => _showCashFlowDialog(context, provider, recordToEdit: record),
-                                      onDelete: () => _deleteRecord(context, provider, record),
-                                    );
-                                  },
-                                ),
-                        ),
-                      ],
-                    );
-                  },
-                ),
-              ),
-            ],
+              return ListView.builder(
+                padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 16),
+                itemCount: groupedRecords.length,
+                itemBuilder: (context, index) {
+                  final monthKey = groupedRecords.keys.elementAt(index);
+                  final records = groupedRecords[monthKey]!;
+                  
+                  final totalIncome = records.where((r) => r.type == "INCOME").fold(0.0, (sum, r) => sum + r.amount);
+                  final totalExpense = records.where((r) => r.type == "EXPENSE").fold(0.0, (sum, r) => sum + r.amount);
+                  final balance = totalIncome - totalExpense;
+
+                  return Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Padding(
+                        padding: const EdgeInsets.only(top: 16, bottom: 8),
+                        child: Text(monthKey, style: const TextStyle(fontWeight: FontWeight.w900, fontSize: 16, color: Color(0xFF1E293B))),
+                      ),
+                      _buildSummaryCards(totalIncome, totalExpense, balance),
+                      const SizedBox(height: 12),
+                      ...records.map((record) => _CashFlowCard(
+                        record: record,
+                        onEdit: () => _showCashFlowDialog(context, provider, recordToEdit: record),
+                        onDelete: () => _deleteRecord(context, provider, record),
+                      )),
+                      const SizedBox(height: 24),
+                    ],
+                  );
+                },
+              );
+            },
           ),
         ),
-      ),
-    );
-  }
-
-  Widget _buildMonthNavigator() {
-    return Container(
-      color: Colors.white,
-      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-      child: Row(
-        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-        children: [
-          IconButton(
-            icon: const Icon(Icons.chevron_left_rounded, size: 28),
-            onPressed: () => setState(() => _selectedMonth = DateTime(_selectedMonth.year, _selectedMonth.month - 1)),
-          ),
-          Text(
-            DateFormat('MMMM yyyy', 'el').format(_selectedMonth).toUpperCase(),
-            style: const TextStyle(fontWeight: FontWeight.w900, fontSize: 15, color: Color(0xFF1E293B)),
-          ),
-          IconButton(
-            icon: const Icon(Icons.chevron_right_rounded, size: 28),
-            onPressed: () => setState(() => _selectedMonth = DateTime(_selectedMonth.year, _selectedMonth.month + 1)),
-          ),
-        ],
       ),
     );
   }
