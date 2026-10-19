@@ -239,6 +239,7 @@ class _ToolEntryDialogState extends State<_ToolEntryDialog> {
   late String _selectedLocationType;
   late int _selectedLocationId;
   String _customLocationName = "";
+  Partner? _selectedAssignedWorker;
 
   @override
   void initState() {
@@ -264,6 +265,12 @@ class _ToolEntryDialogState extends State<_ToolEntryDialog> {
   Widget build(BuildContext context) {
     final provider = Provider.of<ProjectProvider>(context);
     final projects = provider.projects;
+    final workers = provider.partners;
+
+    if (_selectedAssignedWorker == null && widget.initialTool != null && widget.initialTool!.assignedTo.isNotEmpty) {
+      _selectedAssignedWorker = workers.where((w) => w.name == widget.initialTool!.assignedTo).firstOrNull;
+    }
+
     const color = Color(0xFF4361EE);
 
     return Dialog(
@@ -385,6 +392,26 @@ class _ToolEntryDialogState extends State<_ToolEntryDialog> {
                           }
                         },
                       ),
+                      const SizedBox(height: 16),
+                      DropdownButtonFormField<Partner>(
+                        value: _selectedAssignedWorker,
+                        isExpanded: true,
+                        decoration: InputDecoration(
+                          labelText: "Χρέωση σε Εργάτη/Συνεργάτη (Προαιρετικό)",
+                          filled: true,
+                          fillColor: const Color(0xFFE2E8F0).withValues(alpha: 0.6),
+                          border: OutlineInputBorder(borderRadius: BorderRadius.circular(16), borderSide: BorderSide.none),
+                        ),
+                        items: [
+                          const DropdownMenuItem<Partner>(value: null, child: Text("ΚΑΜΙΑ ΧΡΕΩΣΗ", style: TextStyle(fontSize: 12, fontWeight: FontWeight.bold, color: Colors.blueGrey))),
+                          ...workers.map((w) => DropdownMenuItem(value: w, child: Text(w.name.toUpperCase(), style: const TextStyle(fontSize: 12, fontWeight: FontWeight.bold)))),
+                        ],
+                        onChanged: (v) {
+                          setState(() {
+                            _selectedAssignedWorker = v;
+                          });
+                        },
+                      ),
                     ],
                     
                     const SizedBox(height: 20),
@@ -416,6 +443,7 @@ class _ToolEntryDialogState extends State<_ToolEntryDialog> {
                               locationType: _selectedLocationType,
                               locationId: _selectedLocationId,
                               customLocationName: _customLocationName,
+                              assignedTo: _selectedAssignedWorker?.name ?? "",
                             );
                             if (widget.initialTool == null) {
                               await provider.addTool(tool);
