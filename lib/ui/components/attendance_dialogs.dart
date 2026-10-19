@@ -42,7 +42,10 @@ class _AddAttendanceDialogState extends State<AddAttendanceDialog> {
       _selectedDate = DateTime.fromMillisecondsSinceEpoch(widget.initialRecord!.date);
       _selectedWorker = widget.initialRecord!.workerName;
       _selectedProjectId = widget.initialRecord!.projectId;
-      _selectedCategory = widget.initialRecord!.workCategory;
+      
+      final exists = AppDestinations.values.any((d) => d.label == widget.initialRecord!.workCategory);
+      _selectedCategory = exists ? widget.initialRecord!.workCategory : AppDestinations.GENERAL.label;
+
       _rateController.text = widget.initialRecord!.dailyRate.toString();
       _overtimeController.text = widget.initialRecord!.overtimeAmount.toString();
       _noteController.text = widget.initialRecord!.note;
