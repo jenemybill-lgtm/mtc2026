@@ -1657,11 +1657,11 @@ class Manager {
 class CashFlowEntity {
   final int id;
   final int date;
-  final String type; // "INCOME" or "EXPENSE"
+  final String type; // "INCOME", "EXPENSE", "EXPENSE_LABOR", "EXPENSE_MATERIAL", "EXPENSE_SUBCONTRACTOR"
   final double amount;
   final String description;
   final String invoiceNumber;
-  final String projectName; // Απλό κείμενο, όχι ID, για ελεύθερη γραφή
+  final String projectName;
 
   CashFlowEntity({
     this.id = 0,

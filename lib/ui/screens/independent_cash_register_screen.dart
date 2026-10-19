@@ -74,7 +74,7 @@ class _IndependentCashRegisterScreenState extends State<IndependentCashRegisterS
                   final monthTitle = DateFormat('MMMM yyyy', 'el').format(month).toUpperCase();
                   
                   final totalIncome = records.where((r) => r.type == "INCOME").fold(0.0, (sum, r) => sum + r.amount);
-                  final totalExpense = records.where((r) => r.type == "EXPENSE").fold(0.0, (sum, r) => sum + r.amount);
+                  final totalExpense = records.where((r) => r.type != "INCOME").fold(0.0, (sum, r) => sum + r.amount);
                   final balance = totalIncome - totalExpense;
 
                   return Container(
@@ -216,16 +216,22 @@ class _IndependentCashRegisterScreenState extends State<IndependentCashRegisterS
               child: Column(
                 mainAxisSize: MainAxisSize.min,
                 children: [
-                  SegmentedButton<String>(
-                    segments: const [
-                      ButtonSegment(value: "INCOME", label: Text("ΕΙΣΠΡΑΞΗ (+)", style: TextStyle(fontWeight: FontWeight.bold))),
-                      ButtonSegment(value: "EXPENSE", label: Text("ΠΛΗΡΩΜΗ (-)", style: TextStyle(fontWeight: FontWeight.bold))),
-                    ],
-                    selected: {type},
-                    onSelectionChanged: (s) => setDialogState(() => type = s.first),
-                    style: SegmentedButton.styleFrom(
-                      selectedBackgroundColor: type == "INCOME" ? const Color(0xFF10B981) : Colors.redAccent,
-                      selectedForegroundColor: Colors.white,
+                  SingleChildScrollView(
+                    scrollDirection: Axis.horizontal,
+                    child: SegmentedButton<String>(
+                      segments: const [
+                        ButtonSegment(value: "INCOME", label: Text("ΕΣΟΔΟ (+)", style: TextStyle(fontWeight: FontWeight.bold))),
+                        ButtonSegment(value: "EXPENSE_LABOR", label: Text("ΕΡΓΑΤΙΚΑ (-)", style: TextStyle(fontWeight: FontWeight.bold))),
+                        ButtonSegment(value: "EXPENSE_MATERIAL", label: Text("ΥΛΙΚΑ (-)", style: TextStyle(fontWeight: FontWeight.bold))),
+                        ButtonSegment(value: "EXPENSE_SUBCONTRACTOR", label: Text("ΣΥΝΕΡΓΑΤΕΣ (-)", style: TextStyle(fontWeight: FontWeight.bold))),
+                        ButtonSegment(value: "EXPENSE", label: Text("ΓΕΝΙΚΟ ΕΞΟΔΟ (-)", style: TextStyle(fontWeight: FontWeight.bold))),
+                      ],
+                      selected: {type},
+                      onSelectionChanged: (s) => setDialogState(() => type = s.first),
+                      style: SegmentedButton.styleFrom(
+                        selectedBackgroundColor: type == "INCOME" ? const Color(0xFF10B981) : Colors.redAccent,
+                        selectedForegroundColor: Colors.white,
+                      ),
                     ),
                   ),
                   const SizedBox(height: 24),
