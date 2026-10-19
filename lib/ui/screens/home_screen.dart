@@ -21,6 +21,7 @@ import 'package:mtc2026/ui/screens/ai_assistant_screen.dart';
 import 'package:mtc2026/ui/screens/portfolio_screen.dart';
 import 'package:mtc2026/ui/screens/global_calendar_screen.dart';
 import 'package:mtc2026/ui/screens/tools_report_screen.dart';
+import 'package:mtc2026/ui/screens/independent_cash_register_screen.dart';
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
@@ -206,6 +207,15 @@ class _HomeScreenState extends State<HomeScreen> {
                       color: const Color(0xFF4361EE),
                       isFullWidth: true,
                       onClick: () => Navigator.push(context, MaterialPageRoute(builder: (context) => const ToolsReportScreen())),
+                    ),
+                    const SizedBox(height: 24),
+                    _PremiumNavCard(
+                      title: "ΤΑΜΕΙΟ ΚΙΝΗΣΗΣ",
+                      subtitle: "Ανεξάρτητη διαχείριση εσόδων - εξόδων",
+                      icon: Icons.point_of_sale_rounded,
+                      color: Colors.teal,
+                      isFullWidth: true,
+                      onClick: () => Navigator.push(context, MaterialPageRoute(builder: (context) => const IndependentCashRegisterScreen())),
                     ),
                   ],
                 ),
