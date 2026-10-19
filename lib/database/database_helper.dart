@@ -145,7 +145,27 @@ class DatabaseHelper {
     await _ensureToolAssignedToColumn(db);
     await _ensureCashRegisterTable(db);
     await _ensureProjectPhotosBeforeAfterColumn(db);
+    await _ensureProjectSpecsTable(db);
     return db;
+  }
+
+  Future<void> _ensureProjectSpecsTable(Database db) async {
+    try {
+      await db.execute('''
+        CREATE TABLE IF NOT EXISTS project_specs (
+          id INTEGER PRIMARY KEY AUTOINCREMENT,
+          projectId INTEGER,
+          category TEXT,
+          name TEXT,
+          brandCode TEXT,
+          supplier TEXT,
+          notes TEXT,
+          dateAdded INTEGER
+        )
+      ''');
+    } catch (e) {
+      print("Schema update error project_specs: $e");
+    }
   }
 
   Future<void> _ensureProjectPhotosBeforeAfterColumn(Database db) async {
