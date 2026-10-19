@@ -22,6 +22,8 @@ class _FloorsCalculatorState extends State<FloorsCalculator> {
   bool _includePurchase = true;
   bool _includeInstallation = true;
   bool _includePrimer = false;
+  
+  double _wastePercentage = 10.0; // Νέο: Ποσοστό Φύρας
 
   final _roomsCount = TextEditingController(text: "0");
 
@@ -83,12 +85,18 @@ class _FloorsCalculatorState extends State<FloorsCalculator> {
     final solPrice = double.tryParse(_solidRoomPriceController.text) ?? 350.0;
 
     double total = 0.0;
+    final wasteMultiplier = 1.0 + (_wastePercentage / 100.0);
+    final rawArea = double.tryParse(_areaSqm.text) ?? 0.0;
+    final areaWithWaste = rawArea * wasteMultiplier;
+
     if (_calcMethod == 0) {
       double rate = 0.0;
-      if (_includePurchase) rate += purPrice;
       if (_includeInstallation) rate += insPrice;
       if (_includePrimer) rate += priPrice;
-      total = (double.tryParse(_areaSqm.text) ?? 0) * rate;
+      total = rawArea * rate; // Εργατικά χωρίς φύρα
+      if (_includePurchase) {
+        total += (areaWithWaste * purPrice); // Υλικά με φύρα
+      }
     } else {
       total = (int.tryParse(_roomsCount.text) ?? 0) * solPrice;
     }
@@ -107,6 +115,47 @@ class _FloorsCalculatorState extends State<FloorsCalculator> {
               ),
             ],
           ),
+          if (_calcMethod == 0 && _includePurchase) ...[
+            const SizedBox(height: 16),
+            SturdyCalcSection(
+              title: "Ποσοστό Φύρας (Scrap/Waste)",
+              icon: Icons.pie_chart_outline_rounded,
+              child: Column(
+                children: [
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      Text("Επιπλέον ξυλεία για κοψίματα:", style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 12, color: Colors.blueGrey)),
+                      Container(
+                        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
+                        decoration: BoxDecoration(color: Colors.blue.withValues(alpha: 0.1), borderRadius: BorderRadius.circular(8)),
+                        child: Text("+${_wastePercentage.toInt()}%", style: const TextStyle(fontWeight: FontWeight.w900, fontSize: 14, color: Colors.blue)),
+                      ),
+                    ],
+                  ),
+                  SliderTheme(
+                    data: SliderTheme.of(context).copyWith(
+                      activeTrackColor: Colors.blue,
+                      inactiveTrackColor: Colors.blue.withValues(alpha: 0.2),
+                      thumbColor: Colors.blue,
+                      overlayColor: Colors.blue.withValues(alpha: 0.1),
+                      valueIndicatorColor: Colors.blue,
+                    ),
+                    child: Slider(
+                      value: _wastePercentage,
+                      min: 0,
+                      max: 20,
+                      divisions: 20,
+                      label: "+${_wastePercentage.toInt()}%",
+                      onChanged: (val) => setState(() => _wastePercentage = val),
+                    ),
+                  ),
+                  const Text("Αυξάνει αυτόματα τα τ.μ. της αγοράς ξυλείας που θα χρεωθεί, χωρίς να αυξάνει την τοποθέτηση.", 
+                    style: TextStyle(fontSize: 9, fontStyle: FontStyle.italic, color: Colors.grey), textAlign: TextAlign.center),
+                ],
+              ),
+            ),
+          ],
 
           if (_showPriceSettings)
             Padding(
