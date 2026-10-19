@@ -22,6 +22,8 @@ class _TilesCalculatorState extends State<TilesCalculator> {
   final _floorSqm = TextEditingController(text: "0");
   final _installationSqm = TextEditingController(text: "0");
   final _skirtingMeters = TextEditingController(text: "0");
+  
+  double _wastePercentage = 10.0; // Νέο: Ποσοστό Φύρας
 
   // Unit Price Controllers
   final _bathPriceController = TextEditingController(text: "1300.0");
@@ -87,9 +89,13 @@ class _TilesCalculatorState extends State<TilesCalculator> {
     final bCount = int.tryParse(_bathroomCount.text) ?? 0;
     final wCount = int.tryParse(_wcCount.text) ?? 0;
     final kCount = int.tryParse(_kitchenCount.text) ?? 0;
-    final fVal = double.tryParse(_floorSqm.text) ?? 0.0;
+    final fValBase = double.tryParse(_floorSqm.text) ?? 0.0;
     final fiVal = double.tryParse(_installationSqm.text) ?? 0.0;
     final sVal = double.tryParse(_skirtingMeters.text) ?? 0.0;
+
+    // Apply waste percentage ONLY to material calculation, not installation
+    final wasteMultiplier = 1.0 + (_wastePercentage / 100.0);
+    final fVal = fValBase * wasteMultiplier;
 
     final bathPrice = double.tryParse(_bathPriceController.text) ?? 0.0;
     final wcPrice = double.tryParse(_wcPriceController.text) ?? 0.0;
@@ -99,7 +105,7 @@ class _TilesCalculatorState extends State<TilesCalculator> {
     final skirtingPrice = double.tryParse(_skirtingPriceController.text) ?? 0.0;
     final gluePrice = double.tryParse(_gluePriceController.text) ?? 0.0;
 
-    final totalGlue = (bCount * 15) + fiVal.ceil();
+    final totalGlue = (bCount * 15) + (fiVal * wasteMultiplier).ceil();
     final glueCost = totalGlue * gluePrice;
     final unitPriceTotal = (bCount * bathPrice) + (wCount * wcPrice) + (kCount * kitchenPrice) + (fVal * tilePrice) + (fiVal * installPrice) + (sVal * skirtingPrice) + glueCost;
 
@@ -116,6 +122,45 @@ class _TilesCalculatorState extends State<TilesCalculator> {
                 icon: Icon(_showPriceSettings ? Icons.settings_applications : Icons.settings_outlined),
               ),
             ],
+          ),
+          const SizedBox(height: 16),
+          SturdyCalcSection(
+            title: "Ποσοστό Φύρας (Scrap/Waste)",
+            icon: Icons.pie_chart_outline_rounded,
+            child: Column(
+              children: [
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    Text("Επιπλέον υλικό για κοψίματα:", style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 12, color: Colors.blueGrey)),
+                    Container(
+                      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
+                      decoration: BoxDecoration(color: Colors.blue.withValues(alpha: 0.1), borderRadius: BorderRadius.circular(8)),
+                      child: Text("+${_wastePercentage.toInt()}%", style: const TextStyle(fontWeight: FontWeight.w900, fontSize: 14, color: Colors.blue)),
+                    ),
+                  ],
+                ),
+                SliderTheme(
+                  data: SliderTheme.of(context).copyWith(
+                    activeTrackColor: Colors.blue,
+                    inactiveTrackColor: Colors.blue.withValues(alpha: 0.2),
+                    thumbColor: Colors.blue,
+                    overlayColor: Colors.blue.withValues(alpha: 0.1),
+                    valueIndicatorColor: Colors.blue,
+                  ),
+                  child: Slider(
+                    value: _wastePercentage,
+                    min: 0,
+                    max: 20,
+                    divisions: 20,
+                    label: "+${_wastePercentage.toInt()}%",
+                    onChanged: (val) => setState(() => _wastePercentage = val),
+                  ),
+                ),
+                const Text("Αυξάνει αυτόματα τα τ.μ. πλακιδίων και τα σακιά κόλλας που θα χρειαστούν, χωρίς να χρεώνει επιπλέον εργατικά τοποθέτησης.", 
+                  style: TextStyle(fontSize: 9, fontStyle: FontStyle.italic, color: Colors.grey), textAlign: TextAlign.center),
+              ],
+            ),
           ),
 
           if (_showPriceSettings)

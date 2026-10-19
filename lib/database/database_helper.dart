@@ -144,7 +144,21 @@ class DatabaseHelper {
     await _ensureClientNotesColumn(db);
     await _ensureToolAssignedToColumn(db);
     await _ensureCashRegisterTable(db);
+    await _ensureProjectPhotosBeforeAfterColumn(db);
     return db;
+  }
+
+  Future<void> _ensureProjectPhotosBeforeAfterColumn(Database db) async {
+    final tableInfo = await db.rawQuery("PRAGMA table_info(project_photos)");
+    final existingColumns = tableInfo.map((row) => row['name'] as String).toSet();
+    if (!existingColumns.contains('afterUri')) {
+      try {
+        await db.execute("ALTER TABLE project_photos ADD COLUMN afterUri TEXT DEFAULT ''");
+        await db.execute("ALTER TABLE project_photos ADD COLUMN isBeforeAfter INTEGER DEFAULT 0");
+      } catch (e) {
+        print("Schema update error project photos: $e");
+      }
+    }
   }
 
   Future<void> _ensureCashRegisterTable(Database db) async {
@@ -730,6 +744,8 @@ class DatabaseHelper {
         description TEXT,
         dateAdded INTEGER,
         folderName TEXT DEFAULT 'ΓΕΝΙΚΑ',
+        afterUri TEXT DEFAULT '',
+        isBeforeAfter INTEGER DEFAULT 0,
         FOREIGN KEY (projectId) REFERENCES projects (id) ON DELETE CASCADE
       )
     ''');

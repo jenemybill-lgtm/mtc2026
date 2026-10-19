@@ -791,6 +791,8 @@ class ProjectPhotoEntity {
   final String description;
   final int dateAdded;
   final String folderName;
+  final String afterUri; // <--- Νέο πεδίο για Before/After
+  final bool isBeforeAfter; // <--- Σημαία
 
   ProjectPhotoEntity({
     this.id = 0,
@@ -799,6 +801,8 @@ class ProjectPhotoEntity {
     this.description = "",
     int? dateAdded,
     this.folderName = "ΓΕΝΙΚΑ",
+    this.afterUri = "",
+    this.isBeforeAfter = false,
   }) : dateAdded = dateAdded ?? DateTime.now().millisecondsSinceEpoch;
 
   Map<String, dynamic> toMap() {
@@ -809,6 +813,8 @@ class ProjectPhotoEntity {
       'description': description,
       'dateAdded': dateAdded,
       'folderName': folderName,
+      'afterUri': afterUri,
+      'isBeforeAfter': isBeforeAfter ? 1 : 0,
     };
   }
 
@@ -820,6 +826,30 @@ class ProjectPhotoEntity {
       description: map['description'] ?? "",
       dateAdded: map['dateAdded'],
       folderName: map['folderName'] ?? "ΓΕΝΙΚΑ",
+      afterUri: map['afterUri'] ?? "",
+      isBeforeAfter: (map['isBeforeAfter'] ?? 0) == 1,
+    );
+  }
+
+  ProjectPhotoEntity copyWith({
+    int? id,
+    int? projectId,
+    String? uri,
+    String? description,
+    int? dateAdded,
+    String? folderName,
+    String? afterUri,
+    bool? isBeforeAfter,
+  }) {
+    return ProjectPhotoEntity(
+      id: id ?? this.id,
+      projectId: projectId ?? this.projectId,
+      uri: uri ?? this.uri,
+      description: description ?? this.description,
+      dateAdded: dateAdded ?? this.dateAdded,
+      folderName: folderName ?? this.folderName,
+      afterUri: afterUri ?? this.afterUri,
+      isBeforeAfter: isBeforeAfter ?? this.isBeforeAfter,
     );
   }
 }
