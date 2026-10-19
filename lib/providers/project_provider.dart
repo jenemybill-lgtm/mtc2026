@@ -514,29 +514,20 @@ class ProjectProvider with ChangeNotifier {
       await DatabaseHelper().getProjectsForClient(clientId);
 
   Future<void> addClient(Client c) async {
-    final newId = await DatabaseHelper().insertClient(c);
-    final newClient = c.copyWith(id: newId);
-    _clients.add(newClient);
-    notifyListeners();
+    await DatabaseHelper().insertClient(c);
+    await fetchProjects();
     await _autoSync('clients');
   }
 
   Future<void> updateClient(Client c) async {
     await DatabaseHelper().updateClient(c);
-    final index = _clients.indexWhere((item) => item.id == c.id);
-    if (index != -1) {
-      _clients[index] = c;
-    } else {
-      _clients.add(c);
-    }
-    notifyListeners();
+    await fetchProjects();
     await _autoSync('clients');
   }
 
   Future<void> deleteClient(int id) async {
     await DatabaseHelper().deleteClient(id);
-    _clients.removeWhere((item) => item.id == id);
-    notifyListeners();
+    await fetchProjects();
     await _autoSync('clients');
   }
 
@@ -584,21 +575,18 @@ class ProjectProvider with ChangeNotifier {
   Future<void> addProjectNote(ProjectNote note) async {
     await DatabaseHelper().insertProjectNote(note);
     await fetchProjectData(note.projectId);
-    notifyListeners();
     await _autoSync();
   }
 
   Future<void> updateProjectNote(ProjectNote note) async {
     await DatabaseHelper().updateProjectNote(note);
     await fetchProjectData(note.projectId);
-    notifyListeners();
     await _autoSync();
   }
 
   Future<void> deleteProjectNote(int projectId, int noteId) async {
     await DatabaseHelper().deleteProjectNote(noteId);
     await fetchProjectData(projectId);
-    notifyListeners();
     await _autoSync();
   }
 
@@ -937,23 +925,6 @@ class ProjectProvider with ChangeNotifier {
   }
 
   Future<void> deleteAttendance(int id) async {
-    // Before deleting attendance, check if there is a CONFIRMED dispatch for this worker and date
-    // If so, revert it to PENDING.
-    final attendanceRecord = await DatabaseHelper().getAttendanceById(id);
-    if (attendanceRecord != null) {
-      final date = DateTime.fromMillisecondsSinceEpoch(attendanceRecord.date);
-      final startOfDay = DateTime(date.year, date.month, date.day, 0, 0, 0).millisecondsSinceEpoch;
-      final endOfDay = DateTime(date.year, date.month, date.day, 23, 59, 59, 999).millisecondsSinceEpoch;
-      
-      final dispatches = await DatabaseHelper().getWorkerDispatchesForWorkerAndDate(attendanceRecord.workerName, startOfDay, endOfDay);
-      for (var dispatch in dispatches) {
-        if (dispatch.status == "CONFIRMED") {
-          final updatedDispatch = dispatch.copyWith(status: "PENDING");
-          await DatabaseHelper().updateWorkerDispatch(updatedDispatch);
-        }
-      }
-    }
-
     await DatabaseHelper().deleteAttendance(id);
     await calculateDashboardStats();
     await _autoSync('attendance');
@@ -1004,6 +975,27 @@ class ProjectProvider with ChangeNotifier {
     await DatabaseHelper().deleteWorkerDispatch(id);
     notifyListeners();
     await _autoSync('worker_dispatches');
+  }
+
+  // --- CASH FLOW (Ταμείο) ---
+  Future<List<CashFlowEntity>> getCashFlows() async => await DatabaseHelper().getCashFlows();
+
+  Future<void> addCashFlow(CashFlowEntity c) async {
+    await DatabaseHelper().insertCashFlow(c);
+    notifyListeners();
+    await _autoSync('cash_register');
+  }
+
+  Future<void> updateCashFlow(CashFlowEntity c) async {
+    await DatabaseHelper().updateCashFlow(c);
+    notifyListeners();
+    await _autoSync('cash_register');
+  }
+
+  Future<void> deleteCashFlow(int id) async {
+    await DatabaseHelper().deleteCashFlow(id);
+    notifyListeners();
+    await _autoSync('cash_register');
   }
 
   Future<List<AttendanceEntity>> getAttendance(int? pid, int? s, int? e) async =>

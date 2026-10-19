@@ -143,7 +143,24 @@ class DatabaseHelper {
     await _ensureQuoteItemExtraColumn(db);
     await _ensureClientNotesColumn(db);
     await _ensureToolAssignedToColumn(db);
+    await _ensureCashRegisterTable(db);
     return db;
+  }
+
+  Future<void> _ensureCashRegisterTable(Database db) async {
+    try {
+      await db.execute('''
+        CREATE TABLE IF NOT EXISTS cash_register (
+          id INTEGER PRIMARY KEY AUTOINCREMENT,
+          date INTEGER,
+          type TEXT,
+          amount REAL,
+          description TEXT,
+          invoiceNumber TEXT,
+          projectName TEXT
+        )
+      ''');
+    } catch (_) {}
   }
 
   Future<void> _ensureToolAssignedToColumn(Database db) async {
@@ -1758,22 +1775,6 @@ class DatabaseHelper {
     return result.map((e) => AttendanceEntity.fromMap(e)).toList();
   }
 
-  Future<AttendanceEntity?> getAttendanceById(int id) async {
-    if (kIsWeb) {
-      final records = (_webMemory['attendance'] ?? []);
-      for (var e in records) {
-        if (e['id'] == id) return AttendanceEntity.fromMap(e);
-      }
-      return null;
-    }
-    Database? db = await database;
-    var result = await db!.query('attendance', where: 'id = ?', whereArgs: [id]);
-    if (result.isNotEmpty) {
-      return AttendanceEntity.fromMap(result.first);
-    }
-    return null;
-  }
-
   Future<int> insertAttendance(AttendanceEntity record) async {
     if (kIsWeb) {
       return _webInsert('attendance', record.toMap());
@@ -1863,22 +1864,6 @@ class DatabaseHelper {
     return result.map((e) => WorkerDispatch.fromMap(e)).toList();
   }
 
-  Future<List<WorkerDispatch>> getWorkerDispatchesForWorkerAndDate(String workerName, int startOfDay, int endOfDay) async {
-    if (kIsWeb) {
-      return (_webMemory['worker_dispatches'] ?? [])
-          .map((e) => WorkerDispatch.fromMap(e))
-          .where((e) => e.date >= startOfDay && e.date <= endOfDay && e.workerName == workerName)
-          .toList();
-    }
-    Database? db = await database;
-    var result = await db!.query(
-      'worker_dispatches',
-      where: 'date >= ? AND date <= ? AND workerName = ?',
-      whereArgs: [startOfDay, endOfDay, workerName],
-    );
-    return result.map((e) => WorkerDispatch.fromMap(e)).toList();
-  }
-
   Future<int> insertWorkerDispatch(WorkerDispatch dispatch) async {
     if (kIsWeb) {
       return _webInsert('worker_dispatches', dispatch.toMap());
@@ -1906,6 +1891,34 @@ class DatabaseHelper {
     }
     Database? db = await database;
     return await db!.delete('worker_dispatches', where: 'id = ?', whereArgs: [id]);
+  }
+
+  // --- Cash Flow / Ταμείο ---
+  Future<List<CashFlowEntity>> getCashFlows() async {
+    if (kIsWeb) {
+      return (_webMemory['cash_register'] ?? []).map((e) => CashFlowEntity.fromMap(e)).toList();
+    }
+    Database? db = await database;
+    var result = await db!.query('cash_register', orderBy: 'date DESC, id DESC');
+    return result.map((e) => CashFlowEntity.fromMap(e)).toList();
+  }
+
+  Future<int> insertCashFlow(CashFlowEntity item) async {
+    if (kIsWeb) return _webInsert('cash_register', item.toMap());
+    Database? db = await database;
+    return await db!.insert('cash_register', item.toMap());
+  }
+
+  Future<int> updateCashFlow(CashFlowEntity item) async {
+    if (kIsWeb) return _webUpdate('cash_register', item.toMap(), item.id);
+    Database? db = await database;
+    return await db!.update('cash_register', item.toMap(), where: 'id = ?', whereArgs: [item.id]);
+  }
+
+  Future<int> deleteCashFlow(int id) async {
+    if (kIsWeb) return _webDelete('cash_register', id);
+    Database? db = await database;
+    return await db!.delete('cash_register', where: 'id = ?', whereArgs: [id]);
   }
 
   Future<int> insertTask(Task task) async {
@@ -2135,7 +2148,7 @@ class DatabaseHelper {
 
     if (category != "ΟΛΑ") {
       if (where.isNotEmpty) where += ' AND ';
-      where += 'LOWER(category) = LOWER(?)';
+      where += 'category = ?';
       whereArgs.add(category);
     }
 
@@ -2878,6 +2891,7 @@ class DatabaseHelper {
       'global_settings',
       'managers',
       'worker_dispatches',
+      'cash_register',
     ];
 
     for (var table in tables) {
@@ -2994,6 +3008,7 @@ class DatabaseHelper {
       'global_settings': 'global_settings',
       'managers': 'managers',
       'worker_dispatches': 'worker_dispatches',
+      'cash_register': 'cash_register',
     };
 
     await db!.transaction((txn) async {

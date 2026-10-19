@@ -1654,6 +1654,70 @@ class Manager {
   }
 }
 
+class CashFlowEntity {
+  final int id;
+  final int date;
+  final String type; // "INCOME" or "EXPENSE"
+  final double amount;
+  final String description;
+  final String invoiceNumber;
+  final String projectName; // Απλό κείμενο, όχι ID, για ελεύθερη γραφή
+
+  CashFlowEntity({
+    this.id = 0,
+    int? date,
+    required this.type,
+    required this.amount,
+    required this.description,
+    this.invoiceNumber = "",
+    this.projectName = "",
+  }) : date = date ?? DateTime.now().millisecondsSinceEpoch;
+
+  Map<String, dynamic> toMap() {
+    return {
+      if (id != 0) 'id': id,
+      'date': date,
+      'type': type,
+      'amount': amount,
+      'description': description,
+      'invoiceNumber': invoiceNumber,
+      'projectName': projectName,
+    };
+  }
+
+  factory CashFlowEntity.fromMap(Map<String, dynamic> map) {
+    return CashFlowEntity(
+      id: map['id'] ?? 0,
+      date: map['date'] ?? 0,
+      type: map['type'] ?? "EXPENSE",
+      amount: (map['amount'] as num?)?.toDouble() ?? 0.0,
+      description: map['description'] ?? "",
+      invoiceNumber: map['invoiceNumber'] ?? "",
+      projectName: map['projectName'] ?? "",
+    );
+  }
+
+  CashFlowEntity copyWith({
+    int? id,
+    int? date,
+    String? type,
+    double? amount,
+    String? description,
+    String? invoiceNumber,
+    String? projectName,
+  }) {
+    return CashFlowEntity(
+      id: id ?? this.id,
+      date: date ?? this.date,
+      type: type ?? this.type,
+      amount: amount ?? this.amount,
+      description: description ?? this.description,
+      invoiceNumber: invoiceNumber ?? this.invoiceNumber,
+      projectName: projectName ?? this.projectName,
+    );
+  }
+}
+
 class WorkerDispatch {
   final int id;
   final String workerName;
