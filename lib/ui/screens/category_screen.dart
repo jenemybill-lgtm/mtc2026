@@ -13,6 +13,7 @@ import 'package:mtc2026/ui/calculators/metal_calculator.dart';
 import 'package:mtc2026/ui/calculators/carpentry_calculator.dart';
 import 'package:mtc2026/ui/calculators/engineering_calculator.dart';
 import 'package:mtc2026/ui/calculators/earthworks_calculator.dart';
+import 'package:mtc2026/ui/calculators/awnings_calculator.dart';
 import 'package:mtc2026/models/enums.dart';
 import 'package:mtc2026/models/project_models.dart';
 import 'package:mtc2026/providers/project_provider.dart';
@@ -249,6 +250,7 @@ class _CategoryScreenState extends State<CategoryScreen> {
               if (widget.category == AppDestinations.METAL) _calcBtn("Υπολογιστής", Icons.construction_rounded, MetalCalculator(onResult: _handleCalcResult), catColor),
               if (widget.category == AppDestinations.CARPENTRY) _calcBtn("Υπολογιστής", Icons.kitchen_rounded, CarpentryCalculator(onResult: _handleCalcResult), catColor),
               if (widget.category == AppDestinations.ENGINEERING) _calcBtn("Υπολογιστής", Icons.design_services_rounded, EngineeringCalculator(onResult: _handleCalcResult), catColor),
+              if (widget.category == AppDestinations.AWNINGS) _calcBtn("Υπολογιστής", Icons.deck_rounded, AwningsCalculator(onResult: _handleCalcResult), catColor),
               _actionBtn("ΠΡΟΤΥΠΑ", Icons.style_rounded, _showPriceTemplatesSheet, const Color(0xFF4CC9F0)),
               _actionBtn("ΣΥΝΤΑΓΕΣ", Icons.auto_fix_high_rounded, _showRecipesSheet, const Color(0xFF4CC9F0)),
               _actionBtn("ΣΤΟΧΟΣ ΚΕΡΔΟΥΣ", Icons.monetization_on_rounded, _showTargetProfitDialog, const Color(0xFF16A34A)),

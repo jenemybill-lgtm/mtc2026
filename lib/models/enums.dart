@@ -16,6 +16,7 @@ enum AppDestinations {
   EARTHWORKS('Χωματουργικά', Icons.landslide, Color(0xFF8D6E63)),
   BETON('Μπετά', Icons.architecture, Color(0xFF455A64)),
   METAL('Μεταλλικά', Icons.precision_manufacturing, Color(0xFF263238)),
+  AWNINGS('Τέντες & Σκίαση', Icons.deck_rounded, Color(0xFFFF9800)),
   ENGINEERING('Μελέτες & Επιβλέψεις', Icons.design_services, Color(0xFF673AB7));
 
   final String label;
