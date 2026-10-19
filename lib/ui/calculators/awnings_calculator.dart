@@ -15,16 +15,18 @@ class AwningsCalculator extends StatefulWidget {
 
 class _AwningsCalculatorState extends State<AwningsCalculator> {
   final _multiplierController = TextEditingController(text: "1");
+  final _sqmController = TextEditingController();
   final _widthController = TextEditingController();
-  final _projectionController = TextEditingController(); // Κατέβασμα (άνοιγμα)
+  final _projectionController = TextEditingController();
 
   final _fabricPriceController = TextEditingController(text: "25.0");
-  final _armsBasePriceController = TextEditingController(text: "250.0"); // 2 arms
+  final _armsBasePriceController = TextEditingController(text: "250.0"); // per pair (ζεύγος)
   final _extraArmPriceController = TextEditingController(text: "100.0");
   final _motorPriceController = TextEditingController(text: "250.0");
 
-  int _armsCount = 2;
-  bool _hasMotor = false;
+  int _armPairsCount = 1; // Δυάδες βραχιόνων (default 1 ζεύγος)
+  int _extraArmsCount = 0; // Επιπλέον μεμονωμένοι βραχίονες
+  int _motorsCount = 0; // Μοτέρ/Μηχανισμοί
   bool _showPriceSettings = false;
 
   @override
@@ -79,9 +81,11 @@ class _AwningsCalculatorState extends State<AwningsCalculator> {
 
   @override
   Widget build(BuildContext context) {
+    final directSqm = double.tryParse(_sqmController.text.replaceAll(',', '.')) ?? 0.0;
     final width = double.tryParse(_widthController.text.replaceAll(',', '.')) ?? 0.0;
     final proj = double.tryParse(_projectionController.text.replaceAll(',', '.')) ?? 0.0;
-    final sqm = width * proj;
+    
+    final sqm = directSqm > 0 ? directSqm : (width * proj);
 
     final pFabric = double.tryParse(_fabricPriceController.text) ?? 25.0;
     final pArmsBase = double.tryParse(_armsBasePriceController.text) ?? 250.0;
@@ -90,19 +94,11 @@ class _AwningsCalculatorState extends State<AwningsCalculator> {
 
     // Υπολογισμοί
     final fabricCost = sqm * pFabric;
-    
-    double armsCost = pArmsBase;
-    if (_armsCount > 2) {
-      armsCost += (_armsCount - 2) * pExtraArm;
-    } else if (_armsCount < 2) {
-      // In case they set it to 0 or 1, maybe just scale or set 0? Let's say it's 0 if 0 arms.
-      if (_armsCount == 0) armsCost = 0;
-      if (_armsCount == 1) armsCost = pArmsBase / 2; // Rough estimate or just minimum 250
-    }
+    final armPairsCost = _armPairsCount * pArmsBase;
+    final extraArmsCost = _extraArmsCount * pExtraArm;
+    final motorsCost = _motorsCount * pMotor;
 
-    final motorCost = _hasMotor ? pMotor : 0.0;
-
-    final total = fabricCost + armsCost + motorCost;
+    final total = fabricCost + armPairsCost + extraArmsCost + motorsCost;
 
     return SingleChildScrollView(
       padding: const EdgeInsets.all(24),
@@ -129,9 +125,9 @@ class _AwningsCalculatorState extends State<AwningsCalculator> {
                 child: Column(
                   children: [
                     _priceEditRow("Πανί (€/m²)", _fabricPriceController),
-                    _priceEditRow("Βραχίονες Βάση (Ζεύγος)", _armsBasePriceController),
-                    _priceEditRow("Επιπλέον Βραχίονας", _extraArmPriceController),
-                    _priceEditRow("Μηχανισμός (Μοτέρ)", _motorPriceController),
+                    _priceEditRow("Δυάδα Βραχιόνων (€/ζεύγος)", _armsBasePriceController),
+                    _priceEditRow("Επιπλέον Βραχίονας (€/τεμ)", _extraArmPriceController),
+                    _priceEditRow("Μηχανισμός / Μοτέρ (€/τεμ)", _motorPriceController),
                   ],
                 ),
               ),
@@ -139,52 +135,140 @@ class _AwningsCalculatorState extends State<AwningsCalculator> {
 
           const SizedBox(height: 16),
           SturdyCalcSection(
-            title: "Διαστάσεις Τέντας",
+            title: "m² Πανιού & Διαστάσεις",
             icon: Icons.straighten_rounded,
             child: Column(
               children: [
+                TextField(
+                  controller: _sqmController,
+                  decoration: const InputDecoration(
+                    labelText: "Συνολικά m² Πανιού (Απευθείας ή από διαστάσεις)",
+                    prefixIcon: Icon(Icons.aspect_ratio_rounded),
+                    border: OutlineInputBorder(),
+                  ),
+                  keyboardType: TextInputType.number,
+                  onChanged: (_) => setState(() {}),
+                ),
+                const SizedBox(height: 12),
                 Row(
                   children: [
-                    Expanded(child: TextField(controller: _widthController, decoration: const InputDecoration(labelText: "Πλάτος (m)", prefixIcon: Icon(Icons.space_bar_rounded), border: OutlineInputBorder()), keyboardType: TextInputType.number, onChanged: (_) => setState(() {}))),
+                    Expanded(
+                      child: TextField(
+                        controller: _widthController, 
+                        decoration: const InputDecoration(labelText: "Πλάτος (m)", prefixIcon: Icon(Icons.space_bar_rounded), border: OutlineInputBorder()), 
+                        keyboardType: TextInputType.number, 
+                        onChanged: (v) {
+                          final w = double.tryParse(v.replaceAll(',', '.')) ?? 0.0;
+                          final p = double.tryParse(_projectionController.text.replaceAll(',', '.')) ?? 0.0;
+                          if (w > 0 && p > 0) {
+                            _sqmController.text = (w * p).toStringAsFixed(2);
+                          }
+                          setState(() {});
+                        },
+                      ),
+                    ),
                     const SizedBox(width: 12),
-                    Expanded(child: TextField(controller: _projectionController, decoration: const InputDecoration(labelText: "Άνοιγμα/Κατέβασμα (m)", prefixIcon: Icon(Icons.height_rounded), border: OutlineInputBorder()), keyboardType: TextInputType.number, onChanged: (_) => setState(() {}))),
+                    Expanded(
+                      child: TextField(
+                        controller: _projectionController, 
+                        decoration: const InputDecoration(labelText: "Άνοιγμα/Κατέβασμα (m)", prefixIcon: Icon(Icons.height_rounded), border: OutlineInputBorder()), 
+                        keyboardType: TextInputType.number, 
+                        onChanged: (v) {
+                          final w = double.tryParse(_widthController.text.replaceAll(',', '.')) ?? 0.0;
+                          final p = double.tryParse(v.replaceAll(',', '.')) ?? 0.0;
+                          if (w > 0 && p > 0) {
+                            _sqmController.text = (w * p).toStringAsFixed(2);
+                          }
+                          setState(() {});
+                        },
+                      ),
+                    ),
                   ],
                 ),
                 const SizedBox(height: 8),
-                Text("Σύνολο Τετραγωνικών (Πανί): ${sqm.toStringAsFixed(2)} m²", style: const TextStyle(fontWeight: FontWeight.bold, color: Colors.blueGrey)),
+                Text("Τελικά m² Πανιού: ${sqm.toStringAsFixed(2)} m²", style: const TextStyle(fontWeight: FontWeight.bold, color: Colors.blueGrey)),
               ],
             ),
           ),
           
           const SizedBox(height: 16),
           SturdyCalcSection(
-            title: "Εξοπλισμός & Μηχανισμοί",
+            title: "Βραχίονες & Μηχανισμοί",
             icon: Icons.settings_suggest_rounded,
             child: Column(
               children: [
+                // 1. Δυάδες / Ζεύγη Βραχιόνων (250 €/ζεύγος)
                 Row(
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
-                    const Text("Αριθμός Βραχιόνων", style: TextStyle(fontWeight: FontWeight.bold)),
+                    const Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text("Δυάδες Βραχιόνων (250€/ζεύγος)", style: TextStyle(fontWeight: FontWeight.bold, fontSize: 12)),
+                        Text("Περιλαμβάνει 2 βραχίονες & βάση", style: TextStyle(fontSize: 9, color: Colors.grey)),
+                      ],
+                    ),
                     Row(
                       children: [
-                        IconButton.filledTonal(onPressed: () => setState(() { if (_armsCount > 0) _armsCount--; }), icon: const Icon(Icons.remove)),
+                        IconButton.filledTonal(onPressed: () => setState(() { if (_armPairsCount > 0) _armPairsCount--; }), icon: const Icon(Icons.remove)),
                         Padding(
-                          padding: const EdgeInsets.symmetric(horizontal: 16),
-                          child: Text("$_armsCount", style: const TextStyle(fontWeight: FontWeight.w900, fontSize: 18)),
+                          padding: const EdgeInsets.symmetric(horizontal: 12),
+                          child: Text("$_armPairsCount", style: const TextStyle(fontWeight: FontWeight.w900, fontSize: 16)),
                         ),
-                        IconButton.filledTonal(onPressed: () => setState(() => _armsCount++), icon: const Icon(Icons.add)),
+                        IconButton.filledTonal(onPressed: () => setState(() => _armPairsCount++), icon: const Icon(Icons.add)),
                       ],
                     ),
                   ],
                 ),
-                const Divider(),
-                SwitchListTile(
-                  title: const Text("Μηχανισμός (Μοτέρ)", style: TextStyle(fontWeight: FontWeight.bold)),
-                  subtitle: const Text("Ηλεκτρικός μηχανισμός λειτουργίας"),
-                  value: _hasMotor,
-                  onChanged: (v) => setState(() => _hasMotor = v),
-                  contentPadding: EdgeInsets.zero,
+                const Divider(height: 20),
+
+                // 2. Επιπλέον Μεμονωμένοι Βραχίονες (100 €/τεμ)
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    const Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text("Επιπλέον Βραχίονες (100€/τεμ)", style: TextStyle(fontWeight: FontWeight.bold, fontSize: 12)),
+                        Text("Μεμονωμένος έξτρα βραχίονας", style: TextStyle(fontSize: 9, color: Colors.grey)),
+                      ],
+                    ),
+                    Row(
+                      children: [
+                        IconButton.filledTonal(onPressed: () => setState(() { if (_extraArmsCount > 0) _extraArmsCount--; }), icon: const Icon(Icons.remove)),
+                        Padding(
+                          padding: const EdgeInsets.symmetric(horizontal: 12),
+                          child: Text("$_extraArmsCount", style: const TextStyle(fontWeight: FontWeight.w900, fontSize: 16)),
+                        ),
+                        IconButton.filledTonal(onPressed: () => setState(() => _extraArmsCount++), icon: const Icon(Icons.add)),
+                      ],
+                    ),
+                  ],
+                ),
+                const Divider(height: 20),
+
+                // 3. Μοτέρ / Μηχανισμοί (250 €/τεμ)
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    const Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text("Ηλεκτρικά Μοτέρ (250€/τεμ)", style: TextStyle(fontWeight: FontWeight.bold, fontSize: 12)),
+                        Text("Μηχανισμός αυτοματισμού", style: TextStyle(fontSize: 9, color: Colors.grey)),
+                      ],
+                    ),
+                    Row(
+                      children: [
+                        IconButton.filledTonal(onPressed: () => setState(() { if (_motorsCount > 0) _motorsCount--; }), icon: const Icon(Icons.remove)),
+                        Padding(
+                          padding: const EdgeInsets.symmetric(horizontal: 12),
+                          child: Text("$_motorsCount", style: const TextStyle(fontWeight: FontWeight.w900, fontSize: 16)),
+                        ),
+                        IconButton.filledTonal(onPressed: () => setState(() => _motorsCount++), icon: const Icon(Icons.add)),
+                      ],
+                    ),
+                  ],
                 ),
               ],
             ),
@@ -200,9 +284,10 @@ class _AwningsCalculatorState extends State<AwningsCalculator> {
                 final q = _multiplierController.text;
                 await _savePrices();
                 
-                String desc = "Εγκατάσταση Τέντας (${_widthController.text}x${_projectionController.text}m)";
-                String details = "Πανί: ${fabricCost.toStringAsFixed(2)}€, Βραχίονες ($_armsCount): ${armsCost.toStringAsFixed(2)}€";
-                if (_hasMotor) details += ", Μοτέρ: ${motorCost.toStringAsFixed(2)}€";
+                String desc = "Εγκατάσταση Τέντας / Σκίασης (${sqm.toStringAsFixed(1)} m²)";
+                String details = "Πανί (${sqm.toStringAsFixed(1)}m²): ${fabricCost.toStringAsFixed(2)}€, Δυάδες Βραχιόνων ($_armPairsCount): ${armPairsCost.toStringAsFixed(2)}€";
+                if (_extraArmsCount > 0) details += ", Έξτρα Βραχίονες ($_extraArmsCount): ${extraArmsCost.toStringAsFixed(2)}€";
+                if (_motorsCount > 0) details += ", Μοτέρ ($_motorsCount): ${motorsCost.toStringAsFixed(2)}€";
 
                 widget.onResult(desc, q, total.toStringAsFixed(2), details);
                 Navigator.pop(context);
