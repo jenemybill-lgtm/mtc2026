@@ -38,6 +38,9 @@ class NotificationService {
         // Handle notification tap
       },
     );
+
+    // Automatically request permissions on startup
+    await requestPermissions();
   }
 
   Future<bool> requestPermissions() async {
@@ -79,15 +82,29 @@ class NotificationService {
       title,
       body,
       tz.TZDateTime.from(scheduledDate, tz.local),
-      const NotificationDetails(
+      NotificationDetails(
         android: AndroidNotificationDetails(
-          'mtc_tasks_channel',
-          'Εργασίες MTC',
-          channelDescription: 'Ειδοποιήσεις για προγραμματισμένες εργασίες',
+          'mtc_tasks_channel_v3',
+          'Ειδοποιήσεις MTC 2026',
+          channelDescription: 'Υψηλής προτεραιότητας ειδοποιήσεις εργασιών και ημερολογίου',
           importance: Importance.max,
-          priority: Priority.high,
+          priority: Priority.max,
+          playSound: true,
+          enableVibration: true,
+          enableLights: true,
+          fullScreenIntent: true,
+          styleInformation: BigTextStyleInformation(
+            body,
+            contentTitle: title,
+            summaryText: 'MTC 2026',
+          ),
+          audioAttributesUsage: AudioAttributesUsage.notification,
         ),
-        iOS: DarwinNotificationDetails(),
+        iOS: const DarwinNotificationDetails(
+          presentAlert: true,
+          presentBadge: true,
+          presentSound: true,
+        ),
       ),
       androidScheduleMode: AndroidScheduleMode.exactAllowWhileIdle,
       uiLocalNotificationDateInterpretation: UILocalNotificationDateInterpretation.absoluteTime,

@@ -708,10 +708,11 @@ class ProjectProvider with ChangeNotifier {
       // Always cancel existing one first
       await NotificationService().cancelNotification(t.id);
 
-      if (t.isCompleted || t.reminderTime == null) return;
+      if (t.isCompleted) return;
 
+      final reminderMinutes = t.reminderTime ?? 0;
       final taskDate = DateTime.fromMillisecondsSinceEpoch(t.date);
-      final scheduledDate = taskDate.subtract(Duration(minutes: t.reminderTime!));
+      final scheduledDate = taskDate.subtract(Duration(minutes: reminderMinutes));
 
       if (scheduledDate.isAfter(DateTime.now())) {
         final project = _projects.firstWhere(

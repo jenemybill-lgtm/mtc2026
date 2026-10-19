@@ -36,7 +36,7 @@ class _TaskDialogState extends State<TaskDialog> {
     } else {
       _selectedDate = widget.initialDate ?? DateTime.now();
       _selectedTime = TimeOfDay.now();
-      _selectedReminderMinutes = null; // Default to no reminder
+      _selectedReminderMinutes = 0; // Default to 'At time of event' (0 minutes)
     }
   }
 
