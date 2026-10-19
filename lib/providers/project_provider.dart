@@ -937,6 +937,23 @@ class ProjectProvider with ChangeNotifier {
   }
 
   Future<void> deleteAttendance(int id) async {
+    // Before deleting attendance, check if there is a CONFIRMED dispatch for this worker and date
+    // If so, revert it to PENDING.
+    final attendanceRecord = await DatabaseHelper().getAttendanceById(id);
+    if (attendanceRecord != null) {
+      final date = DateTime.fromMillisecondsSinceEpoch(attendanceRecord.date);
+      final startOfDay = DateTime(date.year, date.month, date.day, 0, 0, 0).millisecondsSinceEpoch;
+      final endOfDay = DateTime(date.year, date.month, date.day, 23, 59, 59, 999).millisecondsSinceEpoch;
+      
+      final dispatches = await DatabaseHelper().getWorkerDispatchesForWorkerAndDate(attendanceRecord.workerName, startOfDay, endOfDay);
+      for (var dispatch in dispatches) {
+        if (dispatch.status == "CONFIRMED") {
+          final updatedDispatch = dispatch.copyWith(status: "PENDING");
+          await DatabaseHelper().updateWorkerDispatch(updatedDispatch);
+        }
+      }
+    }
+
     await DatabaseHelper().deleteAttendance(id);
     await calculateDashboardStats();
     await _autoSync('attendance');

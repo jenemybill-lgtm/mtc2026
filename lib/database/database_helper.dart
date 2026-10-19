@@ -1758,6 +1758,22 @@ class DatabaseHelper {
     return result.map((e) => AttendanceEntity.fromMap(e)).toList();
   }
 
+  Future<AttendanceEntity?> getAttendanceById(int id) async {
+    if (kIsWeb) {
+      final records = (_webMemory['attendance'] ?? []);
+      for (var e in records) {
+        if (e['id'] == id) return AttendanceEntity.fromMap(e);
+      }
+      return null;
+    }
+    Database? db = await database;
+    var result = await db!.query('attendance', where: 'id = ?', whereArgs: [id]);
+    if (result.isNotEmpty) {
+      return AttendanceEntity.fromMap(result.first);
+    }
+    return null;
+  }
+
   Future<int> insertAttendance(AttendanceEntity record) async {
     if (kIsWeb) {
       return _webInsert('attendance', record.toMap());
@@ -1843,6 +1859,22 @@ class DatabaseHelper {
       where: 'date >= ? AND date <= ?',
       whereArgs: [startOfDay, endOfDay],
       orderBy: 'id DESC',
+    );
+    return result.map((e) => WorkerDispatch.fromMap(e)).toList();
+  }
+
+  Future<List<WorkerDispatch>> getWorkerDispatchesForWorkerAndDate(String workerName, int startOfDay, int endOfDay) async {
+    if (kIsWeb) {
+      return (_webMemory['worker_dispatches'] ?? [])
+          .map((e) => WorkerDispatch.fromMap(e))
+          .where((e) => e.date >= startOfDay && e.date <= endOfDay && e.workerName == workerName)
+          .toList();
+    }
+    Database? db = await database;
+    var result = await db!.query(
+      'worker_dispatches',
+      where: 'date >= ? AND date <= ? AND workerName = ?',
+      whereArgs: [startOfDay, endOfDay, workerName],
     );
     return result.map((e) => WorkerDispatch.fromMap(e)).toList();
   }
