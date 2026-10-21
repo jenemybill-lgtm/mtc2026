@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:intl/intl.dart';
 import 'package:fl_chart/fl_chart.dart';
+import 'package:shared_preferences/shared_preferences.dart';
+import 'package:mtc2026/ui/screens/company_login_screen.dart';
 import 'package:toastification/toastification.dart';
 import 'package:glassmorphism_ui/glassmorphism_ui.dart';
 import 'package:mtc2026/providers/project_provider.dart';
@@ -135,7 +137,26 @@ class _HomeScreenState extends State<HomeScreen> {
                             Text(provider.settings.ownerName.toUpperCase(), style: const TextStyle(fontWeight: FontWeight.w800, fontSize: 28, color: Color(0xFF0F172A), letterSpacing: -1)),
                           ],
                         ),
-                        _buildGlobalSearch(context),
+                        Row(
+                          children: [
+                            _buildGlobalSearch(context),
+                            const SizedBox(width: 8),
+                            IconButton(
+                              icon: const Icon(Icons.logout_rounded, color: Colors.blueGrey),
+                              tooltip: "Αποσύνδεση / Αλλαγή Εταιρείας",
+                              onPressed: () async {
+                                final prefs = await SharedPreferences.getInstance();
+                                await prefs.clear();
+                                if (context.mounted) {
+                                  Navigator.of(context).pushAndRemoveUntil(
+                                    MaterialPageRoute(builder: (context) => const CompanyLoginScreen()),
+                                    (route) => false,
+                                  );
+                                }
+                              },
+                            ),
+                          ],
+                        ),
                       ],
                     ),
                     Row(
