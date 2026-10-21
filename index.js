@@ -116,7 +116,20 @@ app.get('/api/sync/download', authMiddleware, async (req, res) => {
   }
 });
 
-app.get('/', (req, res) => res.send('MTC ERP API IS LIVE'));
+const path = require('path');
+const fs = require('fs');
+
+// --- SERVE FLUTTER WEB APP & FALLBACK API ---
+const webBuildPath = path.join(__dirname, 'build', 'web');
+if (fs.existsSync(webBuildPath)) {
+  app.use(express.static(webBuildPath));
+  app.get('*', (req, res, next) => {
+    if (req.path.startsWith('/api')) return next();
+    res.sendFile(path.join(webBuildPath, 'index.html'));
+  });
+} else {
+  app.get('/', (req, res) => res.send('MTC ERP API IS LIVE'));
+}
 
 // --- SERVER START ---
 const PORT = process.env.PORT || 5000;
