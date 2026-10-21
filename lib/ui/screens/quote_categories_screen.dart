@@ -196,18 +196,47 @@ class _QuoteCategoriesScreenState extends State<QuoteCategoriesScreen> {
     }
 
     final totalCost = items.fold(0.0, (sum, i) => sum + i.cost);
-    final profitController = TextEditingController();
+    final currentProfit = items.fold(0.0, (sum, i) => sum + (i.netPriceForClient - i.cost));
+    final currentMarginPct = totalCost > 0 ? (currentProfit / totalCost) * 100 : 0.0;
+
+    final profitController = TextEditingController(text: currentProfit > 0 ? currentProfit.toStringAsFixed(0) : "");
 
     showDialog(
       context: context,
       builder: (context) => AlertDialog(
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(28)),
-        title: const PremiumHeader(title: "ΟΛΙΚΟΣ ΣΤΟΧΟΣ ΚΕΡΔΟΥΣ ΠΡΟΣΦΟΡΑΣ", icon: Icons.monetization_on_rounded, color: Color(0xFF16A34A)),
+        title: const PremiumHeader(title: "ΟΛΙΚΟΣ ΣТОΧΟΣ ΚΕΡΔΟΥΣ ΠΡΟΣΦΟΡΑΣ", icon: Icons.monetization_on_rounded, color: Color(0xFF16A34A)),
         content: Column(
           mainAxisSize: MainAxisSize.min,
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Text("Συνολικό Κόστος Όλων των Εργασιών/Υλικών: ${totalCost.toStringAsFixed(2)} €", style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 12, color: Colors.blueGrey)),
+            Container(
+              padding: const EdgeInsets.all(14),
+              decoration: BoxDecoration(
+                color: const Color(0xFF16A34A).withValues(alpha: 0.08),
+                borderRadius: BorderRadius.circular(16),
+                border: Border.all(color: const Color(0xFF16A34A).withValues(alpha: 0.2)),
+              ),
+              child: Column(
+                children: [
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      const Text("Συνολικό Κόστος Υλικών/Εργασιών:", style: TextStyle(fontSize: 11, fontWeight: FontWeight.bold, color: Colors.blueGrey)),
+                      Text("${totalCost.toStringAsFixed(2)} €", style: const TextStyle(fontSize: 12, fontWeight: FontWeight.w900, color: Color(0xFF1E293B))),
+                    ],
+                  ),
+                  const SizedBox(height: 6),
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      const Text("Τρέχον Συνολικό Κέρδος:", style: TextStyle(fontSize: 11, fontWeight: FontWeight.bold, color: Colors.blueGrey)),
+                      Text("${currentProfit.toStringAsFixed(2)} € (${currentMarginPct.toStringAsFixed(1)}%)", style: const TextStyle(fontSize: 12, fontWeight: FontWeight.w900, color: Color(0xFF16A34A))),
+                    ],
+                  ),
+                ],
+              ),
+            ),
             const SizedBox(height: 16),
             TextField(
               controller: profitController,
@@ -215,18 +244,19 @@ class _QuoteCategoriesScreenState extends State<QuoteCategoriesScreen> {
                 labelText: "Επιθυμητό Συνολικό Κέρδος (€)",
                 hintText: "π.χ. 5000",
                 prefixIcon: Icon(Icons.savings_rounded, color: Color(0xFF16A34A)),
+                border: OutlineInputBorder(),
               ),
               keyboardType: TextInputType.number,
             ),
             const SizedBox(height: 8),
-            const Text("Το ποσοστό κέρδους θα υπολογιστεί και θα εφαρμοστεί αυτόματα σε ΟΛΕΣ τις κατηγορίες της προσφοράς.", style: TextStyle(fontSize: 10, color: Colors.blueGrey, fontStyle: FontStyle.italic)),
+            const Text("Το ποσό αυτό θα μοιραστεί ΑΝΑΛΟΓΙΚΑ σε όλες τις εργασίες με βάση το κόστος της καθενιάς, ώστε το άθροισμα του κέρδους να ισούται ακριβώς με το στόχο σας.", style: TextStyle(fontSize: 10, color: Colors.blueGrey, fontStyle: FontStyle.italic)),
           ],
         ),
         actions: [
           TextButton(onPressed: () => Navigator.pop(context), child: const Text("ΑΚΥΡΟ", style: TextStyle(fontWeight: FontWeight.w900))),
           ElevatedButton(
             onPressed: () async {
-              final targetProfit = double.tryParse(profitController.text) ?? 0.0;
+              final targetProfit = double.tryParse(profitController.text.replaceAll(',', '.')) ?? 0.0;
               if (targetProfit > 0 && totalCost > 0) {
                 final requiredMarginPct = (targetProfit / totalCost) * 100;
                 for (var item in items) {
