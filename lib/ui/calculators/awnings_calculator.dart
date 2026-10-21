@@ -201,18 +201,20 @@ class _AwningsCalculatorState extends State<AwningsCalculator> {
                 Row(
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
-                    const Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Text("Δυάδες Βραχιόνων (250€/ζεύγος)", style: TextStyle(fontWeight: FontWeight.bold, fontSize: 12)),
-                        Text("Περιλαμβάνει 2 βραχίονες & βάση", style: TextStyle(fontSize: 9, color: Colors.grey)),
-                      ],
+                    const Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text("Δυάδες Βραχιόνων (250€/ζεύγος)", style: TextStyle(fontWeight: FontWeight.bold, fontSize: 12)),
+                          Text("Περιλαμβάνει 2 βραχίονες & βάση", style: TextStyle(fontSize: 9, color: Colors.grey)),
+                        ],
+                      ),
                     ),
                     Row(
                       children: [
                         IconButton.filledTonal(onPressed: () => setState(() { if (_armPairsCount > 0) _armPairsCount--; }), icon: const Icon(Icons.remove)),
                         Padding(
-                          padding: const EdgeInsets.symmetric(horizontal: 12),
+                          padding: const EdgeInsets.symmetric(horizontal: 8),
                           child: Text("$_armPairsCount", style: const TextStyle(fontWeight: FontWeight.w900, fontSize: 16)),
                         ),
                         IconButton.filledTonal(onPressed: () => setState(() => _armPairsCount++), icon: const Icon(Icons.add)),
@@ -226,18 +228,20 @@ class _AwningsCalculatorState extends State<AwningsCalculator> {
                 Row(
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
-                    const Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Text("Επιπλέον Βραχίονες (100€/τεμ)", style: TextStyle(fontWeight: FontWeight.bold, fontSize: 12)),
-                        Text("Μεμονωμένος έξτρα βραχίονας", style: TextStyle(fontSize: 9, color: Colors.grey)),
-                      ],
+                    const Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text("Επιπλέον Βραχίονες (100€/τεμ)", style: TextStyle(fontWeight: FontWeight.bold, fontSize: 12)),
+                          Text("Μεμονωμένος έξτρα βραχίονας", style: TextStyle(fontSize: 9, color: Colors.grey)),
+                        ],
+                      ),
                     ),
                     Row(
                       children: [
                         IconButton.filledTonal(onPressed: () => setState(() { if (_extraArmsCount > 0) _extraArmsCount--; }), icon: const Icon(Icons.remove)),
                         Padding(
-                          padding: const EdgeInsets.symmetric(horizontal: 12),
+                          padding: const EdgeInsets.symmetric(horizontal: 8),
                           child: Text("$_extraArmsCount", style: const TextStyle(fontWeight: FontWeight.w900, fontSize: 16)),
                         ),
                         IconButton.filledTonal(onPressed: () => setState(() => _extraArmsCount++), icon: const Icon(Icons.add)),
@@ -251,18 +255,20 @@ class _AwningsCalculatorState extends State<AwningsCalculator> {
                 Row(
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
-                    const Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Text("Ηλεκτρικά Μοτέρ (250€/τεμ)", style: TextStyle(fontWeight: FontWeight.bold, fontSize: 12)),
-                        Text("Μηχανισμός αυτοματισμού", style: TextStyle(fontSize: 9, color: Colors.grey)),
-                      ],
+                    const Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text("Ηλεκτρικά Μοτέρ (250€/τεμ)", style: TextStyle(fontWeight: FontWeight.bold, fontSize: 12)),
+                          Text("Μηχανισμός αυτοματισμού", style: TextStyle(fontSize: 9, color: Colors.grey)),
+                        ],
+                      ),
                     ),
                     Row(
                       children: [
                         IconButton.filledTonal(onPressed: () => setState(() { if (_motorsCount > 0) _motorsCount--; }), icon: const Icon(Icons.remove)),
                         Padding(
-                          padding: const EdgeInsets.symmetric(horizontal: 12),
+                          padding: const EdgeInsets.symmetric(horizontal: 8),
                           child: Text("$_motorsCount", style: const TextStyle(fontWeight: FontWeight.w900, fontSize: 16)),
                         ),
                         IconButton.filledTonal(onPressed: () => setState(() => _motorsCount++), icon: const Icon(Icons.add)),

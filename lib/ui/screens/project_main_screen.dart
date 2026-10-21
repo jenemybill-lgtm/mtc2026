@@ -103,54 +103,64 @@ class _ProjectMainScreenState extends State<ProjectMainScreen> {
           decoration: BoxDecoration(
             border: Border(top: BorderSide(color: Colors.black.withValues(alpha: 0.05))),
           ),
-          child: NavigationBar(
-            height: 64,
-            elevation: 0,
-            backgroundColor: Colors.white,
-            indicatorColor: const Color(0xFF1E40AF).withValues(alpha: 0.1),
-            selectedIndex: _selectedIndex + 1,
-            onDestinationSelected: (index) {
-              if (index == 0) {
-                Navigator.of(context).pushAndRemoveUntil(
-                  MaterialPageRoute(builder: (context) => const HomeScreen()),
-                  (route) => false,
-                );
-              } else {
-                setState(() => _selectedIndex = index - 1);
-              }
-            },
-            destinations: const [
-              NavigationDestination(
-                icon: Icon(Icons.home_outlined, size: 22),
-                selectedIcon: Icon(Icons.home_rounded, size: 22, color: Color(0xFF1E40AF)),
-                label: "Αρχική",
-              ),
-              NavigationDestination(
-                icon: Icon(Icons.dashboard_outlined, size: 22),
-                selectedIcon: Icon(Icons.dashboard_rounded, size: 22, color: Color(0xFF1E40AF)),
-                label: "Επισκόπηση",
-              ),
-              NavigationDestination(
-                icon: Icon(Icons.assignment_outlined, size: 22),
-                selectedIcon: Icon(Icons.assignment_rounded, size: 22, color: Color(0xFF1E40AF)),
-                label: "Προσφορά",
-              ),
-              NavigationDestination(
-                icon: Icon(Icons.analytics_outlined, size: 22),
-                selectedIcon: Icon(Icons.analytics_rounded, size: 22, color: Color(0xFF1E40AF)),
-                label: "Σύνολο",
-              ),
-              NavigationDestination(
-                icon: Icon(Icons.event_note_outlined, size: 22),
-                selectedIcon: Icon(Icons.event_note_rounded, size: 22, color: Color(0xFF1E40AF)),
-                label: "Ημερολόγιο",
-              ),
-              NavigationDestination(
-                icon: Icon(Icons.dashboard_customize_outlined, size: 22),
-                selectedIcon: Icon(Icons.dashboard_customize_rounded, size: 22, color: Color(0xFF1E40AF)),
-                label: "Διαχείριση",
-              ),
-            ],
+          child: NavigationBarTheme(
+            data: NavigationBarThemeData(
+              labelTextStyle: WidgetStateProperty.resolveWith<TextStyle>((states) {
+                if (states.contains(WidgetState.selected)) {
+                  return const TextStyle(fontSize: 9.5, fontWeight: FontWeight.w900, color: Color(0xFF1E40AF));
+                }
+                return const TextStyle(fontSize: 9.5, fontWeight: FontWeight.bold, color: Colors.blueGrey);
+              }),
+            ),
+            child: NavigationBar(
+              height: 64,
+              elevation: 0,
+              backgroundColor: Colors.white,
+              indicatorColor: const Color(0xFF1E40AF).withValues(alpha: 0.1),
+              selectedIndex: _selectedIndex + 1,
+              onDestinationSelected: (index) {
+                if (index == 0) {
+                  Navigator.of(context).pushAndRemoveUntil(
+                    MaterialPageRoute(builder: (context) => const HomeScreen()),
+                    (route) => false,
+                  );
+                } else {
+                  setState(() => _selectedIndex = index - 1);
+                }
+              },
+              destinations: const [
+                NavigationDestination(
+                  icon: Icon(Icons.home_outlined, size: 20),
+                  selectedIcon: Icon(Icons.home_rounded, size: 20, color: Color(0xFF1E40AF)),
+                  label: "Αρχική",
+                ),
+                NavigationDestination(
+                  icon: Icon(Icons.dashboard_outlined, size: 20),
+                  selectedIcon: Icon(Icons.dashboard_rounded, size: 20, color: Color(0xFF1E40AF)),
+                  label: "Επισκόπηση",
+                ),
+                NavigationDestination(
+                  icon: Icon(Icons.assignment_outlined, size: 20),
+                  selectedIcon: Icon(Icons.assignment_rounded, size: 20, color: Color(0xFF1E40AF)),
+                  label: "Προσφορά",
+                ),
+                NavigationDestination(
+                  icon: Icon(Icons.analytics_outlined, size: 20),
+                  selectedIcon: Icon(Icons.analytics_rounded, size: 20, color: Color(0xFF1E40AF)),
+                  label: "Σύνολο",
+                ),
+                NavigationDestination(
+                  icon: Icon(Icons.event_note_outlined, size: 20),
+                  selectedIcon: Icon(Icons.event_note_rounded, size: 20, color: Color(0xFF1E40AF)),
+                  label: "Ημερολόγιο",
+                ),
+                NavigationDestination(
+                  icon: Icon(Icons.dashboard_customize_outlined, size: 20),
+                  selectedIcon: Icon(Icons.dashboard_customize_rounded, size: 20, color: Color(0xFF1E40AF)),
+                  label: "Διαχείριση",
+                ),
+              ],
+            ),
           ),
         ),
       ),
