@@ -242,7 +242,7 @@ class _CalendarSheetDialogState extends State<CalendarSheetDialog> {
               padding: const EdgeInsets.symmetric(vertical: 20, horizontal: 20),
               decoration: const BoxDecoration(
                 gradient: LinearGradient(
-                  colors: [Color(0xFF4361EE), Color(0xFF3B59DA)],
+                  colors: [Color(0xFF1E3A8A), Color(0xFF3B82F6)],
                   begin: Alignment.topLeft,
                   end: Alignment.bottomRight,
                 ),
@@ -261,18 +261,25 @@ class _CalendarSheetDialogState extends State<CalendarSheetDialog> {
                       children: [
                         const Text(
                           "ΠΡΟΓΡΑΜΜΑ ΗΜΕΡΑΣ",
-                          style: TextStyle(color: Colors.white70, fontWeight: FontWeight.w900, fontSize: 11, letterSpacing: 1.5),
+                          style: TextStyle(color: Colors.white70, fontWeight: FontWeight.w900, fontSize: 11, letterSpacing: 2.0),
                         ),
-                        const SizedBox(height: 4),
+                        const SizedBox(height: 6),
                         Text(
                           DateFormat('d').format(_selectedDate),
-                          style: const TextStyle(color: Colors.white, fontWeight: FontWeight.w900, fontSize: 48, height: 1),
+                          style: const TextStyle(color: Colors.white, fontWeight: FontWeight.w900, fontSize: 44, height: 1),
                         ),
-                        const SizedBox(height: 4),
-                        Text(
-                          dateStr.toUpperCase(),
-                          textAlign: TextAlign.center,
-                          style: const TextStyle(color: Colors.white, fontWeight: FontWeight.w800, fontSize: 13, letterSpacing: 0.5),
+                        const SizedBox(height: 8),
+                        Container(
+                          padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 5),
+                          decoration: BoxDecoration(
+                            color: Colors.white.withValues(alpha: 0.2),
+                            borderRadius: BorderRadius.circular(12),
+                          ),
+                          child: Text(
+                            dateStr.toUpperCase(),
+                            textAlign: TextAlign.center,
+                            style: const TextStyle(color: Colors.white, fontWeight: FontWeight.w900, fontSize: 11, letterSpacing: 0.5),
+                          ),
                         ),
                       ],
                     ),
@@ -847,14 +854,17 @@ class _MobileCalendarSheetState extends State<_MobileCalendarSheet> {
               Padding(
                 padding: const EdgeInsets.symmetric(horizontal: 16),
                 child: Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 12),
+                  padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 14),
                   decoration: BoxDecoration(
                     gradient: const LinearGradient(
-                      colors: [Color(0xFF2563EB), Color(0xFF1D4ED8)],
+                      colors: [Color(0xFF1E3A8A), Color(0xFF3B82F6)],
                       begin: Alignment.topLeft,
                       end: Alignment.bottomRight,
                     ),
-                    borderRadius: BorderRadius.circular(20),
+                    borderRadius: BorderRadius.circular(24),
+                    boxShadow: [
+                      BoxShadow(color: const Color(0xFF1E3A8A).withValues(alpha: 0.25), blurRadius: 15, offset: const Offset(0, 5)),
+                    ],
                   ),
                   child: Row(
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -869,13 +879,20 @@ class _MobileCalendarSheetState extends State<_MobileCalendarSheet> {
                           children: [
                             const Text(
                               "ΠΡΟΓΡΑΜΜΑ ΗΜΕΡΑΣ",
-                              style: TextStyle(color: Colors.white70, fontWeight: FontWeight.w900, fontSize: 10, letterSpacing: 1.5),
+                              style: TextStyle(color: Colors.white70, fontWeight: FontWeight.w900, fontSize: 10, letterSpacing: 2.0),
                             ),
-                            const SizedBox(height: 2),
-                            Text(
-                              dateStr.toUpperCase(),
-                              textAlign: TextAlign.center,
-                              style: const TextStyle(color: Colors.white, fontWeight: FontWeight.w900, fontSize: 13),
+                            const SizedBox(height: 4),
+                            Container(
+                              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
+                              decoration: BoxDecoration(
+                                color: Colors.white.withValues(alpha: 0.2),
+                                borderRadius: BorderRadius.circular(10),
+                              ),
+                              child: Text(
+                                dateStr.toUpperCase(),
+                                textAlign: TextAlign.center,
+                                style: const TextStyle(color: Colors.white, fontWeight: FontWeight.w900, fontSize: 11),
+                              ),
                             ),
                           ],
                         ),
